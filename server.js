@@ -1,33 +1,38 @@
 const express = require("express");
-const puppeteer = require("puppeteer-core");
+const puppeteer = require("puppeteer");
 const cors = require("cors");
 
 const app = express();
 app.use(cors());
 
 app.get("/invoice", async (req, res) => {
+    let browser;
+
     try {
         const url = req.query.url;
 
-        const browser = await puppeteer.launch({
+        browser = await puppeteer.launch({
             headless: true,
-            executablePath: process.env.CHROME_PATH,
             args: [
                 "--no-sandbox",
-                "--disable-setuid-sandbox"
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage"
             ]
         });
 
         const page = await browser.newPage();
-        await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
-        await page.waitForSelector("body");
+        await page.goto(url, {
+            waitUntil: "networkidle2",
+            timeout: 60000
+        });
 
-        await new Promise(r => setTimeout(r, 5000));
+        await page.waitForTimeout(5000);
 
         const data = await page.evaluate(() => {
-            let text = document.body.innerText;
-            return { raw: text };
+            return {
+                text: document.body.innerText
+            };
         });
 
         await browser.close();
@@ -35,8 +40,11 @@ app.get("/invoice", async (req, res) => {
         res.json(data);
 
     } catch (e) {
+        if (browser) await browser.close();
         res.json({ error: e.toString() });
     }
 });
 
-app.listen(10000);
+app.listen(10000, () => {
+    console.log("Server running");
+});

@@ -1,5 +1,5 @@
 const express = require("express");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const cors = require("cors");
 
 const app = express();
@@ -11,34 +11,27 @@ app.get("/invoice", async (req, res) => {
 
         const browser = await puppeteer.launch({
             headless: true,
-            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+            executablePath: process.env.CHROME_PATH,
+            args: [
+                "--no-sandbox",
+                "--disable-setuid-sandbox"
+            ]
         });
 
         const page = await browser.newPage();
-        await page.goto(url, { waitUntil: "networkidle2" });
+        await page.goto(url, { waitUntil: "networkidle2", timeout: 60000 });
 
-        await page.waitForSelector("table");
+        await page.waitForSelector("body");
+
+        await new Promise(r => setTimeout(r, 5000));
 
         const data = await page.evaluate(() => {
-            let items = [];
-
-            document.querySelectorAll("table tbody tr").forEach(row => {
-                let cols = row.querySelectorAll("td");
-
-                if (cols.length >= 4) {
-                    items.push({
-                        name: cols[0].innerText,
-                        qty: cols[1].innerText,
-                        price: cols[2].innerText,
-                        total: cols[3].innerText
-                    });
-                }
-            });
-
-            return items;
+            let text = document.body.innerText;
+            return { raw: text };
         });
 
         await browser.close();
+
         res.json(data);
 
     } catch (e) {
@@ -46,4 +39,4 @@ app.get("/invoice", async (req, res) => {
     }
 });
 
-app.listen(10000, () => console.log("Server running"));
+app.listen(10000);

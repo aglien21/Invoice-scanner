@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluency/180/star--v1.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <title>KidQuest Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Nunito', sans-serif; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .game-card { border-bottom-width: 6px; border-right-width: 4px; transition: all 0.1s; }
+        .game-card:active { border-bottom-width: 2px; border-right-width: 2px; transform: translateY(4px) translateX(2px); }
+        .progress-fill { transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .shake { animation: shake 0.5s; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+        .checkbox-custom:checked + label { background-color: #4f46e5 !important; color: white !important; border-color: #4f46e5 !important; transform: scale(0.95); }
+    </style>
+
+    <script>
+        window.onerror = function(msg, url, lineNo) {
+            var el = document.getElementById('loading-text');
+            if(el) { 
+                el.innerHTML = '<span style="color:#ffcccc;">GABIM: ' + msg + ' (Rr: ' + lineNo + ')</span>'; 
+                el.classList.remove('animate-pulse'); 
+            }
+            return false;
+        };
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+    <div id="login-screen" class="flex flex-col items-center justify-center h-screen px-4 bg-indigo-600">
+        <div class="text-center mb-8 text-white">
+            <h1 class="text-6xl font-black mb-2 drop-shadow-xl italic">KidQuest</h1>
+            <p class="font-bold opacity-80 uppercase tracking-tighter">Mission Control</p>
+        </div>
+        <div class="bg-white p-8 rounded-[3rem] shadow-2xl w-full max-w-md border-b-8 border-indigo-200 text-center">
+            <p id="loading-text" class="text-indigo-500 font-bold mb-4 animate-pulse italic text-center">Po lidhet me serverin...</p>
+            <div id="login-form" class="hidden space-y-4 text-left">
+                <input id="user-input" type="text" placeholder="Emri yt..." class="w-full p-4 bg-slate-100 rounded-2xl font-bold focus:outline-none focus:ring-4 focus:ring-indigo-200">
+                <input id="pass-input" type="password" placeholder="PIN" class="w-full p-4 bg-slate-100 rounded-2xl font-bold focus:outline-none focus:ring-4 focus:ring-indigo-200">
+                <button onclick="login()" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1 active:shadow-none transition-all">HYR NË LOJË</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-screen" class="hidden max-w-lg mx-auto bg-white min-h-screen shadow-2xl relative pb-20">
+        <header class="bg-indigo-600 text-white p-6 flex justify-between items-center rounded-b-[2.5rem] shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/20 p-2 rounded-xl">👑</div>
+                <h2 id="welcome-text" class="text-xl font-black">Heroi</h2>
+            </div>
+            <div class="flex gap-2">
+                <button id="btn-settings" onclick="toggleSettings()" class="hidden bg-white/20 p-3 rounded-xl">⚙️</button>
+                <button onclick="logout()" class="bg-red-500/80 px-4 py-2 rounded-xl text-xs font-bold">Dil</button>
+            </div>
+        </header>
+
+        <div id="admin-panel" class="hidden p-5">
+            <h3 class="text-lg font-black text-orange-500 mb-4 flex items-center gap-2">⏳ NË PRITJE <span id="pending-count" class="bg-orange-500 text-white px-2 rounded-full">0</span></h3>
+            <div id="admin-pending-tasks" class="space-y-3 mb-8"></div>
+
+            <div class="bg-indigo-50 p-6 rounded-[2.5rem] border-4 border-indigo-100 mb-8 shadow-inner">
+                <h3 class="font-black text-indigo-700 mb-4">🚀 JEP NJË MISION</h3>
+                <select id="quick-task-select" class="w-full p-4 mb-4 border-2 border-indigo-200 rounded-2xl font-bold text-sm" onchange="fillTaskForm()"></select>
+                <div class="flex gap-2 mb-3">
+                    <input id="task-emoji" type="text" readonly onclick="openCustomEmojiPicker('task-emoji')" placeholder="👇" class="w-1/4 p-4 border-2 border-indigo-200 rounded-2xl bg-white text-center text-2xl cursor-pointer">
+                    <input id="task-name" type="text" placeholder="Emri i misionit" class="w-3/4 p-4 border-2 border-indigo-200 rounded-2xl font-bold">
+                </div>
+                <input id="task-points" type="number" placeholder="Pikët (Përdor - për dënim)" class="w-full p-4 mb-5 border-2 border-indigo-200 rounded-2xl font-bold">
+                <div id="assign-checkboxes" class="flex flex-wrap gap-2 mb-6"></div>
+                
+                <button onclick="sendTaskToFirebase()" id="btn-send-task" class="w-full bg-indigo-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#4338ca] active:translate-y-1 transition-all">DËRGO</button>
+                <button id="btn-wa-task" class="hidden w-full bg-green-500 text-white p-5 rounded-2xl font-black text-xl shadow-[0_5px_0_#16a34a] active:translate-y-1 transition-all">✅ DËRGU PËR WHATSAPP</button>
+            </div>
+            
+            <div class="grid grid-cols-1 gap-4 mb-8">
+                <div class="bg-white p-4 rounded-3xl border-2 h-44"><canvas id="adminChart"></canvas></div>
+                <div class="bg-slate-900 p-5 rounded-[2rem] h-60"><canvas id="weeklyChart"></canvas></div>
+            </div>
+        </div>
+
+        <div id="settings-panel" class="hidden p-5 bg-slate-50 min-h-screen">
+            <h2 class="text-3xl font-black mb-6 text-indigo-700">Settings</h2>
+            
+            <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 rounded-3xl text-white mb-6 shadow-lg">
+                <h3 class="font-black mb-4 italic">🎯 SYNIMI I MADH</h3>
+                <div class="space-y-3">
+                    <input id="setting-goal-points" type="number" placeholder="Sa pikë duhen?" class="w-full p-3 rounded-xl text-slate-900 font-bold">
+                    <input id="setting-goal-reward" type="text" placeholder="P.sh. Pizza, Lodra, Park..." class="w-full p-3 rounded-xl text-slate-900 font-bold">
+                </div>
+            </div>
+
+            <div id="edit-parents-list" class="bg-white p-5 rounded-3xl border-2 mb-6 shadow-sm"></div>
+            <div id="edit-children-list" class="bg-white p-5 rounded-3xl border-2 mb-6 shadow-sm"></div>
+
+            <div class="bg-white p-5 rounded-3xl border-2 border-purple-100 mb-6 shadow-sm">
+                <h3 class="text-purple-600 font-black mb-3 italic">📝 SHABLLONET</h3>
+                <ul id="saved-tasks-list" class="space-y-2 mb-4"></ul>
+                <button onclick="saveTaskTemplate()" class="w-full bg-purple-100 text-purple-700 p-3 rounded-xl font-bold">SHTO TË RE</button>
+            </div>
+            
+            <div class="bg-white p-5 rounded-3xl border-2 border-green-100 mb-6 shadow-sm">
+                <h3 class="text-green-600 font-black mb-3 italic">📲 Telegram Njoftimet</h3>
+                <input id="setting-tg-token" type="text" placeholder="Bot Token" class="w-full p-3 border rounded-xl text-xs mb-3">
+                <input id="setting-tg-id" type="text" placeholder="Chat ID" class="w-full p-3 border rounded-xl text-xs">
+            </div>
+
+            <button onclick="saveSettings()" id="btn-save-settings" class="w-full bg-indigo-600 text-white font-black p-5 rounded-2xl shadow-xl mb-4 transition-all">RUAJ TË GJITHA</button>
+            <button onclick="resetApp()" class="w-full text-red-400 font-bold p-3">Reset Data</button>
+        </div>
+
+        <div id="child-panel" class="hidden p-5">
+            <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border-b-8 border-slate-100 mb-8 mt-2">
+                <div class="text-center mb-6 bg-indigo-50 p-4 rounded-3xl border-2 border-indigo-100">
+                    <p class="text-[10px] font-black text-indigo-400 tracking-widest uppercase mb-1">Misioni i Madh:</p>
+                    <h3 id="goal-text" class="text-2xl font-black text-indigo-700 uppercase">Duke u ngarkuar...</h3>
+                </div>
+
+                <div class="flex justify-between items-end mb-2 px-1">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Progresi Yt</span>
+                    <span class="text-xs font-black text-indigo-600"><span id="my-points">0</span> / <span id="goal-points-display">0</span> ⭐</span>
+                </div>
+                <div class="w-full bg-slate-100 h-8 rounded-full overflow-hidden border-2 border-slate-50 p-1">
+                    <div id="progress-bar" class="progress-fill h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="progress-percent" class="text-center mt-2 font-black text-slate-300 text-xs tracking-widest">0% PËRFUNDUAR</p>
+            </div>
+
+            <h3 class="text-2xl font-black mb-5 text-indigo-800 flex items-center gap-2">🎯 MISIONET <span class="bg-indigo-100 text-indigo-600 text-xs px-2 py-1 rounded-lg">LIVE</span></h3>
+            <div id="task-list" class="space-y-4"></div>
+            
+            <div class="mt-10 bg-slate-900 p-5 rounded-[2.5rem] h-44 shadow-2xl border-b-4 border-indigo-500">
+                <canvas id="childChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="emoji-modal" class="hidden fixed inset-0 bg-slate-900/80 flex items-center justify-center z-50 px-4 backdrop-blur-md">
+        <div class="bg-white rounded-[3rem] p-8 w-full max-w-xs shadow-2xl text-center">
+            <div class="grid grid-cols-5 gap-3 text-3xl mb-8" id="emoji-grid"></div>
+            <button onclick="closeEmojiModal()" class="w-full bg-slate-100 font-black py-4 rounded-2xl">MBYLL</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, onSnapshot, query, orderBy, doc, updateDoc, where, setDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAaN5zEU0_pByPUM_EySHnLvEkbduuFX34",
+            authDomain: "ian-jon-ansi.firebaseapp.com",
+            projectId: "ian-jon-ansi",
+            storageBucket: "ian-jon-ansi.firebasestorage.app",
+            messagingSenderId: "847967076537",
+            appId: "1:847967076537:web:05f57a87a71decf14e5b68"
+        };
+
+        let app, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+        } catch(e) {
+            console.error("Firebase Init Error:", e);
+        }
+
+        let currentUser = null, adminChart = null, childChart = null, weekChart = null, pointsData = {}, appConfig = null;
+        const myEmojis = ['📚','🛏️','🧹','🍽️','👕','🦷','🚿','🗑️','🏃','🎨','📝','🐶','🐱','🍎','🥦','🏅','🏆','⭐','🎮','🚗','🏀','⚽','🌱','🛠️','🧩','🧸','🎵','🚲','🧼','🙌','😢','📉'];
+        let targetEmojiField = null;
+
+        window.openCustomEmojiPicker = (f) => { 
+            targetEmojiField = document.getElementById(f); 
+            let emojiHTML = "";
+            myEmojis.forEach(e => {
+                emojiHTML += `<div class="cursor-pointer hover:scale-125 transition-transform" onclick="selectEmoji('${e}')">${e}</div>`;
+            });
+            document.getElementById('emoji-grid').innerHTML = emojiHTML; 
+            document.getElementById('emoji-modal').classList.remove('hidden'); 
+        };
+
+        window.selectEmoji = (e) => { 
+            if(targetEmojiField) targetEmojiField.value = e; 
+            window.closeEmojiModal(); 
+        };
+
+        window.closeEmojiModal = () => {
+            document.getElementById('emoji-modal').classList.add('hidden');
+        };
+
+        const configRef = doc(db, "system", "settings");
+        
+        onSnapshot(configRef, (docSnap) => {
+            if (!docSnap.exists()) {
+                const def = { 
+                    femijet: [
+                        {id:"c1", emri:"Ian", pass:"123", tel:""}, 
+                        {id:"c2", emri:"Jon", pass:"123", tel:""}, 
+                        {id:"c3", emri:"Ansi", pass:"123", tel:""}
+                    ], 
+                    prinderit: [{id:"p1", emri:"Babi", pass:"123"}], 
+                    shabllone: [], 
+                    goal_piket: 100, 
+                    goal_shperblimi: "Shpërblim Sekret", 
+                    tg_token: "", 
+                    tg_id: "" 
+                };
+                setDoc(configRef, def).then(() => { 
+                    appConfig = def; 
+                    showLogin(); 
+                    updateUI(); 
+                });
+            } else { 
+                appConfig = docSnap.data(); 
+                showLogin(); 
+                updateUI(); 
+            }
+        });
+
+        function showLogin() { 
+            const loader = document.getElementById('loading-text');
+            if(loader) loader.classList.add('hidden'); 
+            const form = document.getElementById('login-form');
+            if(form) form.classList.remove('hidden'); 
+        }
+        
+        function updateUI() {
+            if(!appConfig) return;
+            try {
+                const femijetSafe = appConfig.femijet || [];
+                const prinderitSafe = appConfig.prinderit || [];
+
+                const cc = document.getElementById('assign-checkboxes');
+                if(cc) {
+                    cc.innerHTML = `
+                        <div class="w-full mb-2">
+                            <input type="checkbox" id="check-all" class="hidden checkbox-custom" onchange="toggleAll(this)">
+                            <label for="check-all" class="cursor-pointer block p-2 border-2 border-indigo-100 bg-white rounded-xl text-center font-bold text-gray-500 shadow-sm transition-all">Zgjidh të gjithë</label>
+                        </div>`;
+                    femijetSafe.forEach(f => {
+                        cc.innerHTML += `
+                            <div class="flex-1">
+                                <input type="checkbox" id="chk-${f.id}" value="${f.emri}" class="hidden checkbox-custom child-chk">
+                                <label for="chk-${f.id}" class="cursor-pointer block p-3 border-2 border-indigo-100 bg-white rounded-2xl font-black text-center text-xs shadow-sm transition-all">${f.emri}</label>
+                            </div>`;
+                    });
+                }
+
+                const gPoints = document.getElementById('setting-goal-points');
+                if(gPoints) gPoints.value = appConfig.goal_piket || 100;
+                
+                const gReward = document.getElementById('setting-goal-reward');
+                if(gReward) gReward.value = appConfig.goal_shperblimi || "";
+                
+                const txtGoal = document.getElementById('goal-text');
+                if(txtGoal) txtGoal.innerText = appConfig.goal_shperblimi ? appConfig.goal_shperblimi : "S'KA SHPËRBLIM AKTIV";
+                
+                const dispPoints = document.getElementById('goal-points-display');
+                if(dispPoints) dispPoints.innerText = appConfig.goal_piket || 100;
+
+                const qs = document.getElementById('quick-task-select'); 
+                const sl = document.getElementById('saved-tasks-list'); 
+                if(qs && sl) {
+                    qs.innerHTML = `<option value="">-- Misionet e Gati --</option>`;
+                    sl.innerHTML = "";
+                    (appConfig.shabllone || []).forEach((sh, i) => { 
+                        qs.innerHTML += `<option value="${sh.titulli}|${sh.emoji}|${sh.piket}">${sh.emoji} ${sh.titulli}</option>`; 
+                        sl.innerHTML += `
+                            <li class="flex justify-between items-center bg-slate-50 p-3 rounded-xl font-bold">
+                                <span>${sh.emoji} ${sh.titulli}</span>
+                                <button onclick="deleteTemplate(${i})" class="text-red-400 bg-red-50 px-2 rounded">X</button>
+                            </li>`;
+                    });
+                }
+                
+                const pl = document.getElementById('edit-parents-list'); 
+                if(pl) {
+                    pl.innerHTML = `<h3 class="font-black mb-3 text-indigo-600 italic">👤 PRINDËRIT</h3>`;
+                    prinderitSafe.forEach(p => { 
+                        pl.innerHTML += `
+                            <div class="flex gap-2 mb-2">
+                                <input type="text" id="edit-pname-${p.id}" value="${p.emri}" class="w-1/2 p-2 border rounded-lg font-bold">
+                                <input type="text" id="edit-ppass-${p.id}" value="${p.pass}" class="w-1/2 p-2 border rounded-lg font-bold" placeholder="PIN">
+                            </div>`; 
+                    });
+                }
+
+                const el = document.getElementById('edit-children-list'); 
+                if(el) {
+                    el.innerHTML = `<h3 class="font-black mb-3 text-blue-600 italic">👦 FËMIJËT (PIN & Tel)</h3>`;
+                    femijetSafe.forEach(f => { 
+                        el.innerHTML += `
+                            <div class="p-3 border-b border-gray-100 mb-2">
+                                <div class="flex gap-2 mb-2">
+                                    <input type="text" id="edit-name-${f.id}" value="${f.emri}" class="w-1/2 border p-2 rounded text-sm font-bold">
+                                    <input type="text" id="edit-pass-${f.id}" value="${f.pass}" class="w-1/2 border p-2 rounded text-sm font-bold" placeholder="PIN">
+                                </div>
+                                <input type="text" id="edit-tel-${f.id}" value="${f.tel || ''}" placeholder="WhatsApp" class="w-full text-xs p-2 border rounded">
+                            </div>`; 
+                    });
+                }
+                
+                const tgToken = document.getElementById('setting-tg-token');
+                if(tgToken) tgToken.value = appConfig.tg_token || "";
+                
+                const tgId = document.getElementById('setting-tg-id');
+                if(tgId) tgId.value = appConfig.tg_id || "";
+                
+            } catch(e) { 
+                console.error("Gabim në UpdateUI: ", e); 
+            }
+        }
+
+        window.login = () => {
+            const u = document.getElementById('user-input').value.trim();
+            const p = document.getElementById('pass-input').value.trim();
+            
+            const pr = (appConfig.prinderit || []).find(x => x.emri.toLowerCase() === u.toLowerCase() && x.pass === p);
+            const fe = (appConfig.femijet || []).find(x => x.emri.toLowerCase() === u.toLowerCase() && x.pass === p);
+            
+            if (pr) { 
+                currentUser = { emri: pr.emri, role: 'admin' }; 
+                dash(); 
+            } else if (fe) { 
+                currentUser = { emri: fe.emri, role: 'child' }; 
+                dash(); 
+            } else {
+                alert("PIN i gabuar!");
+            }
+        };
+
+        function dash() {
+            document.getElementById('login-screen').classList.add('hidden'); 
+            document.getElementById('app-screen').classList.remove('hidden');
+            document.getElementById('welcome-text').innerText = currentUser.emri;
+            
+            window.calculateTotalPoints();
+            
+            if (currentUser.role === 'admin') { 
+                document.getElementById('btn-settings').classList.remove('hidden'); 
+                document.getElementById('admin-panel').classList.remove('hidden'); 
+                window.listenForApprovals(); 
+            } else { 
+                document.getElementById('child-panel').classList.remove('hidden'); 
+                window.listenToMyTasks(currentUser.emri); 
+            }
+        }
+
+        window.sendTaskToFirebase = async () => {
+            const n = document.getElementById('task-name').value;
+            const e = document.getElementById('task-emoji').value || "✨";
+            const p = parseInt(document.getElementById('task-points').value);
+            const r = Array.from(document.querySelectorAll('.child-chk:checked')).map(c => c.value);
+            
+            if(!n || isNaN(p) || r.length === 0) {
+                return alert("Plotëso misionin dhe zgjidh fëmijët!");
+            }
+            
+            const btnSend = document.getElementById('btn-send-task');
+            const btnWa = document.getElementById('btn-wa-task');
+            
+            btnSend.innerText = "⏳ DUKE U DËRGUAR...";
+            btnSend.disabled = true;
+            
+            try {
+                for (let i = 0; i < r.length; i++) {
+                    let c = r[i];
+                    await addDoc(collection(db, "tasks"), { 
+                        titulli: n, 
+                        emoji: e, 
+                        piket: p, 
+                        kujt_i_caktohet: c, 
+                        krijuar_nga: currentUser.emri, 
+                        statusi: "hapur", 
+                        koha: serverTimestamp() 
+                    }); 
+                }
+                
+                if(r.length === 1 && p > 0) { 
+                    btnSend.classList.add('hidden');
+                    btnWa.classList.remove('hidden');
+                    
+                    btnWa.onclick = () => {
+                        const f = (appConfig.femijet || []).find(x => x.emri === r[0]);
+                        if(f && f.tel) {
+                            const pastruarTel = f.tel.replace(/\D/g,'');
+                            const msgText = "🚀 Mision i ri: *" + n + "* (+" + p + "⭐)";
+                            window.location.href = "https://api.whatsapp.com/send?phone=" + pastruarTel + "&text=" + encodeURIComponent(msgText);
+                            setTimeout(() => location.reload(), 2000);
+                        } else {
+                            alert("S'ka numër telefoni për këtë fëmijë!");
+                            location.reload();
+                        }
+                    };
+                } else { 
+                    alert("Misionet u dërguan në panel!"); 
+                    location.reload(); 
+                }
+            } catch (err) { 
+                alert("Gabim: " + err.message); 
+                btnSend.innerText = "DËRGO PËRSËRI";
+                btnSend.disabled = false;
+            }
+        };
+
+        window.listenToMyTasks = (c) => {
+            onSnapshot(query(collection(db, "tasks"), orderBy("koha", "desc")), (snap) => {
+                const l = document.getElementById('task-list'); 
+                l.innerHTML = ""; 
+                let pts = 0;
+                
+                snap.forEach(d => {
+                    const t = d.data(); 
+                    if(t.kujt_i_caktohet === c) {
+                        let vleraPikeve = t.piket;
+                        let b = "";
+                        let clr = "bg-white border-indigo-200";
+                        
+                        if(t.statusi === "aprovuar") {
+                            pts += t.piket;
+                            b = `<span class="text-green-500 text-xl font-black">✔</span>`; 
+                            clr = "bg-green-50 border-green-200 opacity-80";
+                        } 
+                        else if (t.statusi === "refuzuar") {
+                            let penalty = Math.floor(t.piket / 2);
+                            pts -= penalty; 
+                            vleraPikeve = "-" + penalty;
+                            b = `<span class="text-red-500 text-xl font-black">✖ DËNIM</span>`; 
+                            clr = "bg-red-50 border-red-300 opacity-90";
+                        }
+                        else if(t.statusi === "hapur" && t.piket > 0) {
+                            b = `<button onclick="sub('${d.id}', '${t.titulli}')" class="bg-indigo-500 text-white px-4 py-2 rounded-xl font-black shadow-[0_4px_0_#4338ca]">KREVA</button>`;
+                        }
+                        else if(t.statusi === "hapur" && t.piket <= 0) {
+                            b = `<button onclick="dec('${d.id}','aprovuar')" class="bg-red-500 text-white px-4 py-2 rounded-xl font-black">KUPTOVA</button>`;
+                        }
+                        else if(t.statusi === "ne_pritje") { 
+                            b = `<span class="text-orange-400 font-bold italic text-xs">Prit...</span>`; 
+                            clr = "bg-orange-50 border-orange-200 shake"; 
+                        }
+                        
+                        if(t.piket < 0 && t.statusi !== "aprovuar") {
+                            clr = "bg-red-50 border-red-300 shake";
+                        }
+                        
+                        const txtColor = (t.statusi === "refuzuar" || t.piket < 0) ? 'text-red-500' : 'text-yellow-600';
+                        const treguesi = (t.statusi !== "refuzuar" && t.piket > 0) ? '+' + vleraPikeve : vleraPikeve;
+                        
+                        l.innerHTML += `
+                            <div class="${clr} p-4 rounded-3xl border-2 mb-3 flex justify-between items-center game-card">
+                                <div>
+                                    <p class="font-black text-sm">${t.emoji} ${t.titulli}</p>
+                                    <p class="text-[11px] font-black ${txtColor}">${treguesi} ⭐</p>
+                                </div>
+                                ${b}
+                            </div>`;
+                    }
+                });
+                
+                document.getElementById('my-points').innerText = pts;
+                updateProgressBar(pts);
+            });
+        };
+
+        function updateProgressBar(pts) {
+            const goal = appConfig.goal_piket || 100;
+            let perc = Math.floor((pts / goal) * 100);
+            
+            if(perc > 100) perc = 100;
+            if(perc < 0) perc = 0;
+            
+            const pBar = document.getElementById('progress-bar');
+            if(pBar) pBar.style.width = perc + "%";
+            
+            const pPerc = document.getElementById('progress-percent');
+            if(pPerc) pPerc.innerText = perc + "% PËRFUNDUAR";
+            
+            if(perc >= 100) { 
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); 
+            }
+        }
+
+        window.sub = async (id, t) => { 
+            await updateDoc(doc(db, "tasks", id), { statusi: "ne_pritje" }); 
+            if(appConfig.tg_token && appConfig.tg_id) {
+                const tgMsg = "✅ " + currentUser.emri + " kreu: " + t;
+                fetch("https://api.telegram.org/bot" + appConfig.tg_token + "/sendMessage?chat_id=" + appConfig.tg_id + "&text=" + encodeURIComponent(tgMsg));
+            }
+        };
+
+        window.listenForApprovals = () => {
+            onSnapshot(query(collection(db, "tasks"), where("statusi", "==", "ne_pritje")), (snap) => {
+                const pl = document.getElementById('admin-pending-tasks'); 
+                const bd = document.getElementById('pending-count'); 
+                pl.innerHTML = ""; 
+                let c = 0;
+                
+                snap.forEach(d => { 
+                    c++; 
+                    const t = d.data(); 
+                    pl.innerHTML += `
+                        <div class="bg-orange-50 p-4 rounded-2xl border-2 border-orange-200 flex justify-between items-center mb-2">
+                            <div>
+                                <p class="font-black text-xs">${t.emoji} ${t.titulli}</p>
+                                <p class="text-[10px] text-indigo-500 font-bold">${t.kujt_i_caktohet} (${t.piket}⭐)</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="dec('${d.id}','aprovuar')" class="bg-green-500 text-white p-3 rounded-xl font-bold">✔</button>
+                                <button onclick="dec('${d.id}','refuzuar')" class="bg-red-500 text-white p-3 rounded-xl font-bold">✖</button>
+                            </div>
+                        </div>`; 
+                });
+                
+                if(bd) bd.innerText = c;
+            });
+        };
+
+        window.dec = async (id, decision) => { 
+            await updateDoc(doc(db, "tasks", id), { statusi: decision }); 
+        };
+
+        window.calculateTotalPoints = () => {
+            onSnapshot(query(collection(db, "tasks"), where("statusi", "in", ["aprovuar", "refuzuar"])), (snap) => {
+                if(!appConfig) return;
+                
+                pointsData = {}; 
+                (appConfig.femijet || []).forEach(f => pointsData[f.emri] = 0);
+                
+                let wData = {}; 
+                const ditet = ["E Diel", "E Hënë", "E Martë", "E Mërkurë", "E Enjte", "E Premte", "E Shtunë"];
+                ditet.forEach(d => { 
+                    wData[d] = {}; 
+                    (appConfig.femijet || []).forEach(f => wData[d][f.emri] = 0); 
+                });
+                
+                snap.forEach(d => {
+                    const t = d.data(); 
+                    if(pointsData[t.kujt_i_caktohet] !== undefined) {
+                        let vlera = t.statusi === "refuzuar" ? -Math.floor(t.piket / 2) : t.piket;
+                        pointsData[t.kujt_i_caktohet] += vlera;
+                        
+                        if(t.koha) { 
+                            try { 
+                                const dObj = t.koha.toDate(); 
+                                wData[ditet[dObj.getDay()]][t.kujt_i_caktohet] += vlera; 
+                            } catch(e) {} 
+                        }
+                    }
+                });
+                renderCharts(wData);
+            });
+        };
+
+        function renderCharts(wData) {
+            try {
+                const labels = Object.keys(pointsData);
+                const vals = Object.values(pointsData);
+                const opt = { plugins: { legend: false }, scales: { y: { display: false } } };
+                
+                const ctxA = document.getElementById('adminChart')?.getContext('2d');
+                if(ctxA) { 
+                    if(adminChart) adminChart.destroy(); 
+                    adminChart = new Chart(ctxA, { 
+                        type: 'bar', 
+                        data: { labels, datasets: [{ data: vals, backgroundColor: ['#4f46e5', '#f97316', '#10b981'], borderRadius: 12 }] }, 
+                        options: opt 
+                    }); 
+                }
+                
+                const ctxC = document.getElementById('childChart')?.getContext('2d');
+                if(ctxC) { 
+                    if(childChart) childChart.destroy(); 
+                    childChart = new Chart(ctxC, { 
+                        type: 'bar', 
+                        data: { labels, datasets: [{ data: vals, backgroundColor: ['#818cf8', '#fb923c', '#4ade80'], borderRadius: 12 }] }, 
+                        options: { ...opt, scales: { x: { ticks: { color: '#fff' } }, y: { display: false } } } 
+                    }); 
+                }
+                
+                const ctxW = document.getElementById('weeklyChart')?.getContext('2d');
+                if(ctxW) {
+                    if(weekChart) weekChart.destroy();
+                    const dL = ["E Hënë", "E Martë", "E Mërkurë", "E Enjte", "E Premte", "E Shtunë", "E Diel"];
+                    const ds = (appConfig.femijet || []).map((f, i) => ({ 
+                        label: f.emri, 
+                        data: dL.map(d => wData[d][f.emri]), 
+                        borderColor: ['#818cf8', '#fb923c', '#4ade80'][i], 
+                        tension: 0.4 
+                    }));
+                    weekChart = new Chart(ctxW, { 
+                        type: 'line', 
+                        data: { labels: dL, datasets: ds }, 
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false, 
+                            plugins: { legend: { labels: { color: '#fff' } } }, 
+                            scales: { y: { ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } 
+                        } 
+                    });
+                }
+            } catch(e) {}
+        }
+
+        window.saveSettings = async () => {
+            const btn = document.getElementById('btn-save-settings');
+            const txtOrig = btn.innerText;
+            btn.innerText = "⏳ DUKE U RUAJTUR...";
+            btn.disabled = true;
+
+            try {
+                let upF = (appConfig.femijet || []).map(f => {
+                    const iEmri = document.getElementById(`edit-name-${f.id}`);
+                    const iTel = document.getElementById(`edit-tel-${f.id}`);
+                    const iPass = document.getElementById(`edit-pass-${f.id}`);
+                    return { 
+                        id: f.id || String(Math.random()), 
+                        emri: (iEmri && iEmri.value) ? iEmri.value : (f.emri || "Fëmijë"), 
+                        tel: (iTel && iTel.value) ? iTel.value : (f.tel || ""), 
+                        pass: (iPass && iPass.value) ? iPass.value : (f.pass || "123") 
+                    };
+                });
+                
+                let upP = (appConfig.prinderit || []).map(p => {
+                    const iEmri = document.getElementById(`edit-pname-${p.id}`);
+                    const iPass = document.getElementById(`edit-ppass-${p.id}`);
+                    return { 
+                        id: p.id || String(Math.random()), 
+                        emri: (iEmri && iEmri.value) ? iEmri.value : (p.emri || "Prind"), 
+                        pass: (iPass && iPass.value) ? iPass.value : (p.pass || "123") 
+                    };
+                });
+
+                let inpPoints = document.getElementById('setting-goal-points');
+                let rawPoints = parseInt(inpPoints ? inpPoints.value : "100");
+                let safeGoalPoints = (isNaN(rawPoints) || rawPoints <= 0) ? 100 : rawPoints;
+                
+                let inpReward = document.getElementById('setting-goal-reward');
+                let safeGoalReward = (inpReward && inpReward.value) ? inpReward.value : "";
+                
+                let inpTgToken = document.getElementById('setting-tg-token');
+                let safeTgToken = (inpTgToken && inpTgToken.value) ? inpTgToken.value : "";
+                
+                let inpTgId = document.getElementById('setting-tg-id');
+                let safeTgId = (inpTgId && inpTgId.value) ? inpTgId.value : "";
+
+                await updateDoc(configRef, { 
+                    femijet: upF, 
+                    prinderit: upP, 
+                    goal_piket: safeGoalPoints,
+                    goal_shperblimi: safeGoalReward,
+                    tg_token: safeTgToken,
+                    tg_id: safeTgId
+                }); 
+                
+                btn.classList.replace('bg-indigo-600', 'bg-green-500');
+                btn.innerText = "✅ TË DHËNAT U RUAJTËN!";
+                
+                setTimeout(() => { 
+                    btn.classList.replace('bg-green-500', 'bg-indigo-600'); 
+                    btn.innerText = txtOrig; 
+                    btn.disabled = false; 
+                }, 2500);
+
+            } catch (err) {
+                alert("Nuk u ruajt dot! Gabim: " + err.message);
+                btn.innerText = "GABIM! PROVO PRAPË";
+                setTimeout(() => { btn.innerText = txtOrig; btn.disabled = false; }, 3000);
+            }
+        };
+
+        window.saveTaskTemplate = async () => {
+            const n = prompt("Titulli i Misionit?");
+            const e = prompt("Emoji (p.sh. 📚)?");
+            const p = parseInt(prompt("Pikët?"));
+            
+            if(n && !isNaN(p)) {
+                let sh = appConfig.shabllone || [];
+                sh.push({titulli: n, emoji: e || "✨", piket: p});
+                await updateDoc(configRef, { shabllone: sh });
+            }
+        };
+
+        window.deleteTemplate = async (i) => { 
+            let nt = [...(appConfig.shabllone || [])]; 
+            nt.splice(i, 1); 
+            await updateDoc(configRef, { shabllone: nt }); 
+        };
+
+        window.resetApp = async () => { 
+            if(confirm("KUJDES: ZERO GJITHÇKA? Të gjitha pikët do të fshihen!")) { 
+                const q = await getDocs(collection(db, "tasks")); 
+                const b = writeBatch(db); 
+                q.forEach(d => b.delete(d.ref)); 
+                await b.commit(); 
+                location.reload(); 
+            } 
+        };
+
+        window.logout = () => location.reload();
+
+        window.toggleSettings = () => { 
+            document.getElementById('admin-panel').classList.toggle('hidden'); 
+            document.getElementById('settings-panel').classList.toggle('hidden'); 
+            window.scrollTo(0,0); 
+        };
+
+        window.fillTaskForm = () => { 
+            const s = document.getElementById('quick-task-select').value; 
+            if(s) { 
+                const p = s.split('|'); 
+                const tName = document.getElementById('task-name');
+                if (tName) tName.value = p[0]; 
+                
+                const tEmoji = document.getElementById('task-emoji');
+                if (tEmoji) tEmoji.value = p[1]; 
+                
+                const tPoints = document.getElementById('task-points');
+                if (tPoints) tPoints.value = p[2]; 
+            } 
+        };
+
+        window.toggleAll = (m) => {
+            document.querySelectorAll('.child-chk').forEach(c => c.checked = m.checked);
+        };
+    </script>
+</body>
+</html>

@@ -990,9 +990,9 @@
             const hit = hits[0];
             let obj = hit.object;
             
-            // Mblidh të gjithë emrat lart te prindërit për siguri
-            let checkObj = obj;
+            // Mblidhet i gjithë emri i strukturës për ta kontrolluar
             let matchedName = "";
+            let checkObj = obj;
             while (checkObj && checkObj !== scene) {
                 const n = (checkObj.name || '').toLowerCase();
                 if (n) matchedName += " " + n;
@@ -1001,40 +1001,22 @@
 
             let part = null;
 
-            // ZGJIDHJA 100% PREÇIZE E BAZUAR NË KOORDINATA LOKALE
-            // Kthejmë pikën e prekjes në koordinatat e sakta origjinale të modelit (para zmadhimit)
-            const localPt = carModel.worldToLocal(hit.point.clone());
-            const lx = localPt.x;
-            const ly = localPt.y;
-            const lz = localPt.z;
-
-            // Kontrolli për xhamat (përfshin të gjitha format: glass, window, dritare, pivot, etj)
-            if (matchedName.includes('glass') || matchedName.includes('window') || matchedName.includes('pivot') || matchedName.includes('dritare')) {
-                
-                // Përcaktojmë Kutinë e Tavanit bazuar në koordinatat e tua me pak marzh sigurie
-                const isSunroof = (lx >= -0.55 && lx <= 0.55) && 
-                                  (ly >= 1.30 && ly <= 1.55) && 
-                                  (lz >= -1.55 && lz <= 0.25);
-
-                if (isSunroof) {
-                    part = 'sunroof';
-                } else {
-                    // Cdo xham tjeter jashte kutise se tavanit u injorua plotesisht sic kerkove
-                    showFeedback("ℹ️ Përdor butonin në ekran për xhamat anësorë");
-                    return; 
-                }
+            // 1. TAVANI - Përdorim fiks emrin unik që ti the
+            // Kjo e ndan përfundimisht nga fenerët (që e kanë emrin Glass_Lights)
+            if (matchedName.includes('pivotglassesglasses_pivot_glass')) {
+                part = 'sunroof';
             }
             // 2. DYERT
-            else if (matchedName.includes('door') || matchedName.includes('detach_door') || matchedName.includes('porta') || matchedName.includes('dyr')) {
+            else if (matchedName.includes('door') || matchedName.includes('detach_door')) {
                 part = 'door';
             } 
             // 3. KAPOTI I MOTORRIT
             else if (matchedName.includes('hood') || matchedName.includes('bonnet') || matchedName.includes('kapot')) {
                 part = 'engine';
             } 
-            // 4. ÇDO GJË TJETËR
+            // 4. ÇDO GJË TJETËR (Xhama, fenerë, llamarinë etj.)
             else {
-                showFeedback("🤔 Pjesë e panjohur");
+                // Injorohet absolutisht. Nuk nxjerrim mesazhe, nuk dërgojmë komanda.
                 return;
             }
 

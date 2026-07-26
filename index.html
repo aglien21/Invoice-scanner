@@ -9,13 +9,18 @@
     <meta name="apple-mobile-web-app-title" content="i30 Control">
     <title>i30 DIGITAL REMOTE</title>
 
-    <link rel="apple-touch-icon" href="./logo.png">
-    <link rel="icon" type="image/png" href="./logo.png">
-    <link rel="shortcut icon" href="./logo.png">
+    <link rel="apple-touch-icon" href="./car.jpg">
+    <link rel="icon" type="image/png" href="./car.jpg">
+    <link rel="shortcut icon" href="./car.jpg">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+
+    <!-- THREE.JS per modelin 3D interaktiv -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <style>
         :root {
@@ -43,7 +48,6 @@
             user-select: none;
         }
 
-        /* LIGHT / DAY DASHBOARD THEME */
         body.light-hud {
             --accent: #0066cc;
             --dash-bg: linear-gradient(135deg, rgba(235, 242, 250, 0.9), rgba(215, 225, 238, 0.95));
@@ -53,28 +57,27 @@
         body.light-hud .v-screen { color: #003366; }
         body.light-hud .v-val { color: #001f3f; }
 
-        .overlay { background: rgba(0, 0, 0, 0.5); min-height: 100vh; padding: 20px; padding-bottom: 80px; }
+        .overlay { background: rgba(0, 0, 0, 0.5); min-height: 100vh; padding: 12px; padding-bottom: 80px; }
         
-        .screen { display: none; text-align: center; max-width: 450px; margin: 0 auto; }
+        .screen { display: none; text-align: center; max-width: 520px; width: 100%; margin: 0 auto; box-sizing: border-box; }
         .screen.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        #screen-login.active { display: flex; flex-direction: column; align-items: center; min-height: 85vh; }
+        #screen-login.active { display: flex; flex-direction: column; align-items: center; min-height: 85vh; max-width: 450px; }
         .logo-login { width: 120px; height: 120px; border-radius: 20%; margin-bottom: 20px; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 4px 15px var(--dash-glow); }
         #pin-input { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: white; font-size: 24px; padding: 15px; border-radius: 10px; width: 200px; text-align: center; margin-bottom: 20px; letter-spacing: 10px; outline: none;}
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 280px; margin-top: auto; margin-bottom: 20px; }
         .num-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; font-size: 22px; border-radius: 10px; cursor: pointer; transition: 0.2s;}
         .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
-        /* DIGITAL CAR DASHBOARD CLUSTER */
         .v-screen { 
             background: var(--dash-bg); 
             backdrop-filter: blur(16px); 
             -webkit-backdrop-filter: blur(16px); 
             border: 2px solid var(--dash-border); 
-            border-radius: 16px; 
-            padding: 18px; 
-            margin-bottom: 20px; 
+            border-radius: 14px; 
+            padding: 12px 15px; 
+            margin-bottom: 15px; 
             text-align: left; 
             font-family: 'Courier New', Courier, monospace; 
             color: var(--accent); 
@@ -87,22 +90,22 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid var(--dash-border);
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-            font-size: 11px;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+            font-size: 10px;
             letter-spacing: 2px;
             font-weight: bold;
             color: #888;
         }
 
-        .v-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 6px;}
+        .v-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; font-size: 13px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px;}
         .v-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
-        .v-val { font-weight: bold; color: #fff; text-shadow: 0 0 8px var(--accent); font-size: 15px; }
+        .v-val { font-weight: bold; color: #fff; text-shadow: 0 0 8px var(--accent); font-size: 14px; }
 
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn-full { grid-column: span 2; }
-        .btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 15px 5px; font-size: 15px; font-weight: bold; color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.2s; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-        .btn span { font-size: 22px; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 14px 5px; font-size: 14px; font-weight: bold; color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.2s; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .btn span { font-size: 20px; margin-bottom: 4px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .btn:active { transform: scale(0.95); }
         
         .b-start { background: linear-gradient(145deg, rgba(40,167,69,0.75), rgba(30,126,52,0.75)); } 
@@ -113,7 +116,7 @@
         .b-blue { background: linear-gradient(145deg, rgba(0,123,255,0.75), rgba(0,86,179,0.75)); }
         .b-allclose { background: rgba(34,34,34,0.75); border: 1px solid rgba(255,255,255,0.2); }
         .b-gray { background: rgba(85,85,85,0.75); }
-        .b-cyber { background: linear-gradient(145deg, rgba(0,210,255,0.3), rgba(0,100,150,0.5)); border: 1px solid var(--accent); color: var(--accent); }
+        .b-cyber { background: linear-gradient(145deg, rgba(0,210,255,0.3), rgba(0,100,150,0.5)); border: 1px solid var(--accent); color: var(--accent); } 
 
         .input-group { text-align: left; margin-bottom: 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
         .input-group h3 { margin-top: 0; color: var(--accent); font-size: 16px; border-bottom: 1px solid var(--dash-border); padding-bottom: 5px; }
@@ -135,6 +138,48 @@
         .guest-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; }
         .guest-pin { font-size: 15px; font-weight: bold; }
         .btn-delete { background: var(--danger); border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+
+        /* ===== 3D INTERACTIVE CAR VIEWER ===== */
+        #car-3d-viewer {
+            width: 100%;
+            height: 340px;
+            background: radial-gradient(circle at center, rgba(0,210,255,0.10), rgba(0,0,0,0.6));
+            border: 2px solid var(--dash-border);
+            border-radius: 16px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 0 20px var(--dash-glow);
+            touch-action: none;
+        }
+        body.light-hud #car-3d-viewer {
+            background: radial-gradient(circle at center, rgba(0,102,204,0.10), rgba(220,230,245,0.5));
+        }
+        #car-3d-canvas { width: 100%; height: 100%; display: block; }
+        #car-3d-hint {
+            position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+            font-size: 10px; color: var(--accent); letter-spacing: 1px;
+            background: rgba(0,0,0,0.5); padding: 3px 10px; border-radius: 8px; pointer-events: none;
+            white-space: nowrap; text-align: center;
+        }
+        #car-3d-feedback {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            font-size: 12px; color: #fff; background: rgba(0,0,0,0.78);
+            padding: 6px 14px; border-radius: 10px; border: 1px solid var(--accent);
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+            box-shadow: 0 0 12px var(--dash-glow);
+        }
+        #car-3d-feedback.show { opacity: 1; }
+        #car-3d-loading {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            color: var(--accent); font-size: 14px; letter-spacing: 1px; text-align: center;
+        }
+        #car-3d-loading .spin {
+            width: 26px; height: 26px; border: 3px solid rgba(0,210,255,0.2);
+            border-top-color: var(--accent); border-radius: 50%;
+            animation: spin3d 0.8s linear infinite; margin-right: 10px;
+        }
+        @keyframes spin3d { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -142,11 +187,11 @@
         
         <!-- EKRANI LOGIN -->
         <div id="screen-login" class="screen active">
-            <h2 style="margin-top: 30px; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
-            <div style="margin-top: 15px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.3rem; color: #aaa; letter-spacing: 1px;">
+            <h2 style="margin-top: 20px; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
+            <div style="margin-top: 10px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.2rem; color: #aaa; letter-spacing: 1px;">
                 Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
             </div>
-            <img id="login-logo-img" src="./logo.png" class="logo-login">
+            <img id="login-logo-img" src="./logo.png?v=2" class="logo-login">
             <input type="password" id="pin-input" readonly placeholder="****">
             
             <div class="numpad">
@@ -159,13 +204,13 @@
 
         <!-- EKRANI DASHBOARD -->
         <div id="screen-dash" class="screen">
-            <h2 style="margin-bottom: 15px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">PULTI KONTROLLIT <br><span id="user-greeting" style="font-size:14px; font-weight:normal; letter-spacing: 1px;"></span></h2>
+            <h2 style="margin-top: 5px; margin-bottom: 10px; font-size: 1.3rem; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">PULTI KONTROLLIT <br><span id="user-greeting" style="font-size:13px; font-weight:normal; letter-spacing: 1px;"></span></h2>
             
             <!-- DIGITAL CLUSTER DASHBOARD SCREEN -->
             <div class="v-screen">
                 <div class="dash-header">
                     <span>Created By</span>
-                    <span style="font-family: 'Brush Script MT', cursive; font-size: 0.9rem; text-transform: none; color: var(--accent);">AGLIEN</span>
+                    <span style="font-family: 'Brush Script MT', cursive; font-size: 0.85rem; text-transform: none; color: var(--accent);">AGLIEN</span>
                 </div>
 
                 <div class="v-row"><span>Statusi i Rrjetit:</span> <span class="v-val" id="val-online" style="color:orange">Duke u lidhur...</span></div>
@@ -175,6 +220,14 @@
                 <div class="v-row" id="row-key"><span>Çelesi i Servisit:</span> <span class="v-val" id="val-key">--</span></div>
                 <div class="v-row" id="row-hours1"><span>Ore Pune Sot:</span> <span class="v-val" id="val-hours-today">0.0 h</span></div>
                 <div class="v-row" id="row-hours2"><span>Ore Totale:</span> <span class="v-val" id="val-work-hours">0.0 h</span></div>
+            </div>
+
+            <!-- 3D INTERACTIVE CAR -->
+            <div id="car-3d-viewer">
+                <div id="car-3d-hint">🚗 Prek pjesën për ta kontrolluar &nbsp;•&nbsp; Lëviz për të rrotulluar</div>
+                <canvas id="car-3d-canvas"></canvas>
+                <div id="car-3d-feedback"></div>
+                <div id="car-3d-loading"><div class="spin"></div>Duke ngarkuar modelin 3D...</div>
             </div>
 
             <div class="btn-grid">
@@ -357,10 +410,6 @@
                 document.getElementById('btn-gps').style.display = 'none';
                 document.getElementById('btn-allclose').style.display = 'none';
                 
-                // Çelësi i servisit tani mbetet i dukshëm edhe për guest
-                // document.getElementById('btn-key').style.display = 'block';
-                // document.getElementById('row-key').style.display = 'flex';
-                
                 document.getElementById('btn-trip').classList.add('btn-full');
 
                 document.getElementById('row-hours1').style.display = 'none';
@@ -461,7 +510,7 @@
                 if (cfg.bgUrl && cfg.bgUrl.trim() !== "") { document.body.style.backgroundImage = `url('${cfg.bgUrl}')`; } 
                 else { document.body.style.backgroundImage = "url('./bg.jpg')"; }
                 if (cfg.logoUrl && cfg.logoUrl.trim() !== "") { document.getElementById('login-logo-img').src = cfg.logoUrl + "?t=" + new Date().getTime(); } 
-                else { document.getElementById('login-logo-img').src = "./logo.png"; }
+                else { document.getElementById('login-logo-img').src = "./logo.png?v=2"; }
                 document.getElementById('set-bg-url').value = cfg.bgUrl || "";
                 document.getElementById('set-logo-url').value = cfg.logoUrl || "";
             });
@@ -573,7 +622,7 @@
             if(vonesa > 0) {
                 alert("Kohët e reja po dërgohen! Makina do t'i ruajë automatikisht në memorie.");
                 document.getElementById('cfg-t-kandele').value = ""; document.getElementById('cfg-t-xhamat').value = "";
-            } else { alert("Nuk ke plotësuar asnjë vlerë për të dërguar."); }
+            } else { alert("Nuk ke plotësuar asnjë vlerë për t'u dërguar."); }
         }
 
         function toggleKey() {
@@ -583,14 +632,29 @@
 
         function initMQTT() {
             if (isMqttConnected) return; 
+            
+            document.getElementById('val-online').innerText = "Duke u lidhur...";
+            document.getElementById('val-online').style.color = "orange";
+
             mqttClient.connect({
-                useSSL: true, reconnect: true, timeout: 3, keepAliveInterval: 30,
+                useSSL: true, 
+                reconnect: true, 
+                timeout: 10, 
+                keepAliveInterval: 30,
                 onSuccess: () => {
-                    isMqttConnected = true; mqttClient.subscribe(topicStatus);
-                    document.getElementById('val-online').innerText = "ONLINE"; document.getElementById('val-online').style.color = "var(--success)";
+                    isMqttConnected = true; 
+                    mqttClient.subscribe(topicStatus);
+                    document.getElementById('val-online').innerText = "ONLINE"; 
+                    document.getElementById('val-online').style.color = "var(--success)";
                     pingCar(false);
                 },
-                onFailure: (err) => { isMqttConnected = false; setTimeout(initMQTT, 3000); }
+                onFailure: (err) => { 
+                    console.error("Lidhja MQTT dështoi:", err);
+                    isMqttConnected = false; 
+                    document.getElementById('val-online').innerText = "Po riprovoj lidhjen..."; 
+                    document.getElementById('val-online').style.color = "orange";
+                    setTimeout(initMQTT, 5000); 
+                }
             });
         }
 
@@ -620,6 +684,7 @@
                         elEng.innerText = "Fikur"; elEng.style.color = "#fff";
                         btnEng.className = "btn b-start btn-full"; btnEng.innerHTML = "<span>⚡</span> NDIZ MOTORRIN"; btnEng.onclick = () => sendCommand("START");
                     }
+                    if(typeof window.setCarPartState === 'function') window.setCarPartState('engine', isEngineRunning);
                 }
 
                 if(data.wh !== undefined && data.wh > 0 && userRole === "admin") {
@@ -642,6 +707,7 @@
                         elLocks.innerText = "HAPUR (!)"; elLocks.style.color = "var(--danger)";
                         btnLocks.className = "btn b-lock btn-full"; btnLocks.innerHTML = "<span>🔒</span> MBYLL DYERT"; btnLocks.onclick = () => sendCommand("LOCK");
                     }
+                    if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', data.l === 0);
                 }
 
                 if(data.k !== undefined) {
@@ -688,6 +754,326 @@
                 } else { pingCar(false); }
             }
         });
+    </script>
+
+    <!-- ===== 3D INTERACTIVE CAR MODEL (Three.js) ===== -->
+    <script>
+    (function () {
+        const MODEL_URL = "./2018_hyundai_i30_n.glb";
+
+        let scene, camera, renderer, controls, carModel, raycaster, pointer;
+        let initialized = false;
+        const canvas = document.getElementById('car-3d-canvas');
+        const viewer = document.getElementById('car-3d-viewer');
+        const feedbackEl = document.getElementById('car-3d-feedback');
+        const loadingEl = document.getElementById('car-3d-loading');
+
+        let downPos = null;
+
+        window.setCarPartState = function(part, isOpenOrActive) {
+            if (!carModel) return;
+            carModel.traverse(obj => {
+                if (!obj.isMesh) return;
+                const n = (obj.name || '').toLowerCase();
+                let isMatchEngine = (part === 'engine' && (n.includes('hood') || n.includes('bonnet') || n.includes('kapot')));
+                let isMatchDoor = (part === 'doors' && (n.includes('detach_door_l') || n.includes('detach_door_r') || n.includes('door')));
+
+                if (isMatchEngine || isMatchDoor) {
+                    if (!obj.userData.origSaved) {
+                        obj.userData.origSaved = true;
+                        obj.userData.origPos = obj.position.clone();
+                        obj.userData.origRot = obj.rotation.clone();
+                    }
+
+                    if (!obj.userData.isCloned) {
+                        if (Array.isArray(obj.material)) {
+                            obj.material = obj.material.map(m => m.clone());
+                        } else {
+                            obj.material = obj.material.clone();
+                        }
+                        obj.userData.isCloned = true;
+                    }
+
+                    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+                    mats.forEach(m => {
+                        if (m._trueOrigEmissive === undefined) {
+                            m._trueOrigEmissive = m.emissive ? m.emissive.clone() : new THREE.Color(0x000000);
+                            m._trueOrigEI = m.emissiveIntensity !== undefined ? m.emissiveIntensity : 1;
+                            m._trueOrigColor = m.color ? m.color.clone() : new THREE.Color(0xffffff);
+                        }
+
+                        if (isOpenOrActive) {
+                            if (m.emissive) m.emissive.setHex(0xff0000);
+                            m.emissiveIntensity = 0.8;
+                            if (m.color) m.color.setHex(0xff3b30); 
+                        } else {
+                            if (m.emissive) m.emissive.copy(m._trueOrigEmissive);
+                            if (m._trueOrigEI !== undefined) m.emissiveIntensity = m._trueOrigEI;
+                            if (m.color) m.color.copy(m._trueOrigColor);
+                        }
+                    });
+
+                    if (isMatchDoor) {
+                        const isRight = n.includes('_r') || n.includes('right') || n.includes('_fr') || n.endsWith('_r');
+                        const isLeft = !isRight;
+                        
+                        obj.position.copy(obj.userData.origPos);
+                        obj.rotation.copy(obj.userData.origRot);
+
+                        if (isOpenOrActive) {
+                            let angle, hingeX, hingeZ, rrshqitjeMbrapa;
+
+                            if (isLeft) {
+                                angle = -0.42;      
+                                hingeX = 0.05;      
+                                hingeZ = 1.1;       
+                                rrshqitjeMbrapa = -0.20; 
+                            } else {
+                                angle = 0.42;       
+                                hingeX = -0.05;     
+                                hingeZ = 1.1;       
+                                rrshqitjeMbrapa = -0.20; 
+                            }
+
+                            obj.rotation.y += angle;
+
+                            const cosA = Math.cos(angle);
+                            const sinA = Math.sin(angle);
+                            
+                            const deltaX = hingeX - (hingeX * cosA + hingeZ * sinA);
+                            const deltaZ = hingeZ - (-hingeX * sinA + hingeZ * cosA);
+
+                            obj.position.x += deltaX;
+                            obj.position.z += (deltaZ + rrshqitjeMbrapa); 
+                        }
+                    }
+                }
+            });
+        };
+
+        function showFeedback(text) {
+            feedbackEl.innerText = text;
+            feedbackEl.classList.add('show');
+            clearTimeout(showFeedback._t);
+            showFeedback._t = setTimeout(() => feedbackEl.classList.remove('show'), 1800);
+        }
+
+        function flashMesh(mesh, duration = 400) {
+            if (!mesh || !mesh.material) return;
+            try {
+                if (!mesh.userData.isCloned) {
+                    if (Array.isArray(mesh.material)) {
+                        mesh.material = mesh.material.map(m => m.clone());
+                    } else {
+                        mesh.material = mesh.material.clone();
+                    }
+                    mesh.userData.isCloned = true;
+                }
+
+                const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+                mats.forEach(m => {
+                    if (m._tempEmissive === undefined) {
+                        m._tempEmissive = m.emissive ? m.emissive.clone() : new THREE.Color(0x000000);
+                    }
+                    if (m._tempEI === undefined) {
+                        m._tempEI = m.emissiveIntensity !== undefined ? m.emissiveIntensity : 1;
+                    }
+                    
+                    m.emissive.setHex(0x00d2ff); 
+                    m.emissiveIntensity = 0.8;
+                });
+
+                if (mesh.userData.flashTimer) {
+                    clearTimeout(mesh.userData.flashTimer);
+                }
+                
+                mesh.userData.flashTimer = setTimeout(() => {
+                    mats.forEach(m => {
+                        if (m._tempEmissive) m.emissive.copy(m._tempEmissive);
+                        if (m._tempEI !== undefined) m.emissiveIntensity = m._tempEI;
+                    });
+                }, duration);
+            } catch (e) { }
+        }
+
+        function init3D() {
+            if (initialized) return;
+            if (typeof THREE === 'undefined') { loadingEl.innerText = "Three.js nuk u ngarkua."; return; }
+            initialized = true;
+
+            const w = Math.max(viewer.clientWidth, 100);
+            const h = Math.max(viewer.clientHeight, 100);
+
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+            
+            camera.position.set(-5, 4.5, 6);
+
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(w, h);
+            renderer.setClearColor(0x000000, 0);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+            const dir = new THREE.DirectionalLight(0xffffff, 0.9); dir.position.set(6, 12, 8); scene.add(dir);
+            const dir2 = new THREE.DirectionalLight(0x88ccff, 0.5); dir2.position.set(-6, 6, -6); scene.add(dir2);
+            const rim = new THREE.DirectionalLight(0xff66cc, 0.25); rim.position.set(0, 4, -10); scene.add(rim);
+
+            const grid = new THREE.GridHelper(20, 20, 0x00d2ff, 0x223344);
+            grid.material.opacity = 0.22; grid.material.transparent = true;
+            scene.add(grid);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.1;
+            controls.enablePan = false;
+            controls.minDistance = 3;
+            controls.maxDistance = 14;
+            controls.maxPolarAngle = Math.PI / 2.05;
+            controls.target.set(0, 0.6, 0);
+
+            raycaster = new THREE.Raycaster();
+            pointer = new THREE.Vector2();
+
+            const loader = new THREE.GLTFLoader();
+            loader.load(MODEL_URL, (gltf) => {
+                carModel = gltf.scene;
+
+                const box = new THREE.Box3().setFromObject(carModel);
+                const size = box.getSize(new THREE.Vector3());
+                const center = box.getCenter(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z) || 1;
+                
+                const scale = 7.9 / maxDim; 
+                carModel.scale.setScalar(scale);
+                carModel.position.x = -center.x * scale;
+                carModel.position.z = -center.z * scale;
+                carModel.position.y = -box.min.y * scale;
+                scene.add(carModel);
+
+                controls.target.set(0, (size.y * scale) / 2, 0);
+                controls.update();
+
+                loadingEl.style.display = 'none';
+
+                if (typeof isEngineRunning !== 'undefined') window.setCarPartState('engine', isEngineRunning);
+                const lockText = document.getElementById('val-locks').innerText;
+                window.setCarPartState('doors', lockText.includes('HAPUR'));
+
+            }, undefined, (err) => {
+                loadingEl.innerHTML = "⚠️ Modeli 3D nuk u ngarkua.<br><small>Kontrollo skedarin .glb</small>";
+                console.error(err);
+            });
+
+            renderer.domElement.addEventListener('pointerdown', (e) => { downPos = { x: e.clientX, y: e.clientY }; });
+            renderer.domElement.addEventListener('pointerup', (e) => {
+                if (!downPos) return;
+                const dx = e.clientX - downPos.x, dy = e.clientY - downPos.y;
+                downPos = null;
+                if (Math.hypot(dx, dy) > 8) return;
+                handleTap(e);
+            });
+
+            window.addEventListener('resize', onResize);
+            animate();
+        }
+
+        function handleTap(e) {
+            if (!carModel) return;
+            const rect = renderer.domElement.getBoundingClientRect();
+            pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+            pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(pointer, camera);
+            const hits = raycaster.intersectObject(carModel, true);
+            if (!hits.length) { showFeedback("🚗 Prek një pjesë të makinës"); return; }
+
+            const hit = hits[0];
+            let obj = hit.object;
+            
+            // Mblidh të gjithë emrat lart te prindërit për siguri
+            let checkObj = obj;
+            let matchedName = "";
+            while (checkObj && checkObj !== scene) {
+                const n = (checkObj.name || '').toLowerCase();
+                if (n) matchedName += " " + n;
+                checkObj = checkObj.parent;
+            }
+
+            let part = null;
+
+            // 1. TAVANI - Bazuar FIKS në emrin e saktë që më dhe
+            if (matchedName.includes('pivotglassesglasses_pivot_glass')) {
+                part = 'sunroof';
+            }
+            // 2. DYERT
+            else if (matchedName.includes('door') || matchedName.includes('detach_door')) {
+                part = 'door';
+            } 
+            // 3. KAPOTI I MOTORRIT
+            else if (matchedName.includes('hood') || matchedName.includes('bonnet') || matchedName.includes('kapot')) {
+                part = 'engine';
+            } 
+            // 4. ÇDO GJË TJETËR (Xhamat anësorë tani kalojnë këtu dhe do injorohen sipas dëshirës tënde)
+            else {
+                showFeedback("🤔 Pjesë e panjohur");
+                return;
+            }
+
+            triggerPart(part, hit.object);
+        }
+
+        function triggerPart(part, mesh) {
+            const role = (typeof userRole !== 'undefined') ? userRole : 'guest';
+
+            if (part === 'door') {
+                flashMesh(mesh, 400);
+                const locksText = document.getElementById('val-locks').innerText;
+                if (locksText.indexOf('Mbyllur') === 0 || locksText === '--') {
+                    sendCommand('UNLOCK'); showFeedback('🔓 Duke shkyçur dyert...');
+                } else {
+                    sendCommand('LOCK'); showFeedback('🔒 Duke mbyllur dyert...');
+                }
+            } else if (part === 'engine') {
+                flashMesh(mesh, 400);
+                const engText = document.getElementById('val-engine').innerText;
+                if (engText === 'Ndezur' || (typeof isEngineRunning !== 'undefined' && isEngineRunning)) {
+                    sendCommand('STOP');
+                    setTimeout(() => { sendCommand('LOCK'); }, 500); 
+                    showFeedback('🛑 Motorri u fik & Dyert u kyçën!');
+                } else {
+                    sendCommand('TRIP_MODE');
+                    showFeedback('🚀 Trip Mode u aktivizua!');
+                }
+            } else if (part === 'sunroof') {
+                if (role === 'guest') { showFeedback('⛔ Nuk keni akses për tavanin'); return; }
+                
+                flashMesh(mesh, 8000); // 8 sekonda zbardhje vetëm për tavanin
+                sendCommand('SUNROOF'); showFeedback('🪟 Duke lëvizur tavanin...');
+            }
+        }
+
+        function onResize() {
+            if (!renderer) return;
+            const w = Math.max(viewer.clientWidth, 100);
+            const h = Math.max(viewer.clientHeight, 100);
+            camera.aspect = w / h; camera.updateProjectionMatrix();
+            renderer.setSize(w, h);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (controls) controls.update();
+            if (renderer) renderer.render(scene, camera);
+        }
+
+        const dash = document.getElementById('screen-dash');
+        const observer = new MutationObserver(() => {
+            if (dash.classList.contains('active')) {
+                requestAnimationFrame(() => init3D());
+            }
+        });
+        observer.observe(dash, { attributes: true, attributeFilter: ['class'] });
+    })();
     </script>
 </body>
 </html>

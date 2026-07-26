@@ -1001,19 +1001,38 @@
 
             let part = null;
 
-            // 1. TAVANI - Bazuar FIKS në emrin e saktë që më dhe
-            if (matchedName.includes('pivotglassesglasses_pivot_glass')) {
-                part = 'sunroof';
+            // ZGJIDHJA 100% PREÇIZE E BAZUAR NË KOORDINATA LOKALE
+            // Kthejmë pikën e prekjes në koordinatat e sakta origjinale të modelit (para zmadhimit)
+            const localPt = carModel.worldToLocal(hit.point.clone());
+            const lx = localPt.x;
+            const ly = localPt.y;
+            const lz = localPt.z;
+
+            // Kontrolli për xhamat (përfshin të gjitha format: glass, window, dritare, pivot, etj)
+            if (matchedName.includes('glass') || matchedName.includes('window') || matchedName.includes('pivot') || matchedName.includes('dritare')) {
+                
+                // Përcaktojmë Kutinë e Tavanit bazuar në koordinatat e tua me pak marzh sigurie
+                const isSunroof = (lx >= -0.55 && lx <= 0.55) && 
+                                  (ly >= 1.30 && ly <= 1.55) && 
+                                  (lz >= -1.55 && lz <= 0.25);
+
+                if (isSunroof) {
+                    part = 'sunroof';
+                } else {
+                    // Cdo xham tjeter jashte kutise se tavanit u injorua plotesisht sic kerkove
+                    showFeedback("ℹ️ Përdor butonin në ekran për xhamat anësorë");
+                    return; 
+                }
             }
             // 2. DYERT
-            else if (matchedName.includes('door') || matchedName.includes('detach_door')) {
+            else if (matchedName.includes('door') || matchedName.includes('detach_door') || matchedName.includes('porta') || matchedName.includes('dyr')) {
                 part = 'door';
             } 
             // 3. KAPOTI I MOTORRIT
             else if (matchedName.includes('hood') || matchedName.includes('bonnet') || matchedName.includes('kapot')) {
                 part = 'engine';
             } 
-            // 4. ÇDO GJË TJETËR (Xhamat anësorë tani kalojnë këtu dhe do injorohen sipas dëshirës tënde)
+            // 4. ÇDO GJË TJETËR
             else {
                 showFeedback("🤔 Pjesë e panjohur");
                 return;

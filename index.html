@@ -939,30 +939,6 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-            // Ndryshimi i ngjyrës së trupit në të bardhë dhe xhamave në të zi solid
-            carModel.traverse((child) => {
-                if (child.isMesh && child.material) {
-                    let objName = child.name ? child.name.toLowerCase() : "";
-                    let matName = child.material.name ? child.material.name.toLowerCase() : "";
-
-                    // 1. Pjesët blu bëhen të bardha (ose materiale trupi)
-                    if ((child.material.color.b > child.material.color.r && child.material.color.b > child.material.color.g) || 
-                        objName.includes('body') || matName.includes('paint')) {
-                        child.material.color.setHex(0xffffff);
-                    }
-
-                    // 2. Xhamat bëhen të zinj dhe jo transparentë
-                    if (objName.includes('glass') || objName.includes('window') || matName.includes('glass') || objName.includes('xham')) {
-                        child.material.color.setHex(0x000000);
-                        child.material.transparent = false;
-                        child.material.opacity = 1;
-                        if (child.material.transmission !== undefined) {
-                            child.material.transmission = 0;
-                        }
-                    }
-                }
-            });
-
                 const box = new THREE.Box3().setFromObject(carModel);
                 const size = box.getSize(new THREE.Vector3());
                 const center = box.getCenter(new THREE.Vector3());

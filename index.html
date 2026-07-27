@@ -914,10 +914,10 @@
             renderer.setSize(w, h);
             renderer.setClearColor(0x000000, 0);
 
-            scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-            const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(6, 12, 8); scene.add(dir);
-            const dir2 = new THREE.DirectionalLight(0x88ccff, 0.6); dir2.position.set(-6, 6, -6); scene.add(dir2);
-            const rim = new THREE.DirectionalLight(0xff66cc, 0.3); rim.position.set(0, 4, -10); scene.add(rim);
+            // Ndriçim më i balancuar që të mos djegë ngjyrat
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const dir = new THREE.DirectionalLight(0xffffff, 0.8); dir.position.set(6, 12, 8); scene.add(dir);
+            const dir2 = new THREE.DirectionalLight(0x88ccff, 0.5); dir2.position.set(-6, 6, -6); scene.add(dir2);
 
             const grid = new THREE.GridHelper(20, 20, 0x00d2ff, 0x223344);
             grid.material.opacity = 0.22; grid.material.transparent = true;
@@ -939,37 +939,36 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // Karroceria e bardhë e pastër me shkëlqim të lartë, duke ruajtur maskarinën, rrotat, fshirëset dhe fenerët në ngjyrën origjinale të zezë
+                // Forcimi i pjesëve të zeza dhe bardhësia natyrale
                 carModel.traverse((node) => {
                     if (node.isMesh) {
                         const n = (node.name || '').toLowerCase();
                         
-                        const isWheel = n.includes('wheel') || n.includes('rim') || n.includes('tire') || n.includes('brake') || n.includes('hub');
-                        const isWiper = n.includes('wiper') || n.includes('blade') || n.includes('fshirese');
-                        const isGrille = n.includes('grille') || n.includes('mask') || n.includes('vent') || n.includes('mesh') || n.includes('intake') || n.includes('radiator') || n.includes('trim') || n.includes('plastic') || n.includes('bumper_front') || n.includes('bodi_front');
-                        const isLight = n.includes('light') || n.includes('lamp') || n.includes('led') || n.includes('bulb') || n.includes('headlight');
+                        // Klasifikimi strikt i pjesëve për të mos ngatërruar ngjyrat
                         const isGlass = n.includes('glass') || n.includes('window') || n.includes('windshield');
+                        const isWiper = n.includes('wiper') || n.includes('blade') || n.includes('fshirese');
+                        // Këtu detyrojmë maskarinën dhe grilën të jetë e zezë
+                        const isGrille = n.includes('grill') || n.includes('mask') || n.includes('mesh') || n.includes('intake') || n.includes('vent') || n.includes('trim') || n.includes('plastic') || n.includes('logo') || n.includes('emblem');
+                        const isWheel = n.includes('wheel') || n.includes('rim') || n.includes('tire') || n.includes('brake') || n.includes('hub');
+                        const isLight = n.includes('light') || n.includes('lamp') || n.includes('led') || n.includes('bulb') || n.includes('headlight') || n.includes('taillight');
 
                         if (isGlass) {
+                            node.material = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.1, metalness: 0.8 });
+                        } else if (isWiper || isGrille) {
+                            // Detyrimisht E ZEZË MAT për fshirëset dhe grilën/maskarinën
+                            node.material = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7, metalness: 0.1 });
+                        } else if (!isWheel && !isLight) {
+                            // E bardhë e pastër natyrale pa "emissive" që djeg format dhe dyert
                             node.material = new THREE.MeshStandardMaterial({
-                                color: 0x020202,
-                                roughness: 0.05,
-                                metalness: 0.95
+                                color: 0xeaeaea, 
+                                roughness: 0.15,
+                                metalness: 0.3
                             });
-                        } else if (!isWheel && !isWiper && !isGrille && !isLight) {
-                            if (n.includes('body') || n.includes('paint') || n.includes('chassis') || n.includes('bodi') || n.includes('bumper') || n.includes('hood') || n.includes('trunk') || n.includes('door') || n.includes('fender') || n.includes('roof')) {
-                                node.material = new THREE.MeshStandardMaterial({
-                                    color: 0xffffff,
-                                    emissive: 0x222222, // E mban të bardhë të pastër dhe të ndritshme pa u errësuar
-                                    roughness: 0.08,
-                                    metalness: 0.1
-                                });
-                            }
                         }
                     }
                 });
 
-                // 1. Llogaritja e përmasave të modelit fillimisht
+                // Llogaritja e përmasave të modelit
                 const box = new THREE.Box3().setFromObject(carModel);
                 const size = box.getSize(new THREE.Vector3());
                 const center = box.getCenter(new THREE.Vector3());
@@ -982,13 +981,14 @@
                 carModel.position.y = -box.min.y * scale;
                 scene.add(carModel);
 
-                // 2. Krijimi i Sunroof si pllakë e sheshtë rekatnguore e prerë saktë dhe e pozicionuar më mbrapa në tavan
-                const sunroofGeo = new THREE.PlaneGeometry(size.x * 0.28, size.z * 0.28);
-                const sunroofMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.5, side: THREE.DoubleSide });
+                // Krijimi i Sunroof të shkurtuar (0.20) dhe të pozicionuar saktë në lartësinë maksimale (pa u ngritur në ajër)
+                const sunroofGeo = new THREE.PlaneGeometry(size.x * 0.28, size.z * 0.20);
+                const sunroofMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.1, metalness: 0.8, side: THREE.DoubleSide });
                 sunroofMesh = new THREE.Mesh(sunroofGeo, sunroofMat);
                 sunroofMesh.rotation.x = -Math.PI / 2;
-                // Pozicioni i rregulluar saktë në tavan, më mbrapa dhe pa dalë përpara
-                sunroofMesh.position.set(center.x, box.max.y + 0.002, center.z - size.z * 0.09);
+                
+                // box.max.y i jep fiks lartësinë e tavanit. center.z - size.z * 0.12 e shtyn më mbrapa
+                sunroofMesh.position.set(center.x, box.max.y, center.z - size.z * 0.12);
                 carModel.add(sunroofMesh);
 
                 controls.target.set(0, (size.y * scale) / 2, 0);

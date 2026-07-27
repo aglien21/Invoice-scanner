@@ -803,9 +803,9 @@
                         }
 
                         if (isOpenOrActive) {
-                            if (m.emissive) m.emissive.setHex(0xff5555); 
+                            if (m.emissive) m.emissive.setHex(0xff0000);
                             m.emissiveIntensity = 0.8;
-                            if (m.color) m.color.setHex(0xff7777); 
+                            if (m.color) m.color.setHex(0xff3b30); 
                         } else {
                             if (m.emissive) m.emissive.copy(m._trueOrigEmissive);
                             if (m._trueOrigEI !== undefined) m.emissiveIntensity = m._trueOrigEI;
@@ -939,34 +939,28 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // Modifikimi: Ngjyra e makinës bardhë perla me filtrin e xhamave
+                // --- SHTIMI: Kthejme makinen te bardhe dhe xhamat te zinj solid ---
                 carModel.traverse((child) => {
-                    if (child.isMesh) {
-                        const mats = Array.isArray(child.material) ? child.material : [child.material];
-                        mats.forEach(m => {
-                            const mName = (m.name || '').toLowerCase();
-                            const cName = (child.name || '').toLowerCase();
+                    if (child.isMesh && child.material) {
+                        let objName = child.name ? child.name.toLowerCase() : "";
+                        let matName = child.material.name ? child.material.name.toLowerCase() : "";
 
-                            const isGlassOrPlastic = mName.includes('glass') || mName.includes('window') || mName.includes('black') || mName.includes('plastic') || mName.includes('grill') || mName.includes('rubber') || mName.includes('xham') || cName.includes('glass') || cName.includes('window');
+                        if ((child.material.color.b > child.material.color.r && child.material.color.b > child.material.color.g) || 
+                            objName.includes('body') || matName.includes('paint')) {
+                            child.material.color.setHex(0xffffff);
+                        }
 
-                            // 1. Nese eshte xham, lere te zi ose errësoje përsëri
-                            if (isGlassOrPlastic) {
-                                if (mName.includes('glass') || mName.includes('window') || cName.includes('glass') || cName.includes('window')) {
-                                    if (m.color) m.color.setHex(0x0a0a0a); // Xham i errët
-                                }
-                                m.needsUpdate = true;
-                            } 
-                            // 2. Nese eshte boja e makines dhe NUK eshte pjese plastike ose xham
-                            else if (cName.includes('carpaint') || mName.includes('carpaint') || mName.includes('paint')) {
-                                if (m.color) m.color.setHex(0xfdfdfd); // Bardhë perla
-                                if (m.map) m.map = null; // Hiq teksturen blu nese ka
-                                if (m.metalness !== undefined) m.metalness = 0.6;
-                                if (m.roughness !== undefined) m.roughness = 0.15;
-                                m.needsUpdate = true;
+                        if (objName.includes('glass') || objName.includes('window') || matName.includes('glass') || objName.includes('xham')) {
+                            child.material.color.setHex(0x000000);
+                            child.material.transparent = false;
+                            child.material.opacity = 1;
+                            if (child.material.transmission !== undefined) {
+                                child.material.transmission = 0;
                             }
-                        });
+                        }
                     }
                 });
+                // -----------------------------------------------------------------
 
                 const box = new THREE.Box3().setFromObject(carModel);
                 const size = box.getSize(new THREE.Vector3());
@@ -1019,7 +1013,6 @@
             const hit = hits[0];
             let obj = hit.object;
             
-            // Mblidh të gjithë emrat lart te prindërit për siguri
             let checkObj = obj;
             let matchedName = "";
             while (checkObj && checkObj !== scene) {
@@ -1030,24 +1023,19 @@
 
             let part = null;
 
-            // 1. TAVANI (Kape saktësisht nga emri i tij: upper roof-glass)
             if (matchedName.includes('upper') || matchedName.includes('roof') || matchedName.includes('sunroof') || matchedName.includes('panoram') || matchedName.includes('tavan')) {
                 part = 'sunroof';
             }
-            // 2. DYERT
             else if (matchedName.includes('door') || matchedName.includes('dyr') || matchedName.includes('porta') || matchedName.includes('detach_door')) {
                 part = 'door';
             } 
-            // 3. KAPOTI I MOTORRIT
             else if (matchedName.includes('hood') || matchedName.includes('bonnet') || matchedName.includes('kapot')) {
                 part = 'engine';
             } 
-            // 4. XHAMAT ANËSORË (Vetëm xhamat që i përkasin dyerve / anësoreve, duke shmangur tavanin)
             else if ((matchedName.includes('glass') || matchedName.includes('window') || matchedName.includes('dritare')) && !matchedName.includes('upper') && !matchedName.includes('roof')) {
                 showFeedback("ℹ️ Përdor butonin në ekran për xhamat");
                 return; 
             }
-            // 5. ÇDO GJË TJETËR (Llamarina ose pjesë pa funksion) -> MOS BËJ ASGJË DHE SHFAQ MESAZH
             else {
                 showFeedback("🤔 Pjesë e panjohur");
                 return;
@@ -1081,7 +1069,7 @@
             } else if (part === 'sunroof') {
                 if (role === 'guest') { showFeedback('⛔ Nuk keni akses për tavanin'); return; }
                 
-                flashMesh(mesh, 8000); // 8 sekonda zbardhje vetëm për tavanin
+                flashMesh(mesh, 8000); 
                 sendCommand('SUNROOF'); showFeedback('🪟 Duke lëvizur tavanin...');
             }
         }

@@ -939,7 +939,7 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // Lyerojmë vetëm trupin e makinës (pjesët blu) në të bardhë, lëmë rrotat dhe dritat të paprekura
+                // Lyerojmë vetëm trupin e makinës në të bardhë dhe xhamat në të zi, duke lënë rrotat dhe fenerët plotësisht të paprekur
                 carModel.traverse((node) => {
                     if (node.isMesh) {
                         const n = (node.name || '').toLowerCase();
@@ -972,7 +972,7 @@
                     }
                 });
 
-                // 1. Llogaritja e saktë e madhësisë dhe pozicionimit të makinës FILLIMISHT
+                // 1. Llogaritja e përmasave të modelit fillimisht
                 const box = new THREE.Box3().setFromObject(carModel);
                 const size = box.getSize(new THREE.Vector3());
                 const center = box.getCenter(new THREE.Vector3());
@@ -985,11 +985,11 @@
                 carModel.position.y = -box.min.y * scale;
                 scene.add(carModel);
 
-                // 2. Shtimi i katrorit Fake Sunroof PAS llogaritjes së kutisë (për të shmangur mikroskopikën)
-                const sunroofGeo = new THREE.BoxGeometry(0.5, 0.01, 0.6);
-                const sunroofMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2 });
+                // 2. Krijimi dhe vendosja e saktë e katrorit Fake Sunroof në tavan bazuar në dimensionet e kutisë
+                const sunroofGeo = new THREE.BoxGeometry(size.x * 0.28, 0.02, size.z * 0.22);
+                const sunroofMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.5 });
                 sunroofMesh = new THREE.Mesh(sunroofGeo, sunroofMat);
-                sunroofMesh.position.set(0, box.max.y - 0.01, 0.1);
+                sunroofMesh.position.set(center.x, box.max.y, center.z + size.z * 0.05);
                 carModel.add(sunroofMesh);
 
                 controls.target.set(0, (size.y * scale) / 2, 0);

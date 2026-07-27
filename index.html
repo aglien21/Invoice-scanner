@@ -759,7 +759,7 @@
     <!-- ===== 3D INTERACTIVE CAR MODEL (Three.js) ===== -->
     <script>
     (function () {
-        const MODEL_URL = "./hyundai_i30_n.glb";
+        const MODEL_URL = "./2018_hyundai_i30_n.glb";
 
         let scene, camera, renderer, controls, carModel, raycaster, pointer;
         let initialized = false;
@@ -769,6 +769,38 @@
         const loadingEl = document.getElementById('car-3d-loading');
 
         let downPos = null;
+
+        // Funksioni për krijimin e targës shqiptare AB592NO
+        function createAlbanianPlate(plateText) {
+            const group = new THREE.Group();
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            
+            // Prapavija e bardhë
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Shiriti i kuq anash (Simulim AL)
+            ctx.fillStyle = '#ce1126';
+            ctx.fillRect(0, 0, 42, 64);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillText('AL', 10, 38);
+
+            // Shkrimi i targës AB592NO
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 30px monospace';
+            ctx.fillText(plateText, 55, 42);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const mat = new THREE.MeshBasicMaterial({ map: texture });
+            const geo = new THREE.PlaneGeometry(0.45, 0.11);
+            const mesh = new THREE.Mesh(geo, mat);
+            group.add(mesh);
+            return group;
+        }
 
         window.setCarPartState = function(part, isOpenOrActive) {
             if (!carModel) return;
@@ -827,12 +859,12 @@
                                 angle = -0.42;      
                                 hingeX = 0.05;      
                                 hingeZ = 1.1;       
-                                rrshqitjeMbrapa = -0.20; 
+                                rrshqitjeMbrapa = -0.25; 
                             } else {
                                 angle = 0.42;       
                                 hingeX = -0.05;     
                                 hingeZ = 1.1;       
-                                rrshqitjeMbrapa = -0.20; 
+                                rrshqitjeMbrapa = -0.25; 
                             }
 
                             obj.rotation.y += angle;
@@ -939,6 +971,40 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
+                // Modifikimi i materialeve për ngjyrën e bardhë, xhamat e zinj dhe targën AB592NO
+                carModel.traverse((node) => {
+                    if (node.isMesh) {
+                        const n = (node.name || '').toLowerCase();
+                        
+                        // Ngjyra e makinës -> E bardhë (White Car Paint)
+                        if (n.includes('body') || n.includes('paint') || n.includes('car') || n.includes('chassis') || n.includes('bodi')) {
+                            node.material = new THREE.MeshStandardMaterial({
+                                color: 0xffffff,
+                                roughness: 0.12,
+                                metalness: 0.85
+                            });
+                        }
+                        
+                        // Xhamat -> Të zinj (Tinted Black Glass)
+                        if (n.includes('glass') || n.includes('window') || n.includes('windshield')) {
+                            node.material = new THREE.MeshPhysicalMaterial({
+                                color: 0x050505,
+                                metalness: 0.1,
+                                roughness: 0.05,
+                                transmission: 0.2,
+                                transparent: true,
+                                opacity: 0.95,
+                                ior: 1.5
+                            });
+                        }
+                    }
+                });
+
+                // Shtimi i targës AB592NO në pjesën e përparme/pasme të modelit
+                const frontPlate = createAlbanianPlate("AB592NO");
+                frontPlate.position.set(0, 0.35, 2.05);
+                carModel.add(frontPlate);
+
                 const box = new THREE.Box3().setFromObject(carModel);
                 const size = box.getSize(new THREE.Vector3());
                 const center = box.getCenter(new THREE.Vector3());
@@ -990,7 +1056,6 @@
             const hit = hits[0];
             let obj = hit.object;
             
-            // Mblidh të gjithë emrat lart te prindërit për siguri
             let checkObj = obj;
             let matchedName = "";
             while (checkObj && checkObj !== scene) {
@@ -1001,24 +1066,19 @@
 
             let part = null;
 
-            // 1. TAVANI (Kape saktësisht nga emri i tij: upper roof-glass)
             if (matchedName.includes('upper') || matchedName.includes('roof') || matchedName.includes('sunroof') || matchedName.includes('panoram') || matchedName.includes('tavan')) {
                 part = 'sunroof';
             }
-            // 2. DYERT
             else if (matchedName.includes('door') || matchedName.includes('dyr') || matchedName.includes('porta') || matchedName.includes('detach_door')) {
                 part = 'door';
             } 
-            // 3. KAPOTI I MOTORRIT
             else if (matchedName.includes('hood') || matchedName.includes('bonnet') || matchedName.includes('kapot')) {
                 part = 'engine';
             } 
-            // 4. XHAMAT ANËSORË (Vetëm xhamat që i përkasin dyerve / anësoreve, duke shmangur tavanin)
             else if ((matchedName.includes('glass') || matchedName.includes('window') || matchedName.includes('dritare')) && !matchedName.includes('upper') && !matchedName.includes('roof')) {
                 showFeedback("ℹ️ Përdor butonin në ekran për xhamat");
                 return; 
             }
-            // 5. ÇDO GJË TJETËR (Llamarina ose pjesë pa funksion) -> MOS BËJ ASGJË DHE SHFAQ MESAZH
             else {
                 showFeedback("🤔 Pjesë e panjohur");
                 return;
@@ -1052,7 +1112,7 @@
             } else if (part === 'sunroof') {
                 if (role === 'guest') { showFeedback('⛔ Nuk keni akses për tavanin'); return; }
                 
-                flashMesh(mesh, 8000); // 8 sekonda zbardhje vetëm për tavanin
+                flashMesh(mesh, 8000); 
                 sendCommand('SUNROOF'); showFeedback('🪟 Duke lëvizur tavanin...');
             }
         }

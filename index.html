@@ -939,7 +939,7 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // Ngjyrosim vetëm trupin e makinës në të bardhë, duke lënë të paprekura rrotat, fshirëset, maskarinën dhe fenerët
+                // Lyerojmë vetëm trupin e makinës në të bardhë dhe xhamat në të zi, duke lënë rrotat, fshirëset, fenerët dhe maskarinën origjinale të zeza
                 carModel.traverse((node) => {
                     if (node.isMesh) {
                         const n = (node.name || '').toLowerCase();
@@ -982,12 +982,13 @@
                 carModel.position.y = -box.min.y * scale;
                 scene.add(carModel);
 
-                // 2. Krijimi i Sunroof si Plane i sheshtë në tavan (pa u bërë kurrë bllok i lartë)
-                const sunroofGeo = new THREE.PlaneGeometry(size.x * 0.28, size.z * 0.32);
+                // 2. Krijimi i Sunroof (më i madh, i sheshtë, i pozicionuar më mbrapa në tavan)
+                const sunroofGeo = new THREE.PlaneGeometry(size.x * 0.35, size.z * 0.38);
                 const sunroofMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.5, side: THREE.DoubleSide });
                 sunroofMesh = new THREE.Mesh(sunroofGeo, sunroofMat);
                 sunroofMesh.rotation.x = -Math.PI / 2;
-                sunroofMesh.position.set(center.x, box.max.y - (size.y * 0.02), center.z + size.z * 0.04);
+                // Pozicioni i vendosur më mbrapa mbi tavan, pa prekur xhamin e përparmë
+                sunroofMesh.position.set(center.x, box.max.y - (size.y * 0.015), center.z - size.z * 0.08);
                 carModel.add(sunroofMesh);
 
                 controls.target.set(0, (size.y * scale) / 2, 0);

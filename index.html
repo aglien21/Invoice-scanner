@@ -914,7 +914,7 @@
             renderer.setSize(w, h);
             renderer.setClearColor(0x000000, 0);
 
-            // Ndriçimi standard i skenës
+            // Ndriçim standard i skenës
             scene.add(new THREE.AmbientLight(0xffffff, 0.7));
             const dir = new THREE.DirectionalLight(0xffffff, 0.8); dir.position.set(6, 12, 8); scene.add(dir);
             const dir2 = new THREE.DirectionalLight(0x88ccff, 0.5); dir2.position.set(-6, 6, -6); scene.add(dir2);
@@ -939,40 +939,6 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // NDRYSHIMI KIRURGJIKAL I NGJYRËS - VETËM LLAMARINA (E BARDHË PERLA)
-                carModel.traverse((node) => {
-                    if (node.isMesh) {
-                        const n = (node.name || '').toLowerCase();
-                        
-                        // Lista e pjesëve që NUK duam të prekim fare
-                        const isGlass = n.includes('glass') || n.includes('window') || n.includes('windshield');
-                        const isWheel = n.includes('wheel') || n.includes('rim') || n.includes('tire') || n.includes('brake') || n.includes('hub');
-                        const isWiper = n.includes('wiper') || n.includes('blade') || n.includes('fshirese');
-                        const isGrille = n.includes('grill') || n.includes('mask') || n.includes('mesh') || n.includes('vent') || n.includes('trim') || n.includes('plastic') || n.includes('logo') || n.includes('emblem');
-                        const isLight = n.includes('light') || n.includes('lamp') || n.includes('led') || n.includes('bulb') || n.includes('headlight');
-
-                        // Lista e pjesëve që konsiderohen "Llamarinë" (Body)
-                        const isBody = n.includes('body') || n.includes('paint') || n.includes('hood') || n.includes('trunk') || n.includes('door') || n.includes('fender') || n.includes('roof') || n.includes('bumper') || n.includes('bodi') || n.includes('chassis');
-
-                        if (isGlass) {
-                            // Xhamat pak më të zinj për kontrast
-                            node.material = new THREE.MeshStandardMaterial({
-                                color: 0x050505, roughness: 0.1, metalness: 0.8
-                            });
-                        } else if (isBody && !isWheel && !isWiper && !isGrille && !isLight) {
-                            // APLIKOJMË BOJËN PERLA VETËM KËTU
-                            node.material = new THREE.MeshPhysicalMaterial({
-                                color: 0xffffff,
-                                metalness: 0.4,       // Efekti metalik/perla
-                                roughness: 0.15,      // Shumë e lëmuar
-                                clearcoat: 1.0,       // Shtresa mbrojtëse me shkëlqim (llaku)
-                                clearcoatRoughness: 0.05
-                            });
-                        }
-                        // Çdo pjesë tjetër mbetet me materialin 100% origjinal nga skedari .glb!
-                    }
-                });
-
                 // Llogaritja e përmasave të modelit
                 const box = new THREE.Box3().setFromObject(carModel);
                 const size = box.getSize(new THREE.Vector3());
@@ -986,7 +952,7 @@
                 carModel.position.y = -box.min.y * scale;
                 scene.add(carModel);
 
-                // Krijimi i Sunroof ashtu siç ishte kur pëlqeve lartësinë
+                // Krijimi i Sunroof ekzaktësisht ashtu siç ishte kur pëlqeve lartësinë (e sheshtë)
                 const sunroofGeo = new THREE.PlaneGeometry(size.x * 0.28, size.z * 0.20);
                 const sunroofMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.1, metalness: 0.8, side: THREE.DoubleSide });
                 sunroofMesh = new THREE.Mesh(sunroofGeo, sunroofMat);

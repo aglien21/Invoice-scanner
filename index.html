@@ -770,38 +770,6 @@
 
         let downPos = null;
 
-        // Funksioni për krijimin e targës shqiptare AB592NO
-        function createAlbanianPlate(plateText) {
-            const group = new THREE.Group();
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 64;
-            const ctx = canvas.getContext('2d');
-            
-            // Prapavija e bardhë
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Shiriti i kuq anash (Simulim AL)
-            ctx.fillStyle = '#ce1126';
-            ctx.fillRect(0, 0, 42, 64);
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 20px Arial';
-            ctx.fillText('AL', 10, 38);
-
-            // Shkrimi i targës AB592NO
-            ctx.fillStyle = '#000000';
-            ctx.font = 'bold 30px monospace';
-            ctx.fillText(plateText, 55, 42);
-
-            const texture = new THREE.CanvasTexture(canvas);
-            const mat = new THREE.MeshBasicMaterial({ map: texture });
-            const geo = new THREE.PlaneGeometry(0.45, 0.11);
-            const mesh = new THREE.Mesh(geo, mat);
-            group.add(mesh);
-            return group;
-        }
-
         window.setCarPartState = function(part, isOpenOrActive) {
             if (!carModel) return;
             carModel.traverse(obj => {
@@ -971,12 +939,12 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // Modifikimi i materialeve për ngjyrën e bardhë, xhamat e zinj dhe targën AB592NO
+                // Modifikimi i materialeve për ngjyrën e bardhë dhe xhamat e zinj
                 carModel.traverse((node) => {
                     if (node.isMesh) {
                         const n = (node.name || '').toLowerCase();
                         
-                        // Ngjyra e makinës -> E bardhë (White Car Paint)
+                        // Ngjyra e makinës -> E bardhë
                         if (n.includes('body') || n.includes('paint') || n.includes('car') || n.includes('chassis') || n.includes('bodi')) {
                             node.material = new THREE.MeshStandardMaterial({
                                 color: 0xffffff,
@@ -985,7 +953,7 @@
                             });
                         }
                         
-                        // Xhamat -> Të zinj (Tinted Black Glass)
+                        // Xhamat -> Të zinj
                         if (n.includes('glass') || n.includes('window') || n.includes('windshield')) {
                             node.material = new THREE.MeshPhysicalMaterial({
                                 color: 0x050505,
@@ -1000,11 +968,7 @@
                     }
                 });
 
-                // Shtimi i targës AB592NO në pjesën e përparme/pasme të modelit
-                const frontPlate = createAlbanianPlate("AB592NO");
-                frontPlate.position.set(0, 0.35, 2.05);
-                carModel.add(frontPlate);
-
+                // Llogaritja e saktë e përmasave të modelit pa ndërhyrje targash
                 const box = new THREE.Box3().setFromObject(carModel);
                 const size = box.getSize(new THREE.Vector3());
                 const center = box.getCenter(new THREE.Vector3());

@@ -939,19 +939,18 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // Lyerojmë vetëm trupin e makinës në të bardhë dhe xhamat në të zi, duke lënë rrotat, fshirëset, fenerët dhe maskarinën origjinale të zeza
+                // Pastrimi dhe ngjyrosja e saktë (karroceria e bardhë e pastër, maskarino dhe fenerët/rrotat të zeza origjinale)
                 carModel.traverse((node) => {
                     if (node.isMesh) {
                         const n = (node.name || '').toLowerCase();
                         
                         const isWheel = n.includes('wheel') || n.includes('rim') || n.includes('tire') || n.includes('brake') || n.includes('hub');
                         const isWiper = n.includes('wiper') || n.includes('blade') || n.includes('fshirese');
-                        const isGrille = n.includes('grille') || n.includes('mask') || n.includes('vent') || n.includes('mesh') || n.includes('intake') || n.includes('radiator') || n.includes('trim') || n.includes('plastic');
-                        const isLight = n.includes('light') || n.includes('lamp') || n.includes('led') || n.includes('bulb');
+                        const isGrille = n.includes('grille') || n.includes('mask') || n.includes('vent') || n.includes('mesh') || n.includes('intake') || n.includes('radiator') || n.includes('trim') || n.includes('plastic') || n.includes('bumper_front') || n.includes('bodi_front');
+                        const isLight = n.includes('light') || n.includes('lamp') || n.includes('led') || n.includes('bulb') || n.includes('headlight');
                         const isGlass = n.includes('glass') || n.includes('window') || n.includes('windshield');
 
                         if (isGlass) {
-                            // Xhamat plotësisht të zinj dhe me shkëlqim
                             node.material = new THREE.MeshStandardMaterial({
                                 color: 0x020202,
                                 roughness: 0.05,
@@ -960,9 +959,9 @@
                         } else if (!isWheel && !isWiper && !isGrille && !isLight) {
                             if (n.includes('body') || n.includes('paint') || n.includes('chassis') || n.includes('bodi') || n.includes('bumper') || n.includes('hood') || n.includes('trunk') || n.includes('door') || n.includes('fender') || n.includes('roof')) {
                                 node.material = new THREE.MeshStandardMaterial({
-                                    color: 0xffffff,
-                                    roughness: 0.12,
-                                    metalness: 0.85
+                                    color: 0xffffff, // E bardhë e pastër
+                                    roughness: 0.08,
+                                    metalness: 0.90
                                 });
                             }
                         }
@@ -982,13 +981,14 @@
                 carModel.position.y = -box.min.y * scale;
                 scene.add(carModel);
 
-                // 2. Krijimi i Sunroof (më i madh, i sheshtë, i pozicionuar më mbrapa në tavan)
-                const sunroofGeo = new THREE.PlaneGeometry(size.x * 0.35, size.z * 0.38);
+                // 2. Krijimi i Sunroof me hark (CylinderGeometry e prerë) që të ndjekë formën e tavanit dhe të mos jetë i zhytur
+                const sunroofGeo = new THREE.CylinderGeometry(size.x * 0.22, size.x * 0.22, size.z * 0.38, 32, 1, false, 0, Math.PI);
                 const sunroofMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2, metalness: 0.5, side: THREE.DoubleSide });
                 sunroofMesh = new THREE.Mesh(sunroofGeo, sunroofMat);
-                sunroofMesh.rotation.x = -Math.PI / 2;
-                // Pozicioni i vendosur më mbrapa mbi tavan, pa prekur xhamin e përparmë
-                sunroofMesh.position.set(center.x, box.max.y - (size.y * 0.015), center.z - size.z * 0.08);
+                sunroofMesh.rotation.z = Math.PI / 2;
+                sunroofMesh.scale.set(0.05, 1, 1); 
+                // Pozicionuar më mbrapa dhe me lartësinë e përshtatur në sipërfaqen e tavanit
+                sunroofMesh.position.set(center.x, box.max.y - (size.y * 0.005), center.z - size.z * 0.07);
                 carModel.add(sunroofMesh);
 
                 controls.target.set(0, (size.y * scale) / 2, 0);

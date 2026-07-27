@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="i30 Control">
+    <title>i30 DIGITAL REMOTE</title>
+
+    <link rel="apple-touch-icon" href="./logo.png">
+    <link rel="icon" type="image/png" href="./logo.png">
+    <link rel="shortcut icon" href="./logo.png">
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+
+    <style>
+        :root {
+            --accent: #00d2ff;
+            --danger: #ff3b30;
+            --success: #34c759;
+            --dash-bg: linear-gradient(135deg, rgba(20, 24, 33, 0.9), rgba(10, 12, 16, 0.95));
+            --dash-border: rgba(0, 210, 255, 0.4);
+            --dash-glow: rgba(0, 210, 255, 0.15);
+        }
+
+        body { 
+            background-color: #0b0c10; 
+            color: #fff; 
+            font-family: '-apple-system', 'Segoe UI', Tahoma, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            min-height: 100vh; 
+            background-image: url('./bg.jpg');
+            background-size: cover; 
+            background-position: center center; 
+            background-repeat: no-repeat;
+            background-attachment: fixed; 
+            transition: background 0.5s ease; 
+            user-select: none;
+        }
+
+        /* LIGHT / DAY DASHBOARD THEME */
+        body.light-hud {
+            --accent: #0066cc;
+            --dash-bg: linear-gradient(135deg, rgba(235, 242, 250, 0.9), rgba(215, 225, 238, 0.95));
+            --dash-border: rgba(0, 102, 204, 0.4);
+            --dash-glow: rgba(0, 102, 204, 0.15);
+        }
+        body.light-hud .v-screen { color: #003366; }
+        body.light-hud .v-val { color: #001f3f; }
+
+        .overlay { background: rgba(0, 0, 0, 0.5); min-height: 100vh; padding: 20px; padding-bottom: 80px; }
+        
+        .screen { display: none; text-align: center; max-width: 450px; margin: 0 auto; }
+        .screen.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        #screen-login.active { display: flex; flex-direction: column; align-items: center; min-height: 85vh; }
+        .logo-login { width: 120px; height: 120px; border-radius: 20%; margin-bottom: 20px; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 4px 15px var(--dash-glow); }
+        #pin-input { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: white; font-size: 24px; padding: 15px; border-radius: 10px; width: 200px; text-align: center; margin-bottom: 20px; letter-spacing: 10px; outline: none;}
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 280px; margin-top: auto; margin-bottom: 20px; }
+        .num-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; font-size: 22px; border-radius: 10px; cursor: pointer; transition: 0.2s;}
+        .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
+
+        /* DIGITAL CAR DASHBOARD CLUSTER */
+        .v-screen { 
+            background: var(--dash-bg); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px); 
+            border: 2px solid var(--dash-border); 
+            border-radius: 16px; 
+            padding: 18px; 
+            margin-bottom: 20px; 
+            text-align: left; 
+            font-family: 'Courier New', Courier, monospace; 
+            color: var(--accent); 
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 0 20px var(--dash-glow);
+            position: relative;
+        }
+        
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--dash-border);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+            font-size: 11px;
+            letter-spacing: 2px;
+            font-weight: bold;
+            color: #888;
+        }
+
+        .v-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 14px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 6px;}
+        .v-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
+        .v-val { font-weight: bold; color: #fff; text-shadow: 0 0 8px var(--accent); font-size: 15px; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-full { grid-column: span 2; }
+        .btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 15px 5px; font-size: 15px; font-weight: bold; color: white; border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.2s; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        .btn span { font-size: 22px; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .btn:active { transform: scale(0.95); }
+        
+        .b-start { background: linear-gradient(145deg, rgba(40,167,69,0.75), rgba(30,126,52,0.75)); } 
+        .b-stop { background: linear-gradient(145deg, rgba(220,53,69,0.75), rgba(167,29,42,0.75)); } 
+        .b-lock { background: linear-gradient(145deg, rgba(255,193,7,0.75), rgba(211,158,0,0.75)); color: #000; } 
+        .b-unlock { background: linear-gradient(145deg, rgba(23,162,184,0.75), rgba(17,122,139,0.75)); } 
+        .b-special { background: linear-gradient(145deg, rgba(111,66,193,0.75), rgba(85,48,152,0.75)); } 
+        .b-blue { background: linear-gradient(145deg, rgba(0,123,255,0.75), rgba(0,86,179,0.75)); }
+        .b-allclose { background: rgba(34,34,34,0.75); border: 1px solid rgba(255,255,255,0.2); }
+        .b-gray { background: rgba(85,85,85,0.75); }
+        .b-cyber { background: linear-gradient(145deg, rgba(0,210,255,0.3), rgba(0,100,150,0.5)); border: 1px solid var(--accent); color: var(--accent); }
+
+        .input-group { text-align: left; margin-bottom: 20px; background: rgba(0,0,0,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .input-group h3 { margin-top: 0; color: var(--accent); font-size: 16px; border-bottom: 1px solid var(--dash-border); padding-bottom: 5px; }
+        .input-group label { display: block; font-size: 13px; color: #ddd; margin-bottom: 5px; margin-top: 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        input[type="text"], input[type="number"], input[type="password"], select { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--accent); background: rgba(0,0,0,0.7); color: #fff; font-size: 15px; margin-bottom: 10px; outline: none; box-sizing: border-box;}
+        
+        .service-tick { display: flex; align-items: center; margin-bottom: 10px; font-size: 15px; color: #ddd; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        .service-tick input[type="checkbox"] { width: 22px; height: 22px; margin-right: 12px; accent-color: var(--accent); cursor: pointer; }
+
+        .nav-bar { display: none; justify-content: space-around; background: rgba(10,12,16,0.95); padding: 15px 0; border-top: 1px solid var(--dash-border); position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
+        .nav-icon { font-size: 26px; cursor: pointer; color: #777; transition: 0.3s; display: flex; flex-direction: column; align-items: center; }
+        .nav-icon span { font-size: 10px; margin-top: 3px; font-weight: bold; }
+        .nav-icon.active { color: var(--accent); transform: translateY(-3px); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; }
+        th, td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
+        th { color: var(--accent); }
+        
+        .guest-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; }
+        .guest-pin { font-size: 15px; font-weight: bold; }
+        .btn-delete { background: var(--danger); border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    
+        /* 3D INTERACTIVE i30 MODEL */
+        #car3d-wrap {
+            margin: 0 0 18px 0;
+            border: 2px solid var(--dash-border);
+            border-radius: 16px;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 45%, rgba(0,210,255,0.10), rgba(0,0,0,0.55) 65%);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 0 24px var(--dash-glow);
+            position: relative;
+            touch-action: none;
+        }
+        #car3d {
+            width: 100%;
+            height: 330px;
+            display: block;
+            touch-action: none;
+        }
+        #car3d-help {
+            position:absolute;
+            left:10px;
+            right:10px;
+            bottom:10px;
+            padding:8px 10px;
+            border-radius:10px;
+            background:rgba(0,0,0,.62);
+            backdrop-filter:blur(8px);
+            font-size:11px;
+            color:#ddd;
+            text-align:center;
+            pointer-events:none;
+        }
+        #car3d-status {
+            position:absolute;
+            top:10px;
+            left:10px;
+            padding:6px 9px;
+            border-radius:8px;
+            background:rgba(0,0,0,.62);
+            color:var(--accent);
+            font-size:11px;
+            font-weight:bold;
+            pointer-events:none;
+            opacity:0;
+            transition:opacity .2s;
+        }
+        .car3d-pulse {
+            animation: car3dPulse .45s ease;
+        }
+        @keyframes car3dPulse {
+            0% { box-shadow: 0 0 0 0 rgba(0,210,255,.0), inset 0 0 24px var(--dash-glow); }
+            50% { box-shadow: 0 0 0 5px rgba(0,210,255,.35), inset 0 0 30px rgba(0,210,255,.28); }
+            100% { box-shadow: 0 0 0 0 rgba(0,210,255,.0), inset 0 0 24px var(--dash-glow); }
+        }
+</style>
+</head>
+<body>
+    <div class="overlay">
+        
+        <!-- EKRANI LOGIN -->
+        <div id="screen-login" class="screen active">
+            <h2 style="margin-top: 30px; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
+            <div style="margin-top: 15px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.3rem; color: #aaa; letter-spacing: 1px;">
+                Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
+            </div>
+            <img id="login-logo-img" src="./logo.png" class="logo-login">
+            <input type="password" id="pin-input" readonly placeholder="****">
+            
+            <div class="numpad">
+                <button class="num-btn" onclick="addPin('1')">1</button><button class="num-btn" onclick="addPin('2')">2</button><button class="num-btn" onclick="addPin('3')">3</button>
+                <button class="num-btn" onclick="addPin('4')">4</button><button class="num-btn" onclick="addPin('5')">5</button><button class="num-btn" onclick="addPin('6')">6</button>
+                <button class="num-btn" onclick="addPin('7')">7</button><button class="num-btn" onclick="addPin('8')">8</button><button class="num-btn" onclick="addPin('9')">9</button>
+                <button class="num-btn" style="color: var(--danger);" onclick="clearPin()">C</button><button class="num-btn" onclick="addPin('0')">0</button><button class="num-btn" style="color: var(--accent);" onclick="checkLogin()">OK</button>
+            </div>
+        </div>
+
+        <!-- EKRANI DASHBOARD -->
+        <div id="screen-dash" class="screen">
+            <h2 style="margin-bottom: 15px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">PULTI KONTROLLIT <br><span id="user-greeting" style="font-size:14px; font-weight:normal; letter-spacing: 1px;"></span></h2>
+            
+            <!-- DIGITAL CLUSTER DASHBOARD SCREEN -->
+            <div class="v-screen">
+                <div class="dash-header">
+                    <span>Created By</span>
+                    <span style="font-family: 'Brush Script MT', cursive; font-size: 0.9rem; text-transform: none; color: var(--accent);">AGLIEN</span>
+                </div>
+
+                <div class="v-row"><span>Statusi i Rrjetit:</span> <span class="v-val" id="val-online" style="color:orange">Duke u lidhur...</span></div>
+                <div class="v-row"><span>Niveli i Baterise:</span> <span class="v-val" id="val-battery">--.- V</span></div>
+                <div class="v-row"><span>Statusi i Motorrit:</span> <span class="v-val" id="val-engine">--</span></div>
+                <div class="v-row"><span>Statusi i Dyerve:</span> <span class="v-val" id="val-locks">--</span></div>
+                <div class="v-row" id="row-key"><span>Çelesi i Servisit:</span> <span class="v-val" id="val-key">--</span></div>
+                <div class="v-row" id="row-hours1"><span>Ore Pune Sot:</span> <span class="v-val" id="val-hours-today">0.0 h</span></div>
+                <div class="v-row" id="row-hours2"><span>Ore Totale:</span> <span class="v-val" id="val-work-hours">0.0 h</span></div>
+            </div>
+
+            <!-- MODEL 3D: prekje pjesët e makinës për komandat direkte -->
+            <div id="car3d-wrap">
+                <canvas id="car3d"></canvas>
+                <div id="car3d-status"></div>
+                <div id="car3d-help">Prek: 🚪 derën • 🔥 kapakun • 🪟 xhamat • ☀️ sunroof • pjesa e prekur zbardhet</div>
+            </div>
+
+            <div class="btn-grid">
+                <button id="btn-engine" class="btn b-start btn-full" onclick="sendCommand('START')"><span>⚡</span> NDIZ MOTORRIN</button>
+                <button id="btn-locks" class="btn b-unlock btn-full" onclick="sendCommand('UNLOCK')"><span>🔓</span> SHKYÇ DYERT</button>
+                
+                <button class="btn b-special" id="btn-sunroof" onclick="sendCommand('SUNROOF')"><span>🪟</span> TAVANI</button>
+                <button class="btn b-special" id="btn-windows" onclick="sendCommand('WINDOWS')"><span>🪟</span> XHAMAT</button>
+                
+                <button class="btn b-blue" id="btn-trip" onclick="sendCommand('TRIP_MODE')"><span>🚀</span> UDHËTIM</button>
+                <button class="btn b-blue" id="btn-gps" onclick="sendCommand('GPS')"><span>📍</span> GPS</button>
+                
+                <button class="btn b-allclose btn-full" id="btn-allclose" onclick="if(confirm('A je i sigurt që do të bësh Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }"><span>🛡️</span> MBYLLJE TOTALE</button>
+                <button id="btn-key" class="btn b-gray btn-full" onclick="toggleKey()"><span>🚫</span> ÇELËSI SERVISIT: JO AKTIV</button>
+                
+                <button class="btn b-cyber btn-full" onclick="toggleDarkMode()"><span>🌓</span> DASHBOARD THEME (DAY/NIGHT)</button>
+            </div>
+        </div>
+
+        <!-- EKRANI CILËSIME & SERVISE -->
+        <div id="screen-serv" class="screen">
+            <h2 style="margin-bottom: 15px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">SISTEMI & SERVISET</h2>
+            
+            <div class="input-group">
+                <h3>👥 SHTO PËRDORUES</h3>
+                <div style="display:flex; flex-direction: column; gap:10px;">
+                    <input type="text" id="new-guest-name" placeholder="Emri (p.sh. Vëllai, Ana)" style="width: 100%; margin:0;">
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <input type="number" id="new-guest-pin" placeholder="Zgjidh PIN (****)" style="margin:0; width:60%;">
+                        <button class="btn b-start" style="padding: 10px; border-radius: 8px; width:40%; min-height: 44px; margin:0; flex-direction:row;" onclick="addGuestPin()">➕ SHTO</button>
+                    </div>
+                </div>
+                <div id="guest-list" style="margin-top:15px; border-top:1px solid var(--dash-border); padding-top:10px;"></div>
+            </div>
+
+            <div class="input-group">
+                <h3>ORËT E PUNËS & HISTORIKU</h3>
+                <div style="display:flex; gap:10px;">
+                    <select id="history-month" style="width:50%;">
+                        <option value="1">Janar</option> <option value="2">Shkurt</option> <option value="3">Mars</option>
+                        <option value="4">Prill</option> <option value="5">Maj</option> <option value="6">Qershor</option>
+                        <option value="7">Korrik</option> <option value="8">Gusht</option> <option value="9">Shtator</option>
+                        <option value="10">Tetor</option> <option value="11">Nëntor</option> <option value="12">Dhjetor</option>
+                    </select>
+                    <input type="number" id="history-year" style="width:50%;" placeholder="Viti (p.sh. 2026)">
+                </div>
+                <button class="btn b-blue" style="padding: 10px; border-radius: 8px; flex-direction: row; gap: 10px;" onclick="loadWorkHistory()">📊 SHFAQ ORËT</button>
+                <div id="work-history-table" style="margin-top:15px; overflow-x:auto;"></div>
+            </div>
+
+            <div class="input-group">
+                <h3>REGJISTRO SERVIS TË RI</h3>
+                <label>Kilometrat aktuale:</label>
+                <input type="number" id="service-km" placeholder="p.sh. 150000">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top: 10px;">
+                    <div class="service-tick"><input type="checkbox" id="srv-oil"> Vaj Motorri</div>
+                    <div class="service-tick"><input type="checkbox" id="srv-oilfilter"> Filtër Vaji</div>
+                    <div class="service-tick"><input type="checkbox" id="srv-air"> Filtër Ajri</div>
+                    <div class="service-tick"><input type="checkbox" id="srv-ac"> Filtër Kond.</div>
+                    <div class="service-tick"><input type="checkbox" id="srv-fuel"> Filtër Nafte</div>
+                </div>
+                <button class="btn b-start" style="padding: 10px; border-radius: 8px; flex-direction: row; gap: 10px; margin-top: 10px;" onclick="saveService()">💾 RUAJ SERVISIN</button>
+                <div id="service-history" style="margin-top:15px; overflow-x:auto;"></div>
+            </div>
+
+            <div class="input-group">
+                <h3>PERSONALIZIMI I APLIKACIONIT</h3>
+                <label>URL e Logos (Opsionale):</label>
+                <input type="text" id="set-logo-url" placeholder="http://...">
+                <label>URL e Sfondit (Lëre bosh për foto lokale bg.jpg):</label>
+                <input type="text" id="set-bg-url" placeholder="http://...">
+                <button class="btn b-blue" style="padding: 10px; border-radius: 8px; flex-direction: row; gap: 10px;" onclick="saveAppConfig()">🎨 RUAJ PAMJEN</button>
+            </div>
+
+            <div class="input-group">
+                <h3>SIGURIA (PIN I ADMINIT)</h3>
+                <label>PIN i ri Admin (Kërkohen 4 shifra):</label>
+                <input type="password" id="new-pin" placeholder="****">
+                <button class="btn b-stop" style="padding: 10px; border-radius: 8px; flex-direction: row; gap: 10px;" onclick="updatePin()">🔑 NDRYSHO PIN</button>
+            </div>
+
+            <div class="input-group">
+                <h3>⚙️ KOHËT E MAKINËS (DIMËR/VERË)</h3>
+                <label>Koha e pritjes së Kuadrit (Kandelet në ms):</label>
+                <input type="number" id="cfg-t-kandele" placeholder="Dimër p.sh. 6000, Verë 3000">
+                <label>Koha e mbylljes së Xhamave (Në ms):</label>
+                <input type="number" id="cfg-t-xhamat" placeholder="P.sh. 4500">
+                <button class="btn b-special" style="padding: 10px; border-radius: 8px; margin-top: 10px;" onclick="ruajKohet()">📡 DËRGO NË MAKINË</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVIGATION BAR -->
+    <div class="nav-bar" id="navbar">
+        <div class="nav-icon active" onclick="switchTab('screen-dash', this)">
+            🚘<span>PULTI</span>
+        </div>
+        <div class="nav-icon" id="nav-serv" onclick="switchTab('screen-serv', this)">
+            📓<span>SERVISET</span>
+        </div>
+        <div class="nav-icon" onclick="window.location.reload()">
+            🔄<span>REFRESH</span>
+        </div>
+        <div class="nav-icon" style="color: var(--danger);" onclick="logout()">
+            🚪<span>DIL</span>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5vAdwGuUd7oFjhxsyhuUSH84TXXSbtQo",
+            authDomain: "ab592no.firebaseapp.com",
+            databaseURL: "https://ab592no-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "ab592no",
+            storageBucket: "ab592no.firebasestorage.app",
+            messagingSenderId: "900777917500",
+            appId: "1:900777917500:web:e9b29ed2d1eb2dc2c8d739"
+        };
+
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const db = firebase.database();
+
+        const topicCmd = "jon_i30_S3kr3t_998877/komanda";
+        const topicStatus = "jon_i30_S3kr3t_998877/statusi";
+        const mqttClient = new Paho.Client("broker.hivemq.com", 8884, "App_" + Math.random().toString(16).slice(2, 8));
+        const botToken = "8896728336:AAFQJvTq9tE1HNDrX-E4aoCr0EQcGh2nZo8";
+        const chatId = "5461448562";
+
+        let carTimer;
+        let isMqttConnected = false;
+        let isEngineRunning = false; 
+        let userRole = "guest"; 
+        let pinEntry = "";
+        
+        function addPin(num) {
+            if(pinEntry.length < 4) { pinEntry += num; document.getElementById('pin-input').value = pinEntry; }
+        }
+        
+        function clearPin() { pinEntry = ""; document.getElementById('pin-input').value = ""; }
+
+        function checkLogin() {
+            if(pinEntry.length < 1) return;
+            
+            db.ref('adminConfig/password').once('value').then((snapAdmin) => {
+                const adminPin = snapAdmin.val();
+                if (String(pinEntry) === String(adminPin)) {
+                    sessionStorage.setItem("isAuth", "true");
+                    sessionStorage.setItem("role", "admin");
+                    showApp();
+                } else {
+                    db.ref('guestUsers/' + pinEntry).once('value').then((snapGuest) => {
+                        if (snapGuest.exists()) {
+                            sessionStorage.setItem("isAuth", "true");
+                            sessionStorage.setItem("role", "guest");
+                            
+                            let gName = snapGuest.val();
+                            if(gName === true) gName = "Përdorues"; 
+                            sessionStorage.setItem("guestName", gName);
+                            
+                            showApp();
+                        } else {
+                            alert("PIN i gabuar ose llogaria nuk ekziston!");
+                            clearPin();
+                        }
+                    });
+                }
+            });
+        }
+
+        function showApp() {
+            document.getElementById('screen-login').classList.remove('active');
+            document.getElementById('screen-dash').classList.add('active');
+            document.getElementById('navbar').style.display = 'flex';
+            
+            userRole = sessionStorage.getItem("role");
+
+            if (userRole === "guest") {
+                document.getElementById('btn-sunroof').style.display = 'none';
+                document.getElementById('btn-windows').style.display = 'none';
+                document.getElementById('btn-gps').style.display = 'none';
+                document.getElementById('btn-allclose').style.display = 'none';
+                
+                // Çelësi i servisit tani mbetet i dukshëm edhe për guest
+                // document.getElementById('btn-key').style.display = 'block';
+                // document.getElementById('row-key').style.display = 'flex';
+                
+                document.getElementById('btn-trip').classList.add('btn-full');
+
+                document.getElementById('row-hours1').style.display = 'none';
+                document.getElementById('row-hours2').style.display = 'none';
+                document.getElementById('nav-serv').style.display = 'none';
+                
+                const gName = sessionStorage.getItem("guestName") || "PËRDORUES";
+                document.getElementById('user-greeting').innerText = `👋 MIRËSEVJEN, ${gName.toUpperCase()}`;
+                document.getElementById('user-greeting').style.color = "orange";
+            } else {
+                loadGuestPins();
+                document.getElementById('user-greeting').innerText = `👋 MIRËSEVJEN, AGLIEN`;
+                document.getElementById('user-greeting').style.color = "var(--accent)";
+            }
+
+            if (localStorage.getItem("dashTheme") === "light") {
+                document.body.classList.add("light-hud");
+            }
+
+            applyAppConfig();
+            initMQTT();
+            if (userRole === "admin") lexoOretNgaFirebase(); 
+            document.getElementById('history-year').value = new Date().getFullYear();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("light-hud");
+            if (document.body.classList.contains("light-hud")) {
+                localStorage.setItem("dashTheme", "light");
+            } else {
+                localStorage.setItem("dashTheme", "dark");
+            }
+        }
+
+        function logout() { sessionStorage.clear(); location.reload(); }
+
+        function switchTab(screenId, el) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-icon').forEach(i => i.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active'); 
+            el.classList.add('active');
+        }
+
+        function addGuestPin() {
+            const name = document.getElementById('new-guest-name').value.trim();
+            const pin = document.getElementById('new-guest-pin').value;
+            
+            if (!name) return alert("Të lutem shkruaj emrin e personit!");
+            if (pin.length < 4) return alert("PIN duhet të ketë të paktën 4 shifra!");
+            if (pin === document.getElementById('new-pin').value || pin === "1619") return alert("Mos përdor PIN-in e Adminit!");
+            
+            db.ref('guestUsers/' + pin).set(name).then(() => {
+                alert("Përdoruesi u shtua me sukses!");
+                document.getElementById('new-guest-name').value = "";
+                document.getElementById('new-guest-pin').value = "";
+                loadGuestPins();
+            });
+        }
+
+        function deleteGuestPin(pin) {
+            if(confirm(`A je i sigurt që do të fshish këtë PIN? Personi nuk e hap dot më makinën.`)) {
+                db.ref('guestUsers/' + pin).remove().then(() => { loadGuestPins(); });
+            }
+        }
+
+        function loadGuestPins() {
+            db.ref('guestUsers').on('value', (snap) => {
+                const guests = snap.val();
+                let html = "";
+                if (guests) {
+                    Object.keys(guests).forEach(pin => {
+                        let gName = guests[pin];
+                        if (gName === true) gName = "Pa Emër"; 
+                        html += `
+                        <div class="guest-item">
+                            <span class="guest-pin">👤 ${gName} <br><span style="font-size:12px; font-weight:normal;">PIN: ${pin}</span></span>
+                            <button class="btn-delete" onclick="deleteGuestPin('${pin}')">X FSHIH</button>
+                        </div>`;
+                    });
+                } else { html = "<span style='color:#aaa;'>Nuk ka asnjë përdorues shtesë.</span>"; }
+                document.getElementById('guest-list').innerHTML = html;
+            });
+        }
+
+        function updatePin() {
+            const newPin = document.getElementById('new-pin').value;
+            if (newPin.length < 4) return alert("Min 4 shifra!");
+            db.ref('adminConfig/password').set(newPin).then(() => {
+                alert("PIN i Adminit u ndryshua me sukses!");
+                document.getElementById('new-pin').value = "";
+            });
+        }
+
+        function applyAppConfig() {
+            db.ref('adminConfig').once('value').then((snap) => {
+                const cfg = snap.val();
+                if (!cfg) return;
+                if (cfg.bgUrl && cfg.bgUrl.trim() !== "") { document.body.style.backgroundImage = `url('${cfg.bgUrl}')`; } 
+                else { document.body.style.backgroundImage = "url('./bg.jpg')"; }
+                if (cfg.logoUrl && cfg.logoUrl.trim() !== "") { document.getElementById('login-logo-img').src = cfg.logoUrl + "?t=" + new Date().getTime(); } 
+                else { document.getElementById('login-logo-img').src = "./logo.png"; }
+                document.getElementById('set-bg-url').value = cfg.bgUrl || "";
+                document.getElementById('set-logo-url').value = cfg.logoUrl || "";
+            });
+        }
+
+        function saveAppConfig() {
+            const bg = document.getElementById('set-bg-url').value; const logo = document.getElementById('set-logo-url').value;
+            db.ref('adminConfig/bgUrl').set(bg); db.ref('adminConfig/logoUrl').set(logo);
+            alert("Ndryshimet u ruajtën! Rifresko faqen."); applyAppConfig();
+        }
+
+        function formatHours(dec) {
+            if (!dec) return "0h 0m";
+            let h = Math.floor(dec); let m = Math.round((dec - h) * 60);
+            if (m === 60) { h += 1; m = 0; }
+            return h + "h " + m + "m";
+        }
+        
+        function lexoOretNgaFirebase() {
+            db.ref("statistika/ore_pune").on('value', (snap) => {
+                const data = snap.val() || { ore_totale: 0, lajmerimi_derguar: false };
+                const el = document.getElementById('val-work-hours');
+                el.innerText = formatHours(data.ore_totale);
+                if(data.ore_totale >= 230) { el.style.color = "var(--danger)"; el.innerText = "🚨 " + el.innerText; } 
+                else { el.style.color = "#fff"; }
+            });
+            const now = new Date();
+            db.ref(`workHours/${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`).on('value', (snap) => {
+                document.getElementById('val-hours-today').innerText = formatHours(snap.val() || 0);
+            });
+        }
+
+        function updateWorkHours(oreTeReja) {
+            db.ref("statistika/ore_pune").transaction(function(dataAktuale) {
+                if (!dataAktuale) dataAktuale = { ore_totale: 0, lajmerimi_derguar: false };
+                dataAktuale.ore_totale += oreTeReja; return dataAktuale;
+            }, function(error, committed, snapshot) {
+                if (committed) {
+                    const data = snapshot.val();
+                    if (data.ore_totale >= 230 && !data.lajmerimi_derguar) dergoLajmerimTelegram(data.ore_totale);
+                }
+            });
+            const now = new Date();
+            db.ref(`workHours/${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`).transaction(function(oretEKaluara) { return (oretEKaluara || 0) + oreTeReja; });
+        }
+
+        function loadWorkHistory() {
+            const muaji = document.getElementById('history-month').value; const viti = document.getElementById('history-year').value;
+            if(!viti) return alert("Vendos vitin fillimisht (p.sh. 2026)");
+            db.ref(`workHours/${viti}/${muaji}`).once('value').then((snap) => {
+                const data = snap.val();
+                let html = '<table><tr><th>Data</th><th style="text-align:right;">Orët</th></tr>';
+                if(!data) { html += '<tr><td colspan="2" style="text-align:center;">Nuk ka të dhëna.</td></tr>'; } 
+                else {
+                    let totaliMuajit = 0;
+                    Object.keys(data).sort((a,b) => b-a).forEach(dita => {
+                        let oreDita = data[dita]; totaliMuajit += oreDita;
+                        html += `<tr><td>${dita}/${muaji}/${viti}</td><td style="text-align:right;">${formatHours(oreDita)}</td></tr>`;
+                    });
+                    html += `<tr><td style="font-weight:bold; color:var(--accent);">TOTALI:</td><td style="text-align:right; font-weight:bold; color:var(--accent);">${formatHours(totaliMuajit)}</td></tr>`;
+                }
+                html += '</table>';
+                document.getElementById('work-history-table').innerHTML = html;
+            });
+        }
+
+        function dergoLajmerimTelegram(oret) {
+            if(!botToken || botToken === "FUT_TOKEN_KËTU") return;
+            const teksti = `🚨 ALARM I30: Motorri ka arritur ${oret.toFixed(1)} orë pune! Është koha për të ndërruar vajin dhe filtrat.`;
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(teksti)}`;
+            fetch(url).then(() => { db.ref("statistika/ore_pune").update({ lajmerimi_derguar: true }); });
+        }
+
+        function saveService() {
+            const km = document.getElementById('service-km').value;
+            if (!km) return alert("Vendos kilometrat!");
+            const service = {
+                km: km, oil: document.getElementById('srv-oil').checked, oilFilter: document.getElementById('srv-oilfilter').checked,
+                air: document.getElementById('srv-air').checked, ac: document.getElementById('srv-ac').checked, fuel: document.getElementById('srv-fuel').checked,
+                date: new Date().toLocaleDateString()
+            };
+            db.ref('serviceHistory/' + Date.now()).set(service).then(() => {
+                alert("Servisi u ruajt me sukses!"); document.getElementById('service-km').value = "";
+                ['srv-oil', 'srv-oilfilter', 'srv-air', 'srv-ac', 'srv-fuel'].forEach(id => document.getElementById(id).checked = false);
+                loadServices();
+            });
+        }
+
+        function loadServices() {
+            db.ref('serviceHistory').once('value').then((snap) => {
+                const data = snap.val() || {};
+                let html = `<table><tr><th>Data</th><th>KM</th><th>Vaj</th><th>F.Vaj</th><th>F.Ajri</th><th>F.AC</th><th>F.Naft</th></tr>`;
+                Object.keys(data).reverse().forEach(key => {
+                    const s = data[key];
+                    html += `<tr><td>${s.date}</td><td>${s.km}</td>
+                        <td>${s.oil ? '✔' : '-'}</td><td>${s.oilFilter ? '✔' : '-'}</td>
+                        <td>${s.air ? '✔' : '-'}</td><td>${s.ac ? '✔' : '-'}</td>
+                        <td>${s.fuel ? '✔' : '-'}</td></tr>`;
+                });
+                html += `</table>`; document.getElementById('service-history').innerHTML = html;
+            });
+        }
+
+        function ruajKohet() {
+            const tKandele = document.getElementById('cfg-t-kandele').value; const tXhamat = document.getElementById('cfg-t-xhamat').value;
+            let vonesa = 0;
+            if (tKandele) { setTimeout(() => sendCommand("CFG:T_KANDELE:" + tKandele), vonesa); vonesa += 1000; }
+            if (tXhamat) { setTimeout(() => sendCommand("CFG:T_XHAMAT:" + tXhamat), vonesa); }
+            if(vonesa > 0) {
+                alert("Kohët e reja po dërgohen! Makina do t'i ruajë automatikisht në memorie.");
+                document.getElementById('cfg-t-kandele').value = ""; document.getElementById('cfg-t-xhamat').value = "";
+            } else { alert("Nuk ke plotësuar asnjë vlerë për të dërguar."); }
+        }
+
+        function toggleKey() {
+            const btn = document.getElementById('btn-key'); btn.innerHTML = "<span>⏳</span> PRITJE...";
+            if (document.getElementById('val-key').innerText === "AKTIV") sendCommand('KEY_OFF'); else sendCommand('KEY_ON');
+        }
+
+        function initMQTT() {
+            if (isMqttConnected) return; 
+            mqttClient.connect({
+                useSSL: true, reconnect: true, timeout: 3, keepAliveInterval: 30,
+                onSuccess: () => {
+                    isMqttConnected = true; mqttClient.subscribe(topicStatus);
+                    document.getElementById('val-online').innerText = "ONLINE"; document.getElementById('val-online').style.color = "var(--success)";
+                    pingCar(false);
+                },
+                onFailure: (err) => { isMqttConnected = false; setTimeout(initMQTT, 3000); }
+            });
+        }
+
+        mqttClient.onConnectionLost = () => {
+            isMqttConnected = false; document.getElementById('val-online').innerText = "OFFLINE (Po rilidhet...)"; document.getElementById('val-online').style.color = "orange";
+        };
+
+        mqttClient.onMessageArrived = (msg) => {
+            clearTimeout(carTimer);
+            document.getElementById('val-online').innerText = "i30 ONLINE"; document.getElementById('val-online').style.color = "var(--success)";
+            
+            try {
+                const data = JSON.parse(msg.payloadString);
+                
+                if(data.v !== undefined) {
+                    const elBat = document.getElementById('val-battery');
+                    elBat.innerText = data.v.toFixed(2) + " Volt"; elBat.style.color = (data.v > 12.0) ? "#fff" : "var(--danger)";
+                }
+
+                if(data.e !== undefined) {
+                    isEngineRunning = (data.e === 1); 
+                    const elEng = document.getElementById('val-engine'); const btnEng = document.getElementById('btn-engine');
+                    if(data.e === 1) {
+                        elEng.innerText = "Ndezur"; elEng.style.color = "var(--success)";
+                        btnEng.className = "btn b-stop btn-full"; btnEng.innerHTML = "<span>🛑</span> FIK MOTORRIN"; btnEng.onclick = () => sendCommand("STOP");
+                    } else {
+                        elEng.innerText = "Fikur"; elEng.style.color = "#fff";
+                        btnEng.className = "btn b-start btn-full"; btnEng.innerHTML = "<span>⚡</span> NDIZ MOTORRIN"; btnEng.onclick = () => sendCommand("START");
+                    }
+                }
+
+                if(data.wh !== undefined && data.wh > 0 && userRole === "admin") {
+                    db.ref("statistika/lock_oreve").transaction(function(lockData) {
+                        const tani = Date.now(); if (!lockData || (tani - lockData > 10000)) return tani; return undefined; 
+                    }, function(error, committed, snapshot) {
+                        if (committed) {
+                            updateWorkHours(data.wh);
+                            try { const msgConf = new Paho.Message("SAVED_HOURS"); msgConf.destinationName = topicCmd; msgConf.qos = 1; mqttClient.send(msgConf); } catch(e) {}
+                        }
+                    });
+                }
+
+                if(data.l !== undefined) {
+                    const elLocks = document.getElementById('val-locks'); const btnLocks = document.getElementById('btn-locks');
+                    if(data.l === 1) {
+                        elLocks.innerText = "Mbyllur"; elLocks.style.color = "#fff";
+                        btnLocks.className = "btn b-unlock btn-full"; btnLocks.innerHTML = "<span>🔓</span> SHKYÇ DYERT"; btnLocks.onclick = () => sendCommand("UNLOCK");
+                    } else if(data.l === 0) {
+                        elLocks.innerText = "HAPUR (!)"; elLocks.style.color = "var(--danger)";
+                        btnLocks.className = "btn b-lock btn-full"; btnLocks.innerHTML = "<span>🔒</span> MBYLL DYERT"; btnLocks.onclick = () => sendCommand("LOCK");
+                    }
+                }
+
+                if(data.k !== undefined) {
+                    const elKey = document.getElementById('val-key'); const btnKey = document.getElementById('btn-key');
+                    if(data.k === 1) {
+                        elKey.innerText = "AKTIV"; elKey.style.color = "#8e44ad";
+                        btnKey.className = "btn b-special btn-full"; btnKey.innerHTML = "<span>🔧</span> ÇELËSI SERVISIT: AKTIV"; if(userRole === "admin") db.ref("statistika/celes_servisi").set(true); 
+                    } else if(data.k === 0) {
+                        elKey.innerText = "JO AKTIV"; elKey.style.color = "#aaa";
+                        btnKey.className = "btn b-gray btn-full"; btnKey.innerHTML = "<span>🚫</span> ÇELËSI SERVISIT: JO AKTIV"; if(userRole === "admin") db.ref("statistika/celes_servisi").set(false);
+                    }
+                }
+            } catch (e) { }
+        };
+
+        window.sendCommand = (cmd) => {
+            if (cmd === 'LOCK' || cmd === 'UNLOCK' || cmd === 'ALL_CLOSE' || cmd === 'TRIP_MODE') {
+                document.getElementById('val-locks').innerText = "PRITJE..."; document.getElementById('val-locks').style.color = "orange";
+            }
+            if (cmd === 'START' || cmd === 'STOP' || cmd === 'TRIP_MODE') {
+                document.getElementById('val-engine').innerText = "PRITJE..."; document.getElementById('val-engine').style.color = "orange";
+            }
+            try { const message = new Paho.Message(cmd); message.destinationName = topicCmd; message.qos = 1; mqttClient.send(message);
+            } catch (error) { alert("Lidhja po rikthehet. Prisni..."); }
+        };
+
+        function pingCar(manual) {
+            try { const msg = new Paho.Message("REFRESH"); msg.destinationName = topicCmd; msg.qos = 1; mqttClient.send(msg); } catch(e) {}
+            carTimer = setTimeout(() => { document.getElementById('val-online').innerText = "i30 OFFLINE"; document.getElementById('val-online').style.color = "var(--danger)"; }, 12000); 
+        }
+
+        window.onload = () => {
+            loadServices();
+            if (sessionStorage.getItem("isAuth")) showApp();
+            else applyAppConfig(); 
+        };
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'visible' && sessionStorage.getItem("isAuth")) {
+                if(userRole === "admin") lexoOretNgaFirebase(); 
+                if (!isMqttConnected) {
+                    document.getElementById('val-online').innerText = "Po zgjohet..."; document.getElementById('val-online').style.color = "orange";
+                    initMQTT();
+                } else { pingCar(false); }
+            }
+        });
+    </script>
+
+    <!-- THREE.JS 3D INTERACTIVE MODEL -->
+    <script type="module">
+        import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+        import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+        const carCanvas = document.getElementById('car3d');
+        const carWrap = document.getElementById('car3d-wrap');
+        const car3dStatus = document.getElementById('car3d-status');
+
+        let carScene, carCamera, carRenderer, carControls;
+        let carModel = null;
+        let carClickable = [];
+        let carRaycaster = new THREE.Raycaster();
+        let carPointer = new THREE.Vector2();
+        let carPointerDown = { x: 0, y: 0, moved: false };
+        let carModelReady = false;
+        let debugHighlight = null;
+        let debugHighlightTimer = null;
+
+        const MODEL_URL = './2018_hyundai_i30_n.glb';
+
+        // Emrat reale të nyjeve që gjenden në GLB-në e ngarkuar.
+        // Pjesët e konfirmuara nga analiza e 2018_hyundai_i30_n.glb.
+        // KUJDES: modeli ka dy mesh-e me materiale xhami.
+        // Mesh 8 = xhamat anësorë / xhamat e trupit.
+        // Mesh 25 = xhama të përzier (parabriz + xham pas + SUNROOF).
+        const CAR_PARTS = {
+            hood: [
+                'detach_hood_45_pivot'
+            ],
+            door: [
+                'detach_door_L_70_pivot',
+                'detach_door_R_70'
+            ],
+            windows: [
+                'glasses_pivot_Glass_Lights',
+                'glasses_pivotglassesglasses_pivot'
+            ]
+        };
+
+        // Dy panelet reale të xhamit të tavanit të gjetura brenda mesh-it
+        // H:car_hyundai_i30nglasses_pivotglassesglasses_pivot_Glass_H:phong2SG1_0
+        // Nuk kanë node më vete, prandaj i dallojmë nga koordinatat e tyre lokale.
+        const SUNROOF_BOXES = [
+            new THREE.Box3(
+                new THREE.Vector3(-0.48865, 1.40414, -0.58639),
+                new THREE.Vector3( 0.48865, 1.47194,  0.13845)
+            ),
+            new THREE.Box3(
+                new THREE.Vector3(-0.47682, 1.36828, -1.46168),
+                new THREE.Vector3( 0.47682, 1.46850, -0.58473)
+            )
+        ];
+
+        const SUNROOF_MESH_NAME = 'glasses_pivotglassesglasses_pivot_Glass';
+        const WINDOWS_MESH_NAME = 'glasses_pivot_Glass_Lightsglasses_pivotglasses';
+
+        function partMatches(name, keys) {
+            const n = (name || '').toLowerCase();
+            return keys.some(k => n.includes(k.toLowerCase()));
+        }
+
+        function setCarStatus(text) {
+            car3dStatus.textContent = text;
+            car3dStatus.style.opacity = '1';
+            clearTimeout(setCarStatus.timer);
+            setCarStatus.timer = setTimeout(() => car3dStatus.style.opacity = '0', 1500);
+        }
+
+        function pulseCarViewer() {
+            carWrap.classList.remove('car3d-pulse');
+            void carWrap.offsetWidth;
+            carWrap.classList.add('car3d-pulse');
+        }
+
+        // DEBUG: ndriçon trekëndëshin E SAKTË që preku gishti.
+        function highlightHitTriangle(hit, label) {
+            if (debugHighlight) {
+                carScene.remove(debugHighlight);
+                debugHighlight.geometry.dispose();
+                debugHighlight.material.dispose();
+                debugHighlight = null;
+            }
+            clearTimeout(debugHighlightTimer);
+            const mesh = hit.object;
+            const geom = mesh.geometry;
+            const pos = geom.getAttribute('position');
+            if (!pos || hit.faceIndex == null) return;
+            const tri = hit.faceIndex;
+            const index = geom.index;
+            const ids = index ? [index.getX(tri*3), index.getX(tri*3+1), index.getX(tri*3+2)] : [tri*3,tri*3+1,tri*3+2];
+            const arr = new Float32Array(9);
+            for (let i=0;i<3;i++) {
+                arr[i*3]=pos.getX(ids[i]);
+                arr[i*3+1]=pos.getY(ids[i]);
+                arr[i*3+2]=pos.getZ(ids[i]);
+            }
+            const g=new THREE.BufferGeometry();
+            g.setAttribute('position',new THREE.BufferAttribute(arr,3));
+            const m=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.95,side:THREE.DoubleSide,depthTest:false,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4});
+            debugHighlight=new THREE.Mesh(g,m);
+            debugHighlight.matrixAutoUpdate=false;
+            debugHighlight.matrix.copy(mesh.matrixWorld);
+            debugHighlight.renderOrder=999;
+            carScene.add(debugHighlight);
+            setCarStatus(label+' • FACE '+hit.faceIndex);
+            debugHighlightTimer=setTimeout(()=>{
+                if (debugHighlight) {
+                    carScene.remove(debugHighlight);
+                    debugHighlight.geometry.dispose();
+                    debugHighlight.material.dispose();
+                    debugHighlight=null;
+                }
+            },3500);
+        }
+
+        function getObjectPath(obj) {
+            const names=[];
+            let p=obj;
+            while(p){ if(p.name) names.push(p.name); p=p.parent; }
+            return names.join(' > ');
+        }
+
+        function setup3D() {
+            if (!carCanvas) return;
+
+            carScene = new THREE.Scene();
+            carScene.background = new THREE.Color(0x070a0e);
+
+            carCamera = new THREE.PerspectiveCamera(35, 1, 0.01, 100);
+            carCamera.position.set(4.5, 2.8, 5.2);
+
+            carRenderer = new THREE.WebGLRenderer({
+                canvas: carCanvas,
+                antialias: true,
+                alpha: true,
+                powerPreference: 'high-performance'
+            });
+            carRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            carRenderer.outputColorSpace = THREE.SRGBColorSpace;
+            carRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+            carRenderer.toneMappingExposure = 1.05;
+
+            carScene.add(new THREE.HemisphereLight(0xbfdcff, 0x111318, 2.0));
+
+            const keyLight = new THREE.DirectionalLight(0xffffff, 3.0);
+            keyLight.position.set(4, 6, 5);
+            carScene.add(keyLight);
+
+            const rimLight = new THREE.DirectionalLight(0x66ccff, 1.5);
+            rimLight.position.set(-4, 3, -5);
+            carScene.add(rimLight);
+
+            carControls = new OrbitControls(carCamera, carCanvas);
+            carControls.enableDamping = true;
+            carControls.dampingFactor = 0.08;
+            carControls.enablePan = false;
+            carControls.minDistance = 2.5;
+            carControls.maxDistance = 9;
+            carControls.maxPolarAngle = Math.PI * 0.48;
+            carControls.target.set(0, 0.65, 0);
+
+            const loader = new GLTFLoader();
+            loader.load(
+                MODEL_URL,
+                (gltf) => {
+                    carModel = gltf.scene;
+
+                    // Modeli e ngarkuar është në shkallë të vogël; e rrisim vetëm për shfaqje.
+                    carModel.scale.setScalar(1.0);
+
+                    carModel.traverse((obj) => {
+                        if (!obj.isMesh) return;
+                        obj.castShadow = false;
+                        obj.receiveShadow = false;
+
+                        // Ruajmë emrin e node-it/mesh-it për raycasting.
+                        let p = obj;
+                        let tags = [];
+                        while (p) {
+                            if (p.name) tags.push(p.name);
+                            p = p.parent;
+                        }
+
+                        if (partMatches(tags.join('|'), CAR_PARTS.door)) {
+                            obj.userData.carAction = 'DOOR';
+                            carClickable.push(obj);
+                        } else if (partMatches(tags.join('|'), CAR_PARTS.hood)) {
+                            obj.userData.carAction = 'ENGINE';
+                            carClickable.push(obj);
+                        } else if (partMatches(tags.join('|'), CAR_PARTS.windows)) {
+                            // Vetëm mesh-i i xhamave të trupit. Mos e përziejmë me mesh 25.
+                            obj.userData.carAction = 'WINDOWS';
+                            carClickable.push(obj);
+                        } else if (partMatches(tags.join('|'), [SUNROOF_MESH_NAME])) {
+                            // Mesh-i 25 përmban disa xhama. E lëmë të klikueshëm, por
+                            // vendimin WINDOWS/SUNROOF e marrim nga pika reale e goditjes.
+                            obj.userData.carAction = 'GLASS_MIXED';
+                            carClickable.push(obj);
+                        }
+                    });
+
+                    // Nuk krijojmë më një box artificial mbi tavan.
+                    // Klikimi bëhet mbi gjeometrinë reale të xhamit të sunroof-it.
+                    carScene.add(carModel);
+
+                    // Fokuso kamerën sipas bounding box-it të modelit.
+                    const box = new THREE.Box3().setFromObject(carModel);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    const maxSize = Math.max(size.x, size.y, size.z);
+                    carControls.target.copy(center);
+                    carCamera.position.copy(center).add(new THREE.Vector3(maxSize * 1.15, maxSize * 0.65, maxSize * 1.35));
+
+                    carControls.minDistance = maxSize * 0.65;
+                    carControls.maxDistance = maxSize * 4.5;
+
+                    carModelReady = true;
+                    setCarStatus('3D I GATSHËM • DEBUG TOUCH ON');
+                    resize3D();
+                },
+                undefined,
+                (error) => {
+                    console.error('GLB load error:', error);
+                    setCarStatus('Nuk u ngarkua modeli 3D');
+                }
+            );
+
+            carCanvas.addEventListener('pointerdown', (e) => {
+                carPointerDown.x = e.clientX;
+                carPointerDown.y = e.clientY;
+                carPointerDown.moved = false;
+            });
+
+            carCanvas.addEventListener('pointermove', (e) => {
+                const dx = e.clientX - carPointerDown.x;
+                const dy = e.clientY - carPointerDown.y;
+                if (Math.hypot(dx, dy) > 8) carPointerDown.moved = true;
+            });
+
+            carCanvas.addEventListener('pointerup', (e) => {
+                if (!carModelReady || carPointerDown.moved) return;
+
+                const rect = carCanvas.getBoundingClientRect();
+                carPointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+                carPointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+                carRaycaster.setFromCamera(carPointer, carCamera);
+                const hits = carRaycaster.intersectObjects(carClickable, true);
+                if (!hits.length) return;
+
+                let hit = hits[0];
+                let action = hit.object.userData.carAction;
+                if (!action) return;
+
+                const localPoint = carModel.worldToLocal(hit.point.clone());
+                const path = getObjectPath(hit.object);
+
+                if (action === 'GLASS_MIXED') {
+                    const isSunroof = SUNROOF_BOXES.some(box => box.containsPoint(localPoint));
+                    highlightHitTriangle(hit, isSunroof ? '☀️ SUNROOF' : '🪟 GLASS OTHER');
+                    console.log('3D HIT', {
+                        resolved: isSunroof ? 'SUNROOF' : 'GLASS_OTHER',
+                        faceIndex: hit.faceIndex,
+                        localPoint,
+                        object: hit.object.name,
+                        path
+                    });
+                    if (isSunroof) action = 'SUNROOF';
+                    else return;
+                } else if (action === 'WINDOWS') {
+                    highlightHitTriangle(hit, '🪟 WINDOWS');
+                } else if (action === 'DOOR') {
+                    highlightHitTriangle(hit, '🚪 DOOR');
+                } else if (action === 'ENGINE') {
+                    highlightHitTriangle(hit, '🔥 HOOD');
+                }
+
+                execute3DCarAction(action);
+            });
+
+            window.addEventListener('resize', resize3D);
+            requestAnimationFrame(animate3D);
+        }
+
+        function execute3DCarAction(action) {
+            pulseCarViewer();
+
+            if (action === 'DOOR') {
+                // E njëjta logjikë si butoni i dyerve: statusi aktual përcakton LOCK/UNLOCK.
+                const lockText = (document.getElementById('val-locks')?.innerText || '').toUpperCase();
+                if (lockText.includes('MBYLLUR')) {
+                    setCarStatus('🚪 SHKYÇ DYERT');
+                    sendCommand('UNLOCK');
+                } else {
+                    setCarStatus('🚪 MBYLL DYERT');
+                    sendCommand('LOCK');
+                }
+                return;
+            }
+
+            if (action === 'ENGINE') {
+                setCarStatus(isEngineRunning ? '🛑 FIK MOTORRIN' : '⚡ NDIZ MOTORRIN');
+                sendCommand(isEngineRunning ? 'STOP' : 'START');
+                return;
+            }
+
+            if (action === 'WINDOWS') {
+                if (userRole === 'guest') {
+                    setCarStatus('🔒 XHAMAT: vetëm ADMIN');
+                    return;
+                }
+                setCarStatus('🪟 MBYLL XHAMAT');
+                sendCommand('WINDOWS');
+                return;
+            }
+
+            if (action === 'SUNROOF') {
+                if (userRole === 'guest') {
+                    setCarStatus('🔒 SUNROOF: vetëm ADMIN');
+                    return;
+                }
+                setCarStatus('☀️ MBYLL SUNROOF');
+                sendCommand('SUNROOF');
+            }
+        }
+
+        function resize3D() {
+            if (!carRenderer || !carCamera || !carCanvas) return;
+            const w = Math.max(1, carCanvas.clientWidth);
+            const h = Math.max(1, carCanvas.clientHeight);
+            carRenderer.setSize(w, h, false);
+            carCamera.aspect = w / h;
+            carCamera.updateProjectionMatrix();
+        }
+
+        function animate3D() {
+            requestAnimationFrame(animate3D);
+            if (!carRenderer || !carScene || !carCamera) return;
+            carControls?.update();
+            carRenderer.render(carScene, carCamera);
+        }
+
+        // Ngarkoje modelin vetëm pasi faqja të jetë gati.
+        window.addEventListener('load', () => setTimeout(setup3D, 150));
+    </script>
+
+</body>
+</html>

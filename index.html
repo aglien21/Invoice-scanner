@@ -803,9 +803,9 @@
                         }
 
                         if (isOpenOrActive) {
-                            if (m.emissive) m.emissive.setHex(0xff5555); // Ndryshuar nga 0xff0000 (kuqe pak me e lehte)
+                            if (m.emissive) m.emissive.setHex(0xff5555); 
                             m.emissiveIntensity = 0.8;
-                            if (m.color) m.color.setHex(0xff7777); // Ndryshuar nga 0xff3b30 (kuqe pak me e lehte)
+                            if (m.color) m.color.setHex(0xff7777); 
                         } else {
                             if (m.emissive) m.emissive.copy(m._trueOrigEmissive);
                             if (m._trueOrigEI !== undefined) m.emissiveIntensity = m._trueOrigEI;
@@ -939,16 +939,31 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // Modifikimi: Ngjyra e makinës bardhë perla
+                // Modifikimi: Ngjyra e makinës bardhë perla me filtrin e xhamave
                 carModel.traverse((child) => {
-                    if (child.isMesh && child.name.toLowerCase().includes('carpaint')) {
+                    if (child.isMesh) {
                         const mats = Array.isArray(child.material) ? child.material : [child.material];
                         mats.forEach(m => {
-                            if (m.color) m.color.setHex(0xfdfdfd); // Bardhë perla
-                            if (m.map) m.map = null; // Hiq teksturen blu nese ka
-                            if (m.metalness !== undefined) m.metalness = 0.6;
-                            if (m.roughness !== undefined) m.roughness = 0.15;
-                            m.needsUpdate = true;
+                            const mName = (m.name || '').toLowerCase();
+                            const cName = (child.name || '').toLowerCase();
+
+                            const isGlassOrPlastic = mName.includes('glass') || mName.includes('window') || mName.includes('black') || mName.includes('plastic') || mName.includes('grill') || mName.includes('rubber') || mName.includes('xham') || cName.includes('glass') || cName.includes('window');
+
+                            // 1. Nese eshte xham, lere te zi ose errësoje përsëri
+                            if (isGlassOrPlastic) {
+                                if (mName.includes('glass') || mName.includes('window') || cName.includes('glass') || cName.includes('window')) {
+                                    if (m.color) m.color.setHex(0x0a0a0a); // Xham i errët
+                                }
+                                m.needsUpdate = true;
+                            } 
+                            // 2. Nese eshte boja e makines dhe NUK eshte pjese plastike ose xham
+                            else if (cName.includes('carpaint') || mName.includes('carpaint') || mName.includes('paint')) {
+                                if (m.color) m.color.setHex(0xfdfdfd); // Bardhë perla
+                                if (m.map) m.map = null; // Hiq teksturen blu nese ka
+                                if (m.metalness !== undefined) m.metalness = 0.6;
+                                if (m.roughness !== undefined) m.roughness = 0.15;
+                                m.needsUpdate = true;
+                            }
                         });
                     }
                 });

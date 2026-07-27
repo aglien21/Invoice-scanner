@@ -761,7 +761,7 @@
     (function () {
         const MODEL_URL = "./2018_hyundai_i30_n.glb";
 
-        let scene, camera, renderer, controls, carModel, raycaster, pointer;
+        let scene, camera, renderer, controls, carModel, sunroofMesh, raycaster, pointer;
         let initialized = false;
         const canvas = document.getElementById('car-3d-canvas');
         const viewer = document.getElementById('car-3d-viewer');
@@ -939,22 +939,26 @@
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
 
-                // Modifikimi i materialeve për ngjyrën e bardhë dhe xhamat e zinj
+                // Ngjyrosim vetëm trupin e makinës në të bardhë dhe xhamat në të zi, duke lënë rrotat paprekur
                 carModel.traverse((node) => {
                     if (node.isMesh) {
                         const n = (node.name || '').toLowerCase();
                         
-                        // Ngjyra e makinës -> E bardhë
-                        if (n.includes('body') || n.includes('paint') || n.includes('car') || n.includes('chassis') || n.includes('bodi')) {
-                            node.material = new THREE.MeshStandardMaterial({
-                                color: 0xffffff,
-                                roughness: 0.12,
-                                metalness: 0.85
-                            });
+                        const isWheel = n.includes('wheel') || n.includes('rim') || n.includes('tire') || n.includes('brake') || n.includes('hub');
+                        const isGlass = n.includes('glass') || n.includes('window') || n.includes('windshield');
+                        const isLight = n.includes('light') || n.includes('lamp') || n.includes('led') || n.includes('bulb');
+
+                        if (!isWheel && !isGlass && !isLight) {
+                            if (n.includes('body') || n.includes('paint') || n.includes('chassis') || n.includes('bodi') || n.includes('bumper') || n.includes('hood') || n.includes('trunk') || n.includes('door') || n.includes('fender') || n.includes('roof') || n.includes('mesh')) {
+                                node.material = new THREE.MeshStandardMaterial({
+                                    color: 0xffffff,
+                                    roughness: 0.12,
+                                    metalness: 0.85
+                                });
+                            }
                         }
                         
-                        // Xhamat -> Të zinj
-                        if (n.includes('glass') || n.includes('window') || n.includes('windshield')) {
+                        if (isGlass) {
                             node.material = new THREE.MeshPhysicalMaterial({
                                 color: 0x050505,
                                 metalness: 0.1,
@@ -968,7 +972,13 @@
                     }
                 });
 
-                // Llogaritja e saktë e përmasave të modelit pa ndërhyrje targash
+                // Shtimi i katrorit fake sunroof në tavan
+                const sunroofGeo = new THREE.BoxGeometry(0.5, 0.01, 0.6);
+                const sunroofMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2 });
+                sunroofMesh = new THREE.Mesh(sunroofGeo, sunroofMat);
+                sunroofMesh.position.set(0, 1.25, 0.1);
+                carModel.add(sunroofMesh);
+
                 const box = new THREE.Box3().setFromObject(carModel);
                 const size = box.getSize(new THREE.Vector3());
                 const center = box.getCenter(new THREE.Vector3());
@@ -1019,6 +1029,11 @@
 
             const hit = hits[0];
             let obj = hit.object;
+
+            if (obj === sunroofMesh) {
+                triggerPart('sunroof', obj);
+                return;
+            }
             
             let checkObj = obj;
             let matchedName = "";

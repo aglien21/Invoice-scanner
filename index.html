@@ -59,11 +59,8 @@
             width: 100%; 
             height: 100%; 
             box-sizing: border-box; 
+            position: relative;
             overflow: hidden;
-            display: flex; 
-            flex-direction: column; 
-            justify-content: space-between;
-            padding: env(safe-area-inset-top, 10px) 12px calc(env(safe-area-inset-bottom, 10px) + 10px) 12px;
         }
         
         .screen { 
@@ -71,38 +68,31 @@
             text-align: center; 
             width: 100%; 
             max-width: 500px; 
-            margin: 0 auto; 
             box-sizing: border-box; 
         }
         .screen.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ===== LOGIN SCREEN (I detyruar Fiks ne Fund) ===== */
+        /* ===== LOGIN SCREEN (Fiks ne Fund te Ekranit) ===== */
         #screen-login.active { 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: flex-end; 
-            height: 100%;
-            width: 100%;
-            padding-bottom: 0px;
-            margin: 0 auto;
-        }
-        
-        .login-content-box {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
             width: 100%;
             max-width: 280px;
-            margin-bottom: 5px;
+            padding-bottom: calc(env(safe-area-inset-bottom, 5px));
         }
 
         .logo-login { 
-            width: 65px; 
-            height: 65px; 
+            width: 60px; 
+            height: 60px; 
             border-radius: 18%; 
-            margin-bottom: 6px; 
+            margin-bottom: 4px; 
             border: 2px solid var(--accent); 
             object-fit: cover; 
             box-shadow: 0 4px 15px var(--dash-glow); 
@@ -113,12 +103,12 @@
             backdrop-filter: blur(10px); 
             border: 1px solid var(--accent); 
             color: white; 
-            font-size: 20px; 
-            padding: 8px; 
+            font-size: 19px; 
+            padding: 6px; 
             border-radius: 8px; 
-            width: 160px; 
+            width: 150px; 
             text-align: center; 
-            margin-bottom: 8px; 
+            margin-bottom: 6px; 
             letter-spacing: 8px; 
             outline: none; 
             -webkit-text-security: disc;
@@ -127,7 +117,7 @@
         .numpad { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
-            gap: 6px; 
+            gap: 5px; 
             width: 100%; 
         }
         
@@ -136,8 +126,8 @@
             backdrop-filter: blur(8px); 
             border: 1px solid rgba(255,255,255,0.2); 
             color: white; 
-            padding: 10px 0; 
-            font-size: 18px; 
+            padding: 8px 0; 
+            font-size: 17px; 
             border-radius: 8px; 
             cursor: pointer; 
             transition: 0.2s; 
@@ -146,7 +136,18 @@
         .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
         /* ===== DASHBOARD ===== */
-        #screen-dash { max-width: 500px; width: 100%; overflow-y: auto; flex-grow: 1; padding-bottom: 60px; }
+        #screen-dash { 
+            max-width: 500px; 
+            width: 100%; 
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow-y: auto; 
+            padding: calc(env(safe-area-inset-top, 10px) + 5px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px;
+            box-sizing: border-box;
+        }
 
         .i30-topbar {
             display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -245,6 +246,16 @@
         }
 
         /* ===== SERVISET & SETTINGS ===== */
+        #screen-serv {
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow-y: auto;
+            padding: calc(env(safe-area-inset-top, 10px) + 5px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px;
+            box-sizing: border-box;
+        }
         .input-group { text-align: left; margin-bottom: 12px; background: rgba(17,22,32,0.9); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,210,255,0.2); }
         .input-group h3 { margin-top: 0; color: var(--accent); font-size: 13px; border-bottom: 1px solid rgba(0,210,255,0.2); padding-bottom: 6px; }
         .input-group label { display: block; font-size: 11px; color: #aaa; margin-bottom: 4px; margin-top: 8px; }
@@ -285,24 +296,22 @@
 <body>
     <div class="overlay">
         
-        <!-- EKRANI LOGIN (I fiksuar fiks ne fund, mbi shiritin e shfletuesit) -->
+        <!-- EKRANI LOGIN (Pozicionim fiks ne fund absolut) -->
         <div id="screen-login" class="screen active">
-            <div class="login-content-box">
-                <h2 style="margin: 0 0 2px 0; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-size: 1.1rem;">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
-                <div style="margin-bottom: 6px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.8rem; color: #aaa; letter-spacing: 1px;">
-                    Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
-                </div>
-                <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login">
-                <input type="password" id="pin-input" readonly placeholder="****">
-                
-                <div class="numpad">
-                    <button class="num-btn" onclick="addPin('1')">1</button><button class="num-btn" onclick="addPin('2')">2</button><button class="num-btn" onclick="addPin('3')">3</button>
-                    <button class="num-btn" onclick="addPin('4')">4</button><button class="num-btn" onclick="addPin('5')">5</button><button class="num-btn" onclick="addPin('6')">6</button>
-                    <button class="num-btn" onclick="addPin('7')">7</button><button class="num-btn" onclick="addPin('8')">8</button><button class="num-btn" onclick="addPin('9')">9</button>
-                    <button class="num-btn" style="color: var(--danger); border-color: rgba(255,59,48,0.4);" onclick="clearPin()">C</button>
-                    <button class="num-btn" onclick="addPin('0')">0</button>
-                    <button class="num-btn" style="color: var(--success); border-color: rgba(52,199,89,0.4);" onclick="checkLogin()">OK</button>
-                </div>
+            <h2 style="margin: 0 0 2px 0; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-size: 1.1rem;">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
+            <div style="margin-bottom: 4px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.8rem; color: #aaa; letter-spacing: 1px;">
+                Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
+            </div>
+            <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login">
+            <input type="password" id="pin-input" readonly placeholder="****">
+            
+            <div class="numpad">
+                <button class="num-btn" onclick="addPin('1')">1</button><button class="num-btn" onclick="addPin('2')">2</button><button class="num-btn" onclick="addPin('3')">3</button>
+                <button class="num-btn" onclick="addPin('4')">4</button><button class="num-btn" onclick="addPin('5')">5</button><button class="num-btn" onclick="addPin('6')">6</button>
+                <button class="num-btn" onclick="addPin('7')">7</button><button class="num-btn" onclick="addPin('8')">8</button><button class="num-btn" onclick="addPin('9')">9</button>
+                <button class="num-btn" style="color: var(--danger); border-color: rgba(255,59,48,0.4);" onclick="clearPin()">C</button>
+                <button class="num-btn" onclick="addPin('0')">0</button>
+                <button class="num-btn" style="color: var(--success); border-color: rgba(52,199,89,0.4);" onclick="checkLogin()">OK</button>
             </div>
         </div>
 

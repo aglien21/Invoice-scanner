@@ -74,8 +74,9 @@
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--panel-border); padding-bottom: 4px; }
         .logo { font-size: 18px; font-weight: 700; font-style: italic; letter-spacing: 1px; display: flex; align-items: center; gap: 5px;}
         .logo span { font-weight: 500; color: var(--text-main); font-style: normal; font-size: 14px;}
-        .top-stats { display: flex; gap: 8px; font-size: 10px; color: var(--text-muted); }
-        .top-stats span { font-weight: 700; }
+        
+        /* Përshëndetja e përdoruesit në krye */
+        .user-greeting { font-size: 11px; font-weight: 700; color: var(--accent-cyan); text-align: right; }
 
         /* RRESHTI I SIPËRM: STATUSI & BUTONAT NË KRAH */
         .top-grid {
@@ -97,7 +98,7 @@
         .val-orange { color: var(--accent-orange) !important; }
         .val-purple { color: var(--accent-purple) !important; }
 
-        /* BUTTONS GRID */
+        /* BUTTONS GRID (Pa butonin e servisit) */
         .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; align-content: start; }
         .cmd-btn {
             background: rgba(17, 22, 32, 0.9); border: 1px solid var(--panel-border); border-radius: 4px;
@@ -118,7 +119,6 @@
         
         .btn-wide { grid-column: span 2; padding: 7px 3px; }
         .btn-allclose { color: var(--text-muted); }
-        .btn-servis { color: var(--accent-purple); }
 
         /* 3D VIEWER */
         #car-3d-wrapper {
@@ -145,7 +145,7 @@
         #car-3d-feedback.show { opacity: 1; }
         #car-3d-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--accent-cyan); font-weight: 700; letter-spacing: 1px; background: rgba(11,15,25,0.8); z-index: 10;}
 
-        /* BOTTOM INFO */
+        /* BOTTOM INFO & ORA AKTUALE NË FUND */
         .bottom-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .info-card { background: rgba(17, 22, 32, 0.8); border: 1px solid var(--panel-border); border-radius: 4px; padding: 8px; }
         .info-card h4 { margin: 0 0 3px 0; color: var(--accent-blue); font-size: 10px; letter-spacing: 0.5px;}
@@ -155,7 +155,8 @@
         .delay-icon { font-size: 18px; color: var(--accent-blue); }
         .delay-val { font-size: 13px; font-weight: 700; color: var(--accent-green); }
 
-        .footer { display: flex; justify-content: space-between; font-size: 8.5px; color: var(--text-muted); font-family: monospace; padding-bottom: 2px;}
+        .footer { display: flex; justify-content: space-between; align-items: center; font-size: 9px; color: var(--text-muted); font-family: monospace; padding-bottom: 2px;}
+        .live-clock-bottom { font-size: 12px; font-weight: bold; color: var(--accent-cyan); }
 
         /* ===== SERVISET ===== */
         .input-group { text-align: left; margin-bottom: 12px; background: rgba(17,22,32,0.9); padding: 10px; border-radius: 4px; border: 1px solid var(--panel-border); }
@@ -210,19 +211,16 @@
             <!-- Header -->
             <div class="header">
                 <div class="logo"><span style="color:var(--accent-blue); font-weight:bold; font-size: 18px;">i30</span> <span>REMOTE</span></div>
-                <div class="top-stats">
-                    <div>MQTT: <span id="val-mqtt-status" class="val-green">OK</span></div>
-                    <div id="live-clock">--:--</div>
-                </div>
+                <div class="user-greeting" id="user-greeting-text">Përshëndetje!</div>
             </div>
 
             <!-- Rreshti i Sipërm: Statusi në të majtë, Butonat në të djathtë -->
             <div class="top-grid">
                 
-                <!-- Paneli i Statusit (Me fushat e kërkuara) -->
+                <!-- Paneli i Statusit (Me fushat e kërkuara, rrjeti lidhur me MQTT) -->
                 <div class="info-panel">
                     <h3>STATUSI</h3>
-                    <div class="data-row"><span>RRJETI</span> <span id="val-online" class="data-val val-green">OK</span></div>
+                    <div class="data-row"><span>RRJETI</span> <span id="val-mqtt-status" class="data-val val-green">OK</span></div>
                     <div class="data-row"><span>MOTORI</span> <span id="val-engine" class="data-val val-red">OFF</span></div>
                     <div class="data-row"><span>DYERT</span> <span id="val-locks" class="data-val val-red">MBYLLUR</span></div>
                     <div class="data-row"><span>BATERI</span> <span id="val-battery" class="data-val val-green">-- V</span></div>
@@ -235,7 +233,7 @@
                     </div>
                 </div>
 
-                <!-- Butonat e Komandave (Në krah, me ndryshim dinamik statusi/ngjyre) -->
+                <!-- Butonat e Komandave (Pa butonin e servisit) -->
                 <div class="btn-grid">
                     <!-- ENGINE -->
                     <div class="cmd-btn btn-green-state" id="btn-engine-ui" onclick="toggleEngine()">
@@ -262,9 +260,6 @@
                     
                     <div class="cmd-btn btn-wide btn-allclose" id="btn-allclose" onclick="if(confirm('Mbyllje Totale?')) sendCommand('ALL_CLOSE')">
                         <span class="cmd-icon" style="font-size:20px;">🚘</span><span class="cmd-text">ALL CLOSE</span>
-                    </div>
-                    <div class="cmd-btn btn-wide btn-servis" id="btn-key-ui" onclick="toggleKey()">
-                        <span class="cmd-icon" style="font-size:20px;">🔧</span><span class="cmd-text">KEY / SERVIS</span>
                     </div>
                 </div>
 
@@ -295,16 +290,16 @@
                 </div>
             </div>
 
-            <!-- Footer -->
+            <!-- Footer me orën aktuale poshtë fare -->
             <div class="footer">
                 <div>* LIDHJA MQTT NË MAKINË</div>
-                <div>v2.0.0</div>
+                <div class="live-clock-bottom" id="live-clock">--:--:--</div>
             </div>
             
         </div>
     </div>
 
-    <!-- EKRANI CILËSIME & SERVISE -->
+    <!-- EKRANI CILËSIME & SERVISE (Me butonin e çelësit të integruar këtu) -->
     <div id="screen-serv" class="screen">
         <div style="max-width: 480px; margin: 0 auto; padding: 12px; box-sizing: border-box; padding-bottom: 70px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom: 1px solid var(--panel-border); padding-bottom: 6px;">
@@ -312,6 +307,13 @@
                 <span style="color:var(--accent-cyan); font-weight:700; cursor:pointer; font-size:11px;" onclick="switchTab('screen-dash')">🔙 PULTI</span>
             </div>
             
+            <!-- Çelësi i Servisit i zhvendosur këtu -->
+            <div class="input-group" style="border-color: var(--accent-purple);">
+                <h3 style="color: var(--accent-purple);">🔧 ÇELËSI I SERVISIT</h3>
+                <div class="data-row" style="margin-bottom: 8px;"><span>STATUSI AKTIV:</span> <span id="val-key-serv" class="data-val">JO AKTIV</span></div>
+                <button class="btn-primary" style="color:var(--accent-purple); border-color:var(--accent-purple);" onclick="toggleKey()">NDRYSHO STATUSIN E ÇELËSIT</button>
+            </div>
+
             <div class="input-group">
                 <h3>👥 SHTO PËRDORUES</h3>
                 <input type="text" id="new-guest-name" placeholder="Emri (p.sh. Vëllai)">
@@ -381,7 +383,7 @@
     <script>
         function updateClock() {
             const now = new Date();
-            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
             document.getElementById('live-clock').innerText = timeStr;
         }
         setInterval(updateClock, 1000); updateClock();
@@ -411,11 +413,17 @@
             db.ref('adminConfig/password').once('value').then((snapAdmin) => {
                 const adminPin = snapAdmin.val();
                 if (String(pinEntry) === String(adminPin)) {
-                    sessionStorage.setItem("isAuth", "true"); sessionStorage.setItem("role", "admin"); showApp();
+                    sessionStorage.setItem("isAuth", "true"); 
+                    sessionStorage.setItem("role", "admin"); 
+                    sessionStorage.setItem("userName", "Admin");
+                    showApp();
                 } else {
                     db.ref('guestUsers/' + pinEntry).once('value').then((snapGuest) => {
                         if (snapGuest.exists()) {
-                            sessionStorage.setItem("isAuth", "true"); sessionStorage.setItem("role", "guest"); showApp();
+                            sessionStorage.setItem("isAuth", "true"); 
+                            sessionStorage.setItem("role", "guest"); 
+                            sessionStorage.setItem("userName", snapGuest.val());
+                            showApp();
                         } else { alert("PIN i gabuar!"); clearPin(); }
                     });
                 }
@@ -427,6 +435,10 @@
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('screen-dash').classList.add('active');
             userRole = sessionStorage.getItem("role");
+            const uName = sessionStorage.getItem("userName") || "Përdorues";
+            
+            // Shfaq Përshëndetjen me emrin e personit
+            document.getElementById('user-greeting-text').innerText = `Përshëndetje, ${uName}!`;
 
             if (userRole === "guest") {
                 document.getElementById('row-hours1').style.display = 'none';
@@ -534,60 +546,77 @@
         const mqttClient = new Paho.Client("broker.hivemq.com", 8884, "App_" + Math.random().toString(16).slice(2, 8));
         let isMqttConnected = false; let isEngineRunning = false; let isLocked = true; let carTimer;
 
-        function setStatus(id, text, type) {
-            const el = document.getElementById(id); el.innerText = text; el.className = "data-val " + type;
+        function setMqttStatus(text, type) {
+            const el = document.getElementById('val-mqtt-status'); 
+            el.innerText = text; 
+            el.className = "data-val " + type;
         }
 
         function initMQTT() {
             if (isMqttConnected) return; 
-            setStatus('val-online', 'CONNECT...', 'val-orange');
-            document.getElementById('val-mqtt-status').innerText = "CON..."; document.getElementById('val-mqtt-status').style.color = "var(--accent-orange)";
+            setMqttStatus('CONNECT...', 'val-orange');
             
             mqttClient.connect({
                 useSSL: true, reconnect: true, timeout: 10, keepAliveInterval: 30,
                 onSuccess: () => {
                     isMqttConnected = true; mqttClient.subscribe(topicStatus);
-                    setStatus('val-online', 'OK', 'val-green');
-                    document.getElementById('val-mqtt-status').innerText = "OK"; document.getElementById('val-mqtt-status').style.color = "var(--accent-green)";
+                    setMqttStatus('OK', 'val-green');
                     try { const msg = new Paho.Message("REFRESH"); msg.destinationName = topicCmd; msg.qos = 1; mqttClient.send(msg); } catch(e) {}
                 },
-                onFailure: (err) => { setTimeout(initMQTT, 5000); }
+                onFailure: (err) => { 
+                    setMqttStatus('ERR', 'val-red');
+                    setTimeout(initMQTT, 5000); 
+                }
             });
         }
 
         mqttClient.onConnectionLost = () => {
             isMqttConnected = false; 
-            setStatus('val-online', 'ERR', 'val-red');
-            document.getElementById('val-mqtt-status').innerText = "ERR"; document.getElementById('val-mqtt-status').style.color = "var(--accent-red)";
+            setMqttStatus('ERR', 'val-red');
         };
 
         mqttClient.onMessageArrived = (msg) => {
             clearTimeout(carTimer);
-            setStatus('val-online', 'OK', 'val-green');
+            setMqttStatus('OK', 'val-green');
             try {
                 const data = JSON.parse(msg.payloadString);
                 
                 if(data.v !== undefined) {
-                    setStatus('val-battery', data.v.toFixed(2) + "V", (data.v > 12.0) ? "val-green" : "val-red");
+                    document.getElementById('val-battery').innerText = data.v.toFixed(2) + "V";
+                    document.getElementById('val-battery').className = "data-val " + ((data.v > 12.0) ? "val-green" : "val-red");
                 }
                 if(data.e !== undefined) {
                     isEngineRunning = (data.e === 1); 
-                    setStatus('val-engine', isEngineRunning ? "ON" : "OFF", isEngineRunning ? "val-green" : "val-red");
+                    document.getElementById('val-engine').innerText = isEngineRunning ? "ON" : "OFF";
+                    document.getElementById('val-engine').className = "data-val " + (isEngineRunning ? "val-green" : "val-red");
                     updateEngineButtonUI();
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('engine', isEngineRunning);
                 }
+                if(data.wh !== undefined && data.wh > 0 && userRole === "admin") {
+                    db.ref("statistika/lock_oreve").transaction(function(lockData) { const tani = Date.now(); if (!lockData || (tani - lockData > 10000)) return tani; return undefined; }, function(error, committed) {
+                        if (committed) { updateWorkHours(data.wh); try { const msgConf = new Paho.Message("SAVED_HOURS"); msgConf.destinationName = topicCmd; msgConf.qos = 1; mqttClient.send(msgConf); } catch(e) {} }
+                    });
+                }
                 if(data.l !== undefined) {
                     isLocked = (data.l === 1);
-                    setStatus('val-locks', isLocked ? "MBYLLUR" : "HAPUR", isLocked ? "val-red" : "val-green");
+                    document.getElementById('val-locks').innerText = isLocked ? "MBYLLUR" : "HAPUR";
+                    document.getElementById('val-locks').className = "data-val " + (isLocked ? "val-red" : "val-green");
                     updateLockButtonUI();
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', !isLocked);
                 }
                 if(data.k !== undefined) {
-                    setStatus('val-key', (data.k === 1) ? "AKTIV" : "JO", (data.k === 1) ? "val-purple" : "");
+                    const keyState = (data.k === 1) ? "AKTIV" : "JO";
+                    document.getElementById('val-key').innerText = keyState;
+                    document.getElementById('val-key').className = "data-val " + ((data.k === 1) ? "val-purple" : "");
+                    const servEl = document.getElementById('val-key-serv');
+                    if(servEl) {
+                        servEl.innerText = (data.k === 1) ? "AKTIV" : "JO AKTIV";
+                        servEl.className = "data-val " + ((data.k === 1) ? "val-purple" : "");
+                    }
                 }
             } catch (e) { }
             
-            carTimer = setTimeout(() => { setStatus('val-online', 'ERR', 'val-red'); }, 12000); 
+            carTimer = setTimeout(() => { setMqttStatus('ERR', 'val-red'); }, 12000); 
         };
 
         window.sendCommand = (cmd) => {
@@ -635,7 +664,10 @@
             }
         }
 
-        function toggleKey() { sendCommand(document.getElementById('val-key').innerText === "AKTIV" ? 'KEY_OFF' : 'KEY_ON'); }
+        function toggleKey() { 
+            const curr = document.getElementById('val-key').innerText;
+            sendCommand(curr === "AKTIV" ? 'KEY_OFF' : 'KEY_ON'); 
+        }
 
         window.onload = () => { loadServices(); if (sessionStorage.getItem("isAuth")) showApp(); };
 

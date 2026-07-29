@@ -75,8 +75,8 @@
         .logo { font-size: 18px; font-weight: 700; font-style: italic; letter-spacing: 1px; display: flex; align-items: center; gap: 5px;}
         .logo span { font-weight: 500; color: var(--text-main); font-style: normal; font-size: 14px;}
         
-        /* Përshëndetja e përdoruesit në krye */
-        .user-greeting { font-size: 11px; font-weight: 700; color: var(--accent-cyan); text-align: right; }
+        /* Përshëndetja e zmadhuar */
+        .user-greeting { font-size: 15px; font-weight: 700; color: var(--accent-cyan); text-align: right; text-shadow: 0 0 8px rgba(0,210,255,0.4); }
 
         /* RRESHTI I SIPËRM: STATUSI & BUTONAT NË KRAH */
         .top-grid {
@@ -98,7 +98,7 @@
         .val-orange { color: var(--accent-orange) !important; }
         .val-purple { color: var(--accent-purple) !important; }
 
-        /* BUTTONS GRID (Pa butonin e servisit) */
+        /* BUTTONS GRID */
         .btn-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; align-content: start; }
         .cmd-btn {
             background: rgba(17, 22, 32, 0.9); border: 1px solid var(--panel-border); border-radius: 4px;
@@ -145,7 +145,7 @@
         #car-3d-feedback.show { opacity: 1; }
         #car-3d-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--accent-cyan); font-weight: 700; letter-spacing: 1px; background: rgba(11,15,25,0.8); z-index: 10;}
 
-        /* BOTTOM INFO & ORA AKTUALE NË FUND */
+        /* BOTTOM INFO */
         .bottom-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .info-card { background: rgba(17, 22, 32, 0.8); border: 1px solid var(--panel-border); border-radius: 4px; padding: 8px; }
         .info-card h4 { margin: 0 0 3px 0; color: var(--accent-blue); font-size: 10px; letter-spacing: 0.5px;}
@@ -217,7 +217,7 @@
             <!-- Rreshti i Sipërm: Statusi në të majtë, Butonat në të djathtë -->
             <div class="top-grid">
                 
-                <!-- Paneli i Statusit (Me fushat e kërkuara, rrjeti lidhur me MQTT) -->
+                <!-- Paneli i Statusit (Me orët e punës të rikthyera) -->
                 <div class="info-panel">
                     <h3>STATUSI</h3>
                     <div class="data-row"><span>RRJETI</span> <span id="val-mqtt-status" class="data-val val-green">OK</span></div>
@@ -233,7 +233,7 @@
                     </div>
                 </div>
 
-                <!-- Butonat e Komandave (Pa butonin e servisit) -->
+                <!-- Butonat e Komandave -->
                 <div class="btn-grid">
                     <!-- ENGINE -->
                     <div class="cmd-btn btn-green-state" id="btn-engine-ui" onclick="toggleEngine()">
@@ -243,11 +243,11 @@
                     <div class="cmd-btn btn-green-state" id="btn-locks-ui" onclick="toggleLocks()">
                         <span class="cmd-icon">🔒</span><span class="cmd-text" id="txt-lock-btn">HAP MAKINËN</span>
                     </div>
-                    <!-- WINDOWS (Vetëm mbyllje) -->
+                    <!-- WINDOWS -->
                     <div class="cmd-btn btn-win" onclick="sendCommand('CLOSE_WINDOWS')">
                         <span class="cmd-icon">🪟</span><span class="cmd-text">MBYLL XHAMAT</span>
                     </div>
-                    <!-- SUNROOF (Vetëm mbyllje) -->
+                    <!-- SUNROOF -->
                     <div class="cmd-btn btn-sun" onclick="sendCommand('CLOSE_SUNROOF')">
                         <span class="cmd-icon">🌅</span><span class="cmd-text">MBYLL TAVANIN</span>
                     </div>
@@ -290,7 +290,7 @@
                 </div>
             </div>
 
-            <!-- Footer me orën aktuale poshtë fare -->
+            <!-- Footer me orën aktuale në fund poshtë -->
             <div class="footer">
                 <div>* LIDHJA MQTT NË MAKINË</div>
                 <div class="live-clock-bottom" id="live-clock">--:--:--</div>
@@ -299,7 +299,7 @@
         </div>
     </div>
 
-    <!-- EKRANI CILËSIME & SERVISE (Me butonin e çelësit të integruar këtu) -->
+    <!-- EKRANI CILËSIME & SERVISE -->
     <div id="screen-serv" class="screen">
         <div style="max-width: 480px; margin: 0 auto; padding: 12px; box-sizing: border-box; padding-bottom: 70px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom: 1px solid var(--panel-border); padding-bottom: 6px;">
@@ -307,7 +307,7 @@
                 <span style="color:var(--accent-cyan); font-weight:700; cursor:pointer; font-size:11px;" onclick="switchTab('screen-dash')">🔙 PULTI</span>
             </div>
             
-            <!-- Çelësi i Servisit i zhvendosur këtu -->
+            <!-- Çelësi i Servisit -->
             <div class="input-group" style="border-color: var(--accent-purple);">
                 <h3 style="color: var(--accent-purple);">🔧 ÇELËSI I SERVISIT</h3>
                 <div class="data-row" style="margin-bottom: 8px;"><span>STATUSI AKTIV:</span> <span id="val-key-serv" class="data-val">JO AKTIV</span></div>
@@ -415,7 +415,7 @@
                 if (String(pinEntry) === String(adminPin)) {
                     sessionStorage.setItem("isAuth", "true"); 
                     sessionStorage.setItem("role", "admin"); 
-                    sessionStorage.setItem("userName", "Admin");
+                    sessionStorage.setItem("userName", "AGLIEN"); // Admini konfiguruar si AGLIEN
                     showApp();
                 } else {
                     db.ref('guestUsers/' + pinEntry).once('value').then((snapGuest) => {
@@ -437,7 +437,7 @@
             userRole = sessionStorage.getItem("role");
             const uName = sessionStorage.getItem("userName") || "Përdorues";
             
-            // Shfaq Përshëndetjen me emrin e personit
+            // Përshëndetja e zmadhuar me emrin
             document.getElementById('user-greeting-text').innerText = `Përshëndetje, ${uName}!`;
 
             if (userRole === "guest") {

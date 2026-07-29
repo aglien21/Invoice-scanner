@@ -149,7 +149,6 @@
             margin:0 0 10px !important;
             border-radius:14px !important;
             border:2px solid rgba(0,210,255,.42) !important;
-            /* Ne default i dhash gradient, por mund te fshihet nga js */
             background: radial-gradient(circle at center, rgba(0,210,255,.15), rgba(0,0,0,.7) 80%);
             box-shadow:0 8px 25px rgba(0,0,0,.5), inset 0 0 20px rgba(0,210,255,.1) !important;
             position: relative;
@@ -205,7 +204,6 @@
             <div style="margin-top: 5px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.1rem; color: #aaa; letter-spacing: 1px;">
                 Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
             </div>
-            <!-- Zëvendësuar logo.png me login.png ashtu siç e kërkove -->
             <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login" style="margin-top: 20px;">
             <input type="password" id="pin-input" readonly placeholder="****">
             
@@ -685,10 +683,10 @@
                 if(data.l !== undefined) {
                     const elLocks = document.getElementById('val-locks'); const btnLocks = document.getElementById('btn-locks');
                     if(data.l === 1) {
-                        elLocks.innerText = "MBYLLUR"; elLocks.style.color = "var(--success)";
+                        elLocks.innerText = "MBYLLUR"; elLocks.style.color = "var(--success)"; // Jeshile kur është mbyllur
                         btnLocks.className = "i30-action i30-green"; btnLocks.innerHTML = '<span class="i30-action-icon">🔒</span><span>HAP MAKINËN</span>';
                     } else if(data.l === 0) {
-                        elLocks.innerText = "HAPUR"; elLocks.style.color = "var(--danger)";
+                        elLocks.innerText = "HAPUR"; elLocks.style.color = "var(--danger)"; // E kuqe kur është hapur
                         btnLocks.className = "i30-action i30-red"; btnLocks.innerHTML = '<span class="i30-action-icon">🔒</span><span>MBYLL MAKINËN</span>';
                     }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', data.l === 0);
@@ -859,7 +857,6 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
             
-            // Kamera vendoset e afërt për ta bërë më të madhe makinën (Zmadhimi)
             camera.position.set(-6.5, 4.5, 6.5);
 
             renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -879,7 +876,6 @@
             controls.maxDistance = 14;
             controls.maxPolarAngle = Math.PI / 2.05;
             
-            // Fokusimi (Target) mbetet njësoj për t'i dhënë hapësirë sipër saj
             controls.target.set(-0.7, 0.7, 1.2); 
 
             raycaster = new THREE.Raycaster();
@@ -916,13 +912,10 @@
                 const center = box.getCenter(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z) || 1;
                 
-                // ZMADHIM SHTESE - nga 8.5 kaluam në 10.5
                 const scale = 10.5 / maxDim; 
                 carModel.scale.setScalar(scale);
                 carModel.position.x = -center.x * scale;
                 carModel.position.z = -center.z * scale;
-                
-                // ULEMI FIZIKISHT POSHTE (zbresim 1.2 njesi)
                 carModel.position.y = (-box.min.y * scale) - 0.8;
                 
                 scene.add(carModel);
@@ -996,10 +989,22 @@
             } else if (part === 'engine') {
                 flashMesh(mesh, 400);
                 const engText = document.getElementById('val-engine').innerText;
-                if (engText === 'ON' || (typeof isEngineRunning !== 'undefined' && isEngineRunning)) {
-                    sendCommand('STOP'); showFeedback('🛑 FIKJE MOTORRI...');
+                const isRunning = (engText === 'ON' || (typeof isEngineRunning !== 'undefined' && isEngineRunning));
+
+                if (!isRunning) {
+                    // Nëse motorri është i fikur -> Hap dyert (UNLOCK) pastaj ndiz motorrin (START)
+                    showFeedback('🔓⏳ NDEZJE SEKUENCIALE...');
+                    sendCommand('UNLOCK');
+                    setTimeout(() => {
+                        sendCommand('START');
+                    }, 1200); // Vonesë 1.2 sekonda ndërmjet komandave
                 } else {
-                    sendCommand('START'); showFeedback('⚡ NDEZJE MOTORRI...');
+                    // Nëse motorri është i ndezur -> Fik motorrin (STOP) pastaj mbyll makinen (LOCK)
+                    showFeedback('🛑⏳ FIKJE & KYÇJE...');
+                    sendCommand('STOP');
+                    setTimeout(() => {
+                        sendCommand('LOCK');
+                    }, 1200);
                 }
             } else if (part === 'sunroof') {
                 if (role === 'guest') { showFeedback('⛔ S\'keni akses'); return; }

@@ -39,8 +39,8 @@
             font-family: '-apple-system', 'Segoe UI', Tahoma, sans-serif; 
             margin: 0; 
             padding: 0; 
-            min-height: 100vh; 
-            min-height: 100dvh; 
+            height: 100vh; 
+            height: 100dvh; 
             width: 100vw;
             overflow: hidden;
             position: fixed;
@@ -49,7 +49,6 @@
             background-position: center center; 
             background-repeat: no-repeat;
             background-attachment: fixed; 
-            transition: background 0.5s ease; 
             user-select: none;
             -webkit-user-select: none;
             touch-action: pan-y;
@@ -59,14 +58,12 @@
             background: rgba(0, 0, 0, 0.5); 
             width: 100%; 
             height: 100%; 
-            padding: 12px; 
             box-sizing: border-box; 
-            overflow-y: auto; 
-            overflow-x: hidden; 
+            overflow: hidden;
             display: flex; 
             flex-direction: column; 
-            padding-top: calc(env(safe-area-inset-top, 45px) + 5px);
-            padding-bottom: calc(env(safe-area-inset-bottom, 10px) + 60px);
+            justify-content: space-between;
+            padding: env(safe-area-inset-top, 10px) 12px calc(env(safe-area-inset-bottom, 10px) + 10px) 12px;
         }
         
         .screen { 
@@ -74,30 +71,82 @@
             text-align: center; 
             width: 100%; 
             max-width: 500px; 
-            margin: auto auto 0 auto; 
+            margin: 0 auto; 
             box-sizing: border-box; 
         }
         .screen.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ===== LOGIN SCREEN (I zbritur poshte fare) ===== */
+        /* ===== LOGIN SCREEN (I detyruar Fiks ne Fund) ===== */
         #screen-login.active { 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: flex-end; 
-            width: 100%;
             height: 100%;
-            padding-bottom: calc(env(safe-area-inset-bottom, 15px) + 10px);
+            width: 100%;
+            padding-bottom: 0px;
+            margin: 0 auto;
         }
-        .logo-login { width: 75px; height: 75px; border-radius: 20%; margin-bottom: 8px; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 4px 15px var(--dash-glow); }
-        #pin-input { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: white; font-size: 22px; padding: 10px; border-radius: 10px; width: 180px; text-align: center; margin-bottom: 10px; letter-spacing: 10px; outline: none; -webkit-text-security: disc;}
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 260px; margin-bottom: 0px; }
-        .num-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px; font-size: 18px; border-radius: 10px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;}
+        
+        .login-content-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 280px;
+            margin-bottom: 5px;
+        }
+
+        .logo-login { 
+            width: 65px; 
+            height: 65px; 
+            border-radius: 18%; 
+            margin-bottom: 6px; 
+            border: 2px solid var(--accent); 
+            object-fit: cover; 
+            box-shadow: 0 4px 15px var(--dash-glow); 
+        }
+        
+        #pin-input { 
+            background: rgba(0,0,0,0.7); 
+            backdrop-filter: blur(10px); 
+            border: 1px solid var(--accent); 
+            color: white; 
+            font-size: 20px; 
+            padding: 8px; 
+            border-radius: 8px; 
+            width: 160px; 
+            text-align: center; 
+            margin-bottom: 8px; 
+            letter-spacing: 8px; 
+            outline: none; 
+            -webkit-text-security: disc;
+        }
+        
+        .numpad { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 6px; 
+            width: 100%; 
+        }
+        
+        .num-btn { 
+            background: rgba(255,255,255,0.1); 
+            backdrop-filter: blur(8px); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            color: white; 
+            padding: 10px 0; 
+            font-size: 18px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            -webkit-tap-highlight-color: transparent;
+        }
         .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
         /* ===== DASHBOARD ===== */
-        #screen-dash { max-width: 500px; width: 100%; padding-bottom: 5px; }
+        #screen-dash { max-width: 500px; width: 100%; overflow-y: auto; flex-grow: 1; padding-bottom: 60px; }
 
         .i30-topbar {
             display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -236,22 +285,24 @@
 <body>
     <div class="overlay">
         
-        <!-- EKRANI LOGIN -->
+        <!-- EKRANI LOGIN (I fiksuar fiks ne fund, mbi shiritin e shfletuesit) -->
         <div id="screen-login" class="screen active">
-            <h2 style="margin: 0 0 2px 0; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-size: 1.2rem;">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
-            <div style="margin-bottom: 8px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.85rem; color: #aaa; letter-spacing: 1px;">
-                Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
-            </div>
-            <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login">
-            <input type="password" id="pin-input" readonly placeholder="****">
-            
-            <div class="numpad">
-                <button class="num-btn" onclick="addPin('1')">1</button><button class="num-btn" onclick="addPin('2')">2</button><button class="num-btn" onclick="addPin('3')">3</button>
-                <button class="num-btn" onclick="addPin('4')">4</button><button class="num-btn" onclick="addPin('5')">5</button><button class="num-btn" onclick="addPin('6')">6</button>
-                <button class="num-btn" onclick="addPin('7')">7</button><button class="num-btn" onclick="addPin('8')">8</button><button class="num-btn" onclick="addPin('9')">9</button>
-                <button class="num-btn" style="color: var(--danger); border-color: rgba(255,59,48,0.4);" onclick="clearPin()">C</button>
-                <button class="num-btn" onclick="addPin('0')">0</button>
-                <button class="num-btn" style="color: var(--success); border-color: rgba(52,199,89,0.4);" onclick="checkLogin()">OK</button>
+            <div class="login-content-box">
+                <h2 style="margin: 0 0 2px 0; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-size: 1.1rem;">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
+                <div style="margin-bottom: 6px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.8rem; color: #aaa; letter-spacing: 1px;">
+                    Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
+                </div>
+                <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login">
+                <input type="password" id="pin-input" readonly placeholder="****">
+                
+                <div class="numpad">
+                    <button class="num-btn" onclick="addPin('1')">1</button><button class="num-btn" onclick="addPin('2')">2</button><button class="num-btn" onclick="addPin('3')">3</button>
+                    <button class="num-btn" onclick="addPin('4')">4</button><button class="num-btn" onclick="addPin('5')">5</button><button class="num-btn" onclick="addPin('6')">6</button>
+                    <button class="num-btn" onclick="addPin('7')">7</button><button class="num-btn" onclick="addPin('8')">8</button><button class="num-btn" onclick="addPin('9')">9</button>
+                    <button class="num-btn" style="color: var(--danger); border-color: rgba(255,59,48,0.4);" onclick="clearPin()">C</button>
+                    <button class="num-btn" onclick="addPin('0')">0</button>
+                    <button class="num-btn" style="color: var(--success); border-color: rgba(52,199,89,0.4);" onclick="checkLogin()">OK</button>
+                </div>
             </div>
         </div>
 

@@ -98,7 +98,8 @@
         /* Paneli Statusit & Butonat në krah */
         .i30-main-status {
             display:grid;
-            grid-template-columns: 140px 1fr;
+            /* Ndryshimi i gjeresise ketu: 165px per statusin, ngushton butonat dhe u jep hapesire oreve */
+            grid-template-columns: 165px 1fr; 
             gap:8px;
             margin-bottom:10px;
         }
@@ -118,7 +119,12 @@
             font-size:10px; color:#ccc; font-weight: 600;
         }
         .i30-status-row:last-child { border-bottom:0; }
-        .i30-status-row b { color:#fff; font-size:11px; text-align: right; }
+        .i30-status-row b { 
+            color:#fff; 
+            font-size:11px; 
+            text-align: right;
+            white-space: nowrap; /* Mban oren tekte dhe min ne 1 rresht */
+        }
 
         /* Grid i butonavet */
         .i30-quick-grid {
@@ -824,8 +830,9 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
             
-            // Rikthejme distancen per portrait! 
-            camera.position.set(-6.5, 4.5, 8.5);
+            // --- NDRYSHIMI PER KENDIN E RE & SPOSTIMIN ---
+            // Kamera vendoset pak më lart per te ruajtur kendin nga fotoja
+            camera.position.set(-6.0, 5.0, 7.5);
 
             renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -840,11 +847,13 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.1;
             controls.enablePan = false;
-            // Distanca bllokohet qe mos te behet lart/poshte mikroskopike
             controls.minDistance = 6;
             controls.maxDistance = 14;
             controls.maxPolarAngle = Math.PI / 2.05;
-            controls.target.set(0, 0.8, 0);
+            
+            // Sposton makinen vete vizualisht drejt pjeses lart-majtas,
+            // qe te mbushe hapesiren boshe pas makines (sic e kerkove)
+            controls.target.set(-0.5, 0.7, 1.2); 
 
             raycaster = new THREE.Raycaster();
             pointer = new THREE.Vector2();
@@ -880,7 +889,6 @@
                 const center = box.getCenter(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z) || 1;
                 
-                // Scale qe mbush sakt ekrani e vogel pa u humbur
                 const scale = 8.5 / maxDim; 
                 carModel.scale.setScalar(scale);
                 carModel.position.x = -center.x * scale;

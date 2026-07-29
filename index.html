@@ -2,7 +2,6 @@
 <html lang="sq">
 <head>
     <meta charset="UTF-8">
-    <!-- Meta e detyruar per te bllokuar zmadhimin (zoom-in) kudo -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -10,15 +9,16 @@
     <meta name="apple-mobile-web-app-title" content="i30 Control">
     <title>i30 DIGITAL REMOTE</title>
 
-    <link rel="apple-touch-icon" href="./car.jpg">
-    <link rel="icon" type="image/png" href="./car.jpg">
-    <link rel="shortcut icon" href="./car.jpg">
+    <!-- Ikona e Aplikacionit -->
+    <link rel="apple-touch-icon" href="car.jpg">
+    <link rel="icon" type="image/jpeg" href="car.jpg">
+    <link rel="shortcut icon" href="car.jpg">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
 
-    <!-- THREE.JS per modelin 3D interaktiv -->
+    <!-- THREE.JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -40,12 +40,11 @@
             margin: 0; 
             padding: 0; 
             min-height: 100vh; 
-            /* Pamje vetëm Portrait */
             width: 100vw;
             height: 100vh;
-            overflow: hidden; /* Fiksim total */
+            overflow: hidden;
             position: fixed;
-            background-image: url('./bg.jpg');
+            background-image: url('bg.jpg');
             background-size: cover; 
             background-position: center center; 
             background-repeat: no-repeat;
@@ -53,14 +52,7 @@
             transition: background 0.5s ease; 
             user-select: none;
             -webkit-user-select: none;
-            touch-action: pan-y; /* Lejon scrolling vetëm lart-poshtë nese nevojitet te serviset */
-        }
-
-        body.light-hud {
-            --accent: #0066cc;
-            --dash-bg: linear-gradient(135deg, rgba(235, 242, 250, 0.9), rgba(215, 225, 238, 0.95));
-            --dash-border: rgba(0, 102, 204, 0.4);
-            --dash-glow: rgba(0, 102, 204, 0.15);
+            touch-action: pan-y;
         }
 
         .overlay { background: rgba(0, 0, 0, 0.5); width: 100%; height: 100%; padding: 12px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; padding-bottom: 90px; }
@@ -77,7 +69,7 @@
         .num-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; font-size: 22px; border-radius: 10px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;}
         .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
-        /* ===== DASHBOARD (Portrait i detyruar) ===== */
+        /* ===== DASHBOARD ===== */
         #screen-dash { max-width: 500px; width: 100%; padding-bottom: 10px; }
 
         .i30-topbar {
@@ -95,10 +87,8 @@
         }
         .i30-top-status b { color:#44e36a; }
 
-        /* Paneli Statusit & Butonat në krah */
         .i30-main-status {
             display:grid;
-            /* Ndryshimi i gjeresise ketu: 165px per statusin, ngushton butonat dhe u jep hapesire oreve */
             grid-template-columns: 165px 1fr; 
             gap:8px;
             margin-bottom:10px;
@@ -123,10 +113,9 @@
             color:#fff; 
             font-size:11px; 
             text-align: right;
-            white-space: nowrap; /* Mban oren tekte dhe min ne 1 rresht */
+            white-space: nowrap; 
         }
 
-        /* Grid i butonavet */
         .i30-quick-grid {
             display:grid; grid-template-columns:repeat(2,1fr); gap:6px;
         }
@@ -149,30 +138,25 @@
         .i30-gray { background:linear-gradient(145deg,rgba(95,102,112,.82),rgba(42,47,53,.88)); }
         .i30-wide { grid-column:span 2; min-height: 50px;}
 
-        /* ===== 3D VIEWER (Kompakt dhe strikt) ===== */
+        /* ===== 3D VIEWER ===== */
         .i30-car-title {
             display:flex; justify-content:space-between; gap:10px; padding:6px 8px; color:#c9c9c9; font-size:10px; text-align:left; letter-spacing:.4px;
         }
 
         #car-3d-viewer {
             width:100% !important;
-            height: 280px !important; /* Lartësi fikse solide per telefonat */
+            height: 280px !important; 
             margin:0 0 10px !important;
             border-radius:14px !important;
             border:2px solid rgba(0,210,255,.42) !important;
-            background: radial-gradient(circle at center, rgba(0,210,255,.15), rgba(0,0,0,.7) 80%) !important;
+            /* Ne default i dhash gradient, por mund te fshihet nga js */
+            background: radial-gradient(circle at center, rgba(0,210,255,.15), rgba(0,0,0,.7) 80%);
             box-shadow:0 8px 25px rgba(0,0,0,.5), inset 0 0 20px rgba(0,210,255,.1) !important;
             position: relative;
             overflow: hidden;
             touch-action: none;
         }
         #car-3d-canvas { width: 100% !important; height: 100% !important; display: block; touch-action:none !important; }
-
-        #car-3d-hint {
-            position: absolute; top:8px !important; left: 50%; transform: translateX(-50%); font-size:9px !important;
-            color: var(--accent); letter-spacing: 1px; background: rgba(0,0,0,0.6); padding:4px 10px !important; 
-            border-radius: 6px; pointer-events: none; white-space: nowrap; text-align: center; border:1px solid rgba(0,210,255,.3); z-index: 10;
-        }
 
         #car-3d-feedback {
             position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: bold;
@@ -185,7 +169,7 @@
             color: var(--accent); font-size: 12px; font-weight: bold; letter-spacing: 1px; text-align: center; background: rgba(0,0,0,0.8); z-index: 20;
         }
 
-        /* ===== SERVISET ===== */
+        /* ===== SERVISET & SETTINGS ===== */
         .input-group { text-align: left; margin-bottom: 12px; background: rgba(17,22,32,0.9); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,210,255,0.2); }
         .input-group h3 { margin-top: 0; color: var(--accent); font-size: 13px; border-bottom: 1px solid rgba(0,210,255,0.2); padding-bottom: 6px; }
         .input-group label { display: block; font-size: 11px; color: #aaa; margin-bottom: 4px; margin-top: 8px; }
@@ -221,7 +205,8 @@
             <div style="margin-top: 5px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.1rem; color: #aaa; letter-spacing: 1px;">
                 Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
             </div>
-            <img id="login-logo-img" src="./logo.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login" style="margin-top: 20px;">
+            <!-- Zëvendësuar logo.png me login.png ashtu siç e kërkove -->
+            <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login" style="margin-top: 20px;">
             <input type="password" id="pin-input" readonly placeholder="****">
             
             <div class="numpad">
@@ -287,7 +272,6 @@
             </div>
 
             <div id="car-3d-viewer">
-                <div id="car-3d-hint">🚗 INTERAKTIVE</div>
                 <canvas id="car-3d-canvas"></canvas>
                 <div id="car-3d-feedback"></div>
                 <div id="car-3d-loading">Duke ngarkuar 3D...</div>
@@ -298,6 +282,17 @@
         <div id="screen-serv" class="screen">
             <h2 style="margin-bottom: 15px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-style: italic;">SISTEMI & <span style="color: var(--accent);">SERVISET</span></h2>
             
+            <div class="input-group">
+                <h3>🎨 PERSONALIZIMI I PAMJES</h3>
+                <label>URL e Logos (Opsionale):</label>
+                <input type="text" id="set-logo-url" placeholder="http://...">
+                <label>URL e Sfondit të Aplikacionit:</label>
+                <input type="text" id="set-bg-url" placeholder="http://...">
+                <label>URL e Sfondit për 3D (Zëvendëson ngjyrën):</label>
+                <input type="text" id="set-bg-3d-url" placeholder="http://...">
+                <button class="btn-primary" onclick="saveAppConfig()">RUAJ PAMJEN</button>
+            </div>
+
             <div class="input-group" style="border-color: #8e44ad;">
                 <h3 style="color: #8e44ad;">🔧 ÇELËSI I SERVISIT</h3>
                 <div style="font-size:12px; color:#ccc; margin-bottom:8px;">Statusi aktual: <b id="val-key-serv" style="color:#fff;">--</b></div>
@@ -415,7 +410,7 @@
                 if (String(pinEntry) === String(adminPin)) {
                     sessionStorage.setItem("isAuth", "true");
                     sessionStorage.setItem("role", "admin");
-                    sessionStorage.setItem("userName", "AGLIEN"); // Zbatim i rreptë: Emri AGLIEN
+                    sessionStorage.setItem("userName", "AGLIEN"); 
                     showApp();
                 } else {
                     db.ref('guestUsers/' + pinEntry).once('value').then((snapGuest) => {
@@ -450,7 +445,7 @@
                 document.getElementById('user-greeting').style.color = "orange";
             } else {
                 loadGuestPins();
-                lexoOretNgaFirebase(); // Sigurohemi qe te admin lexohen oret dhe mbushin panellin
+                lexoOretNgaFirebase(); 
                 document.getElementById('user-greeting').style.color = "var(--accent)";
             }
 
@@ -467,6 +462,46 @@
             if(el) el.classList.add('active');
         }
 
+        // --- APLIKIMI I KONFIGURIMEVE TË PAMJES ---
+        function applyAppConfig() {
+            db.ref('adminConfig').once('value').then((snap) => {
+                const cfg = snap.val();
+                if (!cfg) return;
+                
+                if (cfg.bgUrl && cfg.bgUrl.trim() !== "") { 
+                    document.body.style.backgroundImage = `url('${cfg.bgUrl}')`; 
+                } else { 
+                    document.body.style.backgroundImage = "url('bg.jpg')"; 
+                }
+                document.getElementById('set-bg-url').value = cfg.bgUrl || "";
+                
+                if (cfg.logoUrl && cfg.logoUrl.trim() !== "") { 
+                    document.getElementById('login-logo-img').src = cfg.logoUrl; 
+                } else { 
+                    document.getElementById('login-logo-img').src = "login.png"; 
+                }
+                document.getElementById('set-logo-url').value = cfg.logoUrl || "";
+
+                if (cfg.bg3dUrl && cfg.bg3dUrl.trim() !== "") {
+                    document.getElementById('car-3d-viewer').style.setProperty('background', `url('${cfg.bg3dUrl}') center/cover no-repeat`, 'important');
+                } else {
+                    document.getElementById('car-3d-viewer').style.setProperty('background', 'radial-gradient(circle at center, rgba(0,210,255,.15), rgba(0,0,0,.7) 80%)', 'important');
+                }
+                document.getElementById('set-bg-3d-url').value = cfg.bg3dUrl || "";
+            });
+        }
+
+        function saveAppConfig() {
+            const bg = document.getElementById('set-bg-url').value; 
+            const logo = document.getElementById('set-logo-url').value;
+            const bg3d = document.getElementById('set-bg-3d-url').value;
+            db.ref('adminConfig/bgUrl').set(bg); 
+            db.ref('adminConfig/logoUrl').set(logo);
+            db.ref('adminConfig/bg3dUrl').set(bg3d);
+            alert("Ndryshimet e pamjes u ruajtën!"); 
+            applyAppConfig();
+        }
+
         // --- ORËT E PUNËS ---
         function formatHours(dec) {
             if (!dec || isNaN(dec)) return "0h 0m";
@@ -476,7 +511,6 @@
         }
         
         function lexoOretNgaFirebase() {
-            // Lexo totalin nga rrenja e statistikes
             db.ref("statistika/ore_pune").on('value', (snap) => {
                 const data = snap.val() || { ore_totale: 0 };
                 const oreTotale = data.ore_totale || 0;
@@ -485,7 +519,6 @@
                 elTot.style.color = (oreTotale >= 230) ? "var(--danger)" : "#fff";
             });
 
-            // Lexo orët e sotme (për historikun e ditës)
             const now = new Date();
             db.ref(`workHours/${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`).on('value', (snap) => {
                 const oreSot = snap.val() || 0;
@@ -495,12 +528,10 @@
 
         function updateWorkHours(oreTeReja) {
             if(isNaN(oreTeReja) || oreTeReja <= 0) return;
-            // Përditëso totalin
             db.ref("statistika/ore_pune").transaction(function(dataAktuale) {
                 if (!dataAktuale) dataAktuale = { ore_totale: 0 };
                 dataAktuale.ore_totale += oreTeReja; return dataAktuale;
             });
-            // Përditëso ditën
             const now = new Date();
             db.ref(`workHours/${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`).transaction(function(oretEKaluara) { 
                 return (oretEKaluara || 0) + oreTeReja; 
@@ -526,7 +557,6 @@
                 document.getElementById('work-history-table').innerHTML = html;
             });
         }
-        // ------------------
 
         // --- GUEST USERS & SETTINGS ---
         function addGuestPin() {
@@ -641,13 +671,12 @@
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('engine', isEngineRunning);
                 }
 
-                // Dëgjojmë për pakon e orëve dhe e ruajmë automatikisht nese jemi admin
                 if(data.wh !== undefined && data.wh > 0 && userRole === "admin") {
                     db.ref("statistika/lock_oreve").transaction(function(lockData) {
                         const tani = Date.now(); if (!lockData || (tani - lockData > 10000)) return tani; return undefined; 
                     }, function(error, committed) {
                         if (committed) {
-                            updateWorkHours(data.wh); // Këtu regjistrojmë saktë orët
+                            updateWorkHours(data.wh); 
                             try { const msgConf = new Paho.Message("SAVED_HOURS"); msgConf.destinationName = topicCmd; msgConf.qos = 1; mqttClient.send(msgConf); } catch(e) {}
                         }
                     });
@@ -688,11 +717,11 @@
         }
 
         window.onload = () => {
+            applyAppConfig(); 
             loadServices();
             if (sessionStorage.getItem("isAuth")) showApp();
         };
 
-        // Rregullo oren lart djathtas
         setInterval(() => {
             const el = document.getElementById('top-clock');
             if (el) el.textContent = new Date().toLocaleTimeString('sq-AL', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
@@ -830,9 +859,8 @@
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
             
-            // --- NDRYSHIMI PER KENDIN E RE & SPOSTIMIN ---
-            // Kamera vendoset pak më lart per te ruajtur kendin nga fotoja
-            camera.position.set(-6.0, 5.0, 7.5);
+            // Kamera vendoset e afërt për ta bërë më të madhe makinën (Zmadhimi)
+            camera.position.set(-5.5, 4.5, 6.5);
 
             renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -847,12 +875,11 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.1;
             controls.enablePan = false;
-            controls.minDistance = 6;
+            controls.minDistance = 5;
             controls.maxDistance = 14;
             controls.maxPolarAngle = Math.PI / 2.05;
             
-            // Sposton makinen vete vizualisht drejt pjeses lart-majtas,
-            // qe te mbushe hapesiren boshe pas makines (sic e kerkove)
+            // Fokusimi (Target) mbetet njësoj për t'i dhënë hapësirë sipër saj
             controls.target.set(-0.5, 0.7, 1.2); 
 
             raycaster = new THREE.Raycaster();
@@ -889,11 +916,15 @@
                 const center = box.getCenter(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z) || 1;
                 
-                const scale = 8.5 / maxDim; 
+                // ZMADHIM SHTESE - nga 8.5 kaluam në 10.5
+                const scale = 10.5 / maxDim; 
                 carModel.scale.setScalar(scale);
                 carModel.position.x = -center.x * scale;
                 carModel.position.z = -center.z * scale;
-                carModel.position.y = -box.min.y * scale;
+                
+                // ULEMI FIZIKISHT POSHTE (zbresim 1.2 njesi)
+                carModel.position.y = (-box.min.y * scale) - 1.2;
+                
                 scene.add(carModel);
 
                 const sunroofGeo = new THREE.PlaneGeometry(size.x * 0.28, size.z * 0.20);

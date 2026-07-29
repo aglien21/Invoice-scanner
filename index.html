@@ -136,7 +136,6 @@
         .i30-purple { background:linear-gradient(145deg,rgba(120,55,185,.82),rgba(65,25,110,.86)); }
         .i30-lime { background:linear-gradient(145deg,rgba(75,145,35,.82),rgba(42,80,20,.86)); }
         .i30-gray { background:linear-gradient(145deg,rgba(95,102,112,.82),rgba(42,47,53,.88)); }
-        .i30-wide { grid-column:span 2; min-height: 50px;}
 
         /* ===== 3D VIEWER ===== */
         .i30-car-title {
@@ -241,17 +240,23 @@
                 </div>
 
                 <div class="i30-quick-grid">
-                    <button id="btn-engine" class="i30-action i30-green" onclick="sendCommand('START')">
-                        <span class="i30-action-icon">⏻</span><span>START</span>
+                    <!-- Butoni Ndezjes: Tani me funksion dinamik (Normal vs Trip Mode) -->
+                    <button id="btn-engine" class="i30-action i30-green" onclick="handleEngineClick()">
+                        <span class="i30-action-icon">⏻</span><span id="txt-engine">START</span>
                     </button>
-                    <button id="btn-locks" class="i30-action i30-red" onclick="sendCommand('UNLOCK')">
-                        <span class="i30-action-icon">🔒</span><span>HAP</span>
+                    <!-- Butonat e dyerve të ndarë veç -->
+                    <button id="btn-unlock" class="i30-action i30-blue" onclick="sendCommand('UNLOCK')">
+                        <span class="i30-action-icon">🔓</span><span>HAP</span>
+                    </button>
+                    <button id="btn-lock" class="i30-action i30-red" onclick="sendCommand('LOCK')">
+                        <span class="i30-action-icon">🔒</span><span>MBYLL</span>
+                    </button>
+                    <!-- Butonat e tjerë -->
+                    <button id="btn-sunroof" class="i30-action i30-orange" onclick="sendCommand('SUNROOF')">
+                        <span class="i30-action-icon">🌅</span><span>TAVANI</span>
                     </button>
                     <button id="btn-windows" class="i30-action i30-blue" onclick="sendCommand('WINDOWS')">
                         <span class="i30-action-icon">🪟</span><span>XHAMAT</span>
-                    </button>
-                    <button id="btn-sunroof" class="i30-action i30-orange" onclick="sendCommand('SUNROOF')">
-                        <span class="i30-action-icon">🌅</span><span>TAVANI</span>
                     </button>
                     <button id="btn-trip" class="i30-action i30-purple" onclick="sendCommand('TRIP_MODE')">
                         <span class="i30-action-icon">🚀</span><span>TRIP</span>
@@ -259,7 +264,7 @@
                     <button id="btn-gps" class="i30-action i30-lime" onclick="sendCommand('GPS')">
                         <span class="i30-action-icon">📍</span><span>GPS</span>
                     </button>
-                    <button id="btn-allclose" class="i30-action i30-gray i30-wide" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
+                    <button id="btn-allclose" class="i30-action i30-gray" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
                         <span class="i30-action-icon" style="font-size: 18px;">🚘</span><span>ALL CLOSE</span>
                     </button>
                 </div>
@@ -436,12 +441,21 @@
 
             document.getElementById('user-greeting').innerText = `👋 PËRSHËNDETJE, ${uName.toUpperCase()}!`;
             
+            // FSHIH BUTONAT SIPAS KËRKESËS PËR GUEST
             if (userRole === "guest") {
                 document.getElementById('nav-serv').style.display = 'none';
                 document.getElementById('row-hours1').style.display = 'none';
                 document.getElementById('row-hours2').style.display = 'none';
                 document.getElementById('user-greeting').style.color = "orange";
+                
+                document.getElementById('btn-windows').style.display = 'none';
+                document.getElementById('btn-gps').style.display = 'none';
+                document.getElementById('btn-allclose').style.display = 'none';
             } else {
+                document.getElementById('btn-windows').style.display = 'flex';
+                document.getElementById('btn-gps').style.display = 'flex';
+                document.getElementById('btn-allclose').style.display = 'flex';
+
                 loadGuestPins();
                 lexoOretNgaFirebase(); 
                 document.getElementById('user-greeting').style.color = "var(--accent)";
@@ -631,7 +645,10 @@
             setOnlineState("CON...", "CONNECTING", "orange");
 
             mqttClient.connect({
-                useSSL: true, reconnect: true, timeout: 5, keepAliveInterval: 25,
+                useSSL: true, 
+                reconnect: true, 
+                timeout: 5, 
+                keepAliveInterval: 60, // Rritja në 60 sekonda mban lidhjen e pashkëputur
                 onSuccess: () => {
                     isMqttConnected = true; 
                     mqttClient.subscribe(topicStatus);
@@ -658,13 +675,18 @@
 
                 if(data.e !== undefined) {
                     isEngineRunning = (data.e === 1); 
-                    const elEng = document.getElementById('val-engine'); const btnEng = document.getElementById('btn-engine');
+                    const elEng = document.getElementById('val-engine'); 
+                    const btnEng = document.getElementById('btn-engine');
+                    const txtEng = document.getElementById('txt-engine');
+
                     if(data.e === 1) {
                         elEng.innerText = "ON"; elEng.style.color = "var(--danger)";
-                        btnEng.className = "i30-action i30-red"; btnEng.innerHTML = '<span class="i30-action-icon">⏻</span><span>FIK MOTORRIN</span>';
+                        btnEng.className = "i30-action i30-red"; 
+                        txtEng.innerText = 'FIK MOTORRIN';
                     } else {
                         elEng.innerText = "OFF"; elEng.style.color = "var(--success)";
-                        btnEng.className = "i30-action i30-green"; btnEng.innerHTML = '<span class="i30-action-icon">⏻</span><span>NDIZ MOTORRIN</span>';
+                        btnEng.className = "i30-action i30-green"; 
+                        txtEng.innerText = 'START';
                     }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('engine', isEngineRunning);
                 }
@@ -681,13 +703,11 @@
                 }
 
                 if(data.l !== undefined) {
-                    const elLocks = document.getElementById('val-locks'); const btnLocks = document.getElementById('btn-locks');
+                    const elLocks = document.getElementById('val-locks');
                     if(data.l === 1) {
                         elLocks.innerText = "MBYLLUR"; elLocks.style.color = "var(--success)"; // Jeshile kur është mbyllur
-                        btnLocks.className = "i30-action i30-green"; btnLocks.innerHTML = '<span class="i30-action-icon">🔒</span><span>HAP MAKINËN</span>';
                     } else if(data.l === 0) {
                         elLocks.innerText = "HAPUR"; elLocks.style.color = "var(--danger)"; // E kuqe kur është hapur
-                        btnLocks.className = "i30-action i30-red"; btnLocks.innerHTML = '<span class="i30-action-icon">🔒</span><span>MBYLL MAKINËN</span>';
                     }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', data.l === 0);
                 }
@@ -701,7 +721,8 @@
                 }
             } catch (e) { }
             
-            carTimer = setTimeout(() => { setOnlineState("ERR", "ERR", "var(--danger)"); }, 12000); 
+            // Zgjatura në 35 sekonda për të lejuar vonesa të lehta të rrjetit GPRS / GSM
+            carTimer = setTimeout(() => { setOnlineState("ERR", "ERR", "var(--danger)"); }, 35000); 
         };
 
         window.sendCommand = (cmd) => {
@@ -713,6 +734,32 @@
             const status = document.getElementById('val-key').innerText;
             sendCommand(status === "AKTIV" ? 'KEY_OFF' : 'KEY_ON');
         }
+
+        // --- Logjika dinamike e Butonit të Engine (Normal per Admin, Sekuence per Guest) ---
+        window.handleEngineClick = function() {
+            const role = (typeof userRole !== 'undefined') ? userRole : 'guest';
+            const engText = document.getElementById('val-engine').innerText;
+            const isRunning = (engText === 'ON' || (typeof isEngineRunning !== 'undefined' && isEngineRunning));
+
+            if (role === 'guest') {
+                if (!isRunning) {
+                    // Për Guest: Fikur -> Hap -> Ndiz
+                    sendCommand('UNLOCK');
+                    setTimeout(() => { sendCommand('START'); }, 1200);
+                } else {
+                    // Për Guest: Ndezur -> Fik -> Kyç
+                    sendCommand('STOP');
+                    setTimeout(() => { sendCommand('LOCK'); }, 1200);
+                }
+            } else {
+                // Për Admin: Funksion Normal (S'ka trip sekuence në buton, mund ta përdorësh butonin trip)
+                if (!isRunning) {
+                    sendCommand('START');
+                } else {
+                    sendCommand('STOP');
+                }
+            }
+        };
 
         window.onload = () => {
             applyAppConfig(); 
@@ -992,19 +1039,15 @@
                 const isRunning = (engText === 'ON' || (typeof isEngineRunning !== 'undefined' && isEngineRunning));
 
                 if (!isRunning) {
-                    // Nëse motorri është i fikur -> Hap dyert (UNLOCK) pastaj ndiz motorrin (START)
+                    // Sekuenca e Ndezjes Trip 
                     showFeedback('🔓⏳ NDEZJE SEKUENCIALE...');
                     sendCommand('UNLOCK');
-                    setTimeout(() => {
-                        sendCommand('START');
-                    }, 1200); // Vonesë 1.2 sekonda ndërmjet komandave
+                    setTimeout(() => { sendCommand('START'); }, 1200); 
                 } else {
-                    // Nëse motorri është i ndezur -> Fik motorrin (STOP) pastaj mbyll makinen (LOCK)
+                    // Sekuenca e Fikjes Trip
                     showFeedback('🛑⏳ FIKJE & KYÇJE...');
                     sendCommand('STOP');
-                    setTimeout(() => {
-                        sendCommand('LOCK');
-                    }, 1200);
+                    setTimeout(() => { sendCommand('LOCK'); }, 1200);
                 }
             } else if (part === 'sunroof') {
                 if (role === 'guest') { showFeedback('⛔ S\'keni akses'); return; }

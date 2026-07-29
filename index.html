@@ -40,8 +40,8 @@
             margin: 0; 
             padding: 0; 
             min-height: 100vh; 
+            min-height: 100dvh; /* Përshtatje specifike për iOS */
             width: 100vw;
-            height: 100vh;
             overflow: hidden;
             position: fixed;
             background-image: url('bg.jpg');
@@ -55,22 +55,50 @@
             touch-action: pan-y;
         }
 
-        .overlay { background: rgba(0, 0, 0, 0.5); width: 100%; height: 100%; padding: 12px; box-sizing: border-box; overflow-y: auto; overflow-x: hidden; padding-bottom: 90px; }
+        /* STRUKTURA E RE PËR TA SHTYRË PËRMBAJTJEN POSHTË (PËR 1 DORË) DHE SHMANGUR DYNAMIC ISLAND */
+        .overlay { 
+            background: rgba(0, 0, 0, 0.5); 
+            width: 100%; 
+            height: 100%; 
+            padding: 12px; 
+            box-sizing: border-box; 
+            overflow-y: auto; 
+            overflow-x: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            /* env(safe-area) mbron pjesen e siperme dhe te poshtme te iphone */
+            padding-top: calc(env(safe-area-inset-top, 45px) + 10px);
+            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 85px);
+        }
         
-        .screen { display: none; text-align: center; width: 100%; max-width: 500px; margin: 0 auto; box-sizing: border-box; }
+        .screen { 
+            display: none; 
+            text-align: center; 
+            width: 100%; 
+            max-width: 500px; 
+            /* Shtyjmë faqen në fund të ekranit */
+            margin: auto auto 0 auto; 
+            box-sizing: border-box; 
+        }
         .screen.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ===== LOGIN SCREEN ===== */
-        #screen-login.active { display: flex; flex-direction: column; align-items: center; min-height: 85vh; }
-        .logo-login { width: 120px; height: 120px; border-radius: 20%; margin-bottom: 20px; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 4px 15px var(--dash-glow); }
+        #screen-login.active { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-end; /* I zbret elementet poshte fare */
+            width: 100%;
+        }
+        .logo-login { width: 100px; height: 100px; border-radius: 20%; margin-bottom: 20px; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 4px 15px var(--dash-glow); }
         #pin-input { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: white; font-size: 24px; padding: 15px; border-radius: 10px; width: 200px; text-align: center; margin-bottom: 20px; letter-spacing: 10px; outline: none; -webkit-text-security: disc;}
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 280px; margin-top: auto; margin-bottom: 20px; }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 280px; margin-bottom: 10px; }
         .num-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 15px; font-size: 22px; border-radius: 10px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;}
         .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
         /* ===== DASHBOARD ===== */
-        #screen-dash { max-width: 500px; width: 100%; padding-bottom: 10px; }
+        #screen-dash { max-width: 500px; width: 100%; padding-bottom: 5px; }
 
         .i30-topbar {
             display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -187,8 +215,19 @@
         .guest-pin { font-size: 12px; font-weight: 700; }
         .btn-delete { background: var(--danger); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px;}
 
-        /* NAV BAR FIX POSHTE */
-        .nav-bar { display: none; justify-content: space-around; background: rgba(10,12,16,0.95); padding: 10px 0; border-top: 1px solid var(--dash-border); position: fixed; bottom: 0; left: 0; width: 100vw; z-index: 1000; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
+        /* NAV BAR FIX POSHTE (Me hapesire extra per Home Indicator te iOS) */
+        .nav-bar { 
+            display: none; 
+            justify-content: space-around; 
+            background: rgba(10,12,16,0.95); 
+            padding: 10px 0 calc(env(safe-area-inset-bottom, 15px) + 5px) 0; 
+            border-top: 1px solid var(--dash-border); 
+            position: fixed; 
+            bottom: 0; left: 0; width: 100vw; 
+            z-index: 1000; 
+            backdrop-filter: blur(15px); 
+            -webkit-backdrop-filter: blur(15px); 
+        }
         .nav-icon { font-size: 22px; cursor: pointer; color: #777; transition: 0.3s; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;}
         .nav-icon span { font-size: 9px; margin-top: 3px; font-weight: bold; letter-spacing: 0.5px;}
         .nav-icon.active { color: var(--accent); transform: translateY(-2px); }
@@ -200,11 +239,11 @@
         
         <!-- EKRANI LOGIN -->
         <div id="screen-login" class="screen active">
-            <h2 style="margin-top: 20px; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
-            <div style="margin-top: 5px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.1rem; color: #aaa; letter-spacing: 1px;">
+            <h2 style="margin-top: 0; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8);">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
+            <div style="margin-top: 5px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 1.1rem; color: #aaa; letter-spacing: 1px; margin-bottom: 15px;">
                 Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
             </div>
-            <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login" style="margin-top: 20px;">
+            <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login">
             <input type="password" id="pin-input" readonly placeholder="****">
             
             <div class="numpad">
@@ -750,7 +789,7 @@
                 }
 
                 if(data.k !== undefined) {
-                    const statusStr = (data.k === 1) ? "AKTIV" : "JO AKTIV";
+                    const statusStr = (data.k === 1) ? "AKTIV" : "JO";
                     const col = (data.k === 1) ? "#8e44ad" : "#fff";
                     document.getElementById('val-key').innerText = statusStr; document.getElementById('val-key').style.color = col;
                     const servK = document.getElementById('val-key-serv');

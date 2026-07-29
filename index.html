@@ -880,7 +880,7 @@
             controls.maxPolarAngle = Math.PI / 2.05;
             
             // Fokusimi (Target) mbetet njësoj për t'i dhënë hapësirë sipër saj
-            controls.target.set(-0.5, 0.7, 1.2); 
+            controls.target.set(-0.9, 0.7, 1.2); 
 
             raycaster = new THREE.Raycaster();
             pointer = new THREE.Vector2();
@@ -923,7 +923,7 @@
                 carModel.position.z = -center.z * scale;
                 
                 // ULEMI FIZIKISHT POSHTE (zbresim 1.2 njesi)
-                carModel.position.y = (-box.min.y * scale) - 1.2;
+                carModel.position.y = (-box.min.y * scale) - 0.8;
                 
                 scene.add(carModel);
 

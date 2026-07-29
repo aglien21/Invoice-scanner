@@ -685,10 +685,10 @@
                 if(data.l !== undefined) {
                     const elLocks = document.getElementById('val-locks'); const btnLocks = document.getElementById('btn-locks');
                     if(data.l === 1) {
-                        elLocks.innerText = "MBYLLUR"; elLocks.style.color = "var(--danger)";
+                        elLocks.innerText = "MBYLLUR"; elLocks.style.color = "var(--success)";
                         btnLocks.className = "i30-action i30-green"; btnLocks.innerHTML = '<span class="i30-action-icon">🔒</span><span>HAP MAKINËN</span>';
                     } else if(data.l === 0) {
-                        elLocks.innerText = "HAPUR"; elLocks.style.color = "var(--success)";
+                        elLocks.innerText = "HAPUR"; elLocks.style.color = "var(--danger)";
                         btnLocks.className = "i30-action i30-red"; btnLocks.innerHTML = '<span class="i30-action-icon">🔒</span><span>MBYLL MAKINËN</span>';
                     }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', data.l === 0);
@@ -860,7 +860,7 @@
             camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
             
             // Kamera vendoset e afërt për ta bërë më të madhe makinën (Zmadhimi)
-            camera.position.set(-5.5, 4.5, 6.5);
+            camera.position.set(-5.0, 4.5, 6.5);
 
             renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
             renderer.setPixelRatio(window.devicePixelRatio);

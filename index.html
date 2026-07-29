@@ -136,6 +136,7 @@
         .i30-purple { background:linear-gradient(145deg,rgba(120,55,185,.82),rgba(65,25,110,.86)); }
         .i30-lime { background:linear-gradient(145deg,rgba(75,145,35,.82),rgba(42,80,20,.86)); }
         .i30-gray { background:linear-gradient(145deg,rgba(95,102,112,.82),rgba(42,47,53,.88)); }
+        .i30-wide { grid-column:span 2; min-height: 50px;}
 
         /* ===== 3D VIEWER ===== */
         .i30-car-title {
@@ -240,18 +241,25 @@
                 </div>
 
                 <div class="i30-quick-grid">
-                    <!-- Butoni Ndezjes: Tani me funksion dinamik (Normal vs Trip Mode) -->
+                    <!-- 1. Butoni i Motorrit -->
                     <button id="btn-engine" class="i30-action i30-green" onclick="handleEngineClick()">
                         <span class="i30-action-icon">⏻</span><span id="txt-engine">START</span>
                     </button>
-                    <!-- Butonat e dyerve të ndarë veç -->
-                    <button id="btn-unlock" class="i30-action i30-blue" onclick="sendCommand('UNLOCK')">
+                    
+                    <!-- 2. Butoni Dinamik për Admin (Hap/Mbyll së bashku) -->
+                    <button id="btn-locks-admin" class="i30-action i30-green" onclick="toggleLocks()">
+                        <span class="i30-action-icon">🔓</span><span>HAP MAKINËN</span>
+                    </button>
+                    
+                    <!-- 3. Butonat e Ndarë për Guest (Shfaqen vetëm tek Guest) -->
+                    <button id="btn-unlock-guest" class="i30-action i30-blue" onclick="sendCommand('UNLOCK')" style="display:none;">
                         <span class="i30-action-icon">🔓</span><span>HAP</span>
                     </button>
-                    <button id="btn-lock" class="i30-action i30-red" onclick="sendCommand('LOCK')">
+                    <button id="btn-lock-guest" class="i30-action i30-red" onclick="sendCommand('LOCK')" style="display:none;">
                         <span class="i30-action-icon">🔒</span><span>MBYLL</span>
                     </button>
-                    <!-- Butonat e tjerë -->
+
+                    <!-- 4. Butonat e tjerë -->
                     <button id="btn-sunroof" class="i30-action i30-orange" onclick="sendCommand('SUNROOF')">
                         <span class="i30-action-icon">🌅</span><span>TAVANI</span>
                     </button>
@@ -264,7 +272,7 @@
                     <button id="btn-gps" class="i30-action i30-lime" onclick="sendCommand('GPS')">
                         <span class="i30-action-icon">📍</span><span>GPS</span>
                     </button>
-                    <button id="btn-allclose" class="i30-action i30-gray" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
+                    <button id="btn-allclose" class="i30-action i30-gray i30-wide" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
                         <span class="i30-action-icon" style="font-size: 18px;">🚘</span><span>ALL CLOSE</span>
                     </button>
                 </div>
@@ -441,20 +449,39 @@
 
             document.getElementById('user-greeting').innerText = `👋 PËRSHËNDETJE, ${uName.toUpperCase()}!`;
             
-            // FSHIH BUTONAT SIPAS KËRKESËS PËR GUEST
             if (userRole === "guest") {
+                // Fsheh menutë dhe orët për Guest
                 document.getElementById('nav-serv').style.display = 'none';
                 document.getElementById('row-hours1').style.display = 'none';
                 document.getElementById('row-hours2').style.display = 'none';
                 document.getElementById('user-greeting').style.color = "orange";
                 
+                // Fsheh butonat e Adminit dhe butonat e ndaluar
+                document.getElementById('btn-locks-admin').style.display = 'none';
                 document.getElementById('btn-windows').style.display = 'none';
                 document.getElementById('btn-gps').style.display = 'none';
                 document.getElementById('btn-allclose').style.display = 'none';
+
+                // Shfaq butonat e ndarë të dyerve për Guest
+                document.getElementById('btn-unlock-guest').style.display = 'flex';
+                document.getElementById('btn-lock-guest').style.display = 'flex';
+                
+                // Bën butonin e Trip më të gjerë për të mbushur hapësirën tek Guest
+                document.getElementById('btn-trip').classList.add('i30-wide');
+
             } else {
+                // Shfaq butonat e Adminit
+                document.getElementById('btn-locks-admin').style.display = 'flex';
                 document.getElementById('btn-windows').style.display = 'flex';
                 document.getElementById('btn-gps').style.display = 'flex';
                 document.getElementById('btn-allclose').style.display = 'flex';
+
+                // Fsheh butonat statikë të Guest
+                document.getElementById('btn-unlock-guest').style.display = 'none';
+                document.getElementById('btn-lock-guest').style.display = 'none';
+
+                // Rregullon gjerësinë e Trip për Admin
+                document.getElementById('btn-trip').classList.remove('i30-wide');
 
                 loadGuestPins();
                 lexoOretNgaFirebase(); 
@@ -648,7 +675,7 @@
                 useSSL: true, 
                 reconnect: true, 
                 timeout: 5, 
-                keepAliveInterval: 60, // Rritja në 60 sekonda mban lidhjen e pashkëputur
+                keepAliveInterval: 60,
                 onSuccess: () => {
                     isMqttConnected = true; 
                     mqttClient.subscribe(topicStatus);
@@ -704,16 +731,26 @@
 
                 if(data.l !== undefined) {
                     const elLocks = document.getElementById('val-locks');
+                    const btnLocksAdmin = document.getElementById('btn-locks-admin'); // Vetem butoni i adminit duhet t'i ndryshoje pamja
+
                     if(data.l === 1) {
-                        elLocks.innerText = "MBYLLUR"; elLocks.style.color = "var(--success)"; // Jeshile kur është mbyllur
+                        elLocks.innerText = "MBYLLUR"; elLocks.style.color = "var(--success)"; 
+                        if (btnLocksAdmin) {
+                            btnLocksAdmin.className = "i30-action i30-green"; 
+                            btnLocksAdmin.innerHTML = '<span class="i30-action-icon">🔓</span><span>HAP MAKINËN</span>';
+                        }
                     } else if(data.l === 0) {
-                        elLocks.innerText = "HAPUR"; elLocks.style.color = "var(--danger)"; // E kuqe kur është hapur
+                        elLocks.innerText = "HAPUR"; elLocks.style.color = "var(--danger)"; 
+                        if (btnLocksAdmin) {
+                            btnLocksAdmin.className = "i30-action i30-red"; 
+                            btnLocksAdmin.innerHTML = '<span class="i30-action-icon">🔒</span><span>MBYLL MAKINËN</span>';
+                        }
                     }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', data.l === 0);
                 }
 
                 if(data.k !== undefined) {
-                    const statusStr = (data.k === 1) ? "AKTIV" : "JO";
+                    const statusStr = (data.k === 1) ? "AKTIV" : "JO AKTIV";
                     const col = (data.k === 1) ? "#8e44ad" : "#fff";
                     document.getElementById('val-key').innerText = statusStr; document.getElementById('val-key').style.color = col;
                     const servK = document.getElementById('val-key-serv');
@@ -721,7 +758,6 @@
                 }
             } catch (e) { }
             
-            // Zgjatura në 35 sekonda për të lejuar vonesa të lehta të rrjetit GPRS / GSM
             carTimer = setTimeout(() => { setOnlineState("ERR", "ERR", "var(--danger)"); }, 35000); 
         };
 
@@ -730,12 +766,21 @@
             } catch (error) { alert("Duke u rilidhur..."); }
         };
 
+        // Funksioni për butonin dinamik të Adminit
+        window.toggleLocks = function() {
+            const elLocks = document.getElementById('val-locks').innerText;
+            if (elLocks.indexOf('MBYLLUR') === 0 || elLocks === '--') {
+                sendCommand('UNLOCK');
+            } else {
+                sendCommand('LOCK');
+            }
+        };
+
         function toggleKey() {
             const status = document.getElementById('val-key').innerText;
             sendCommand(status === "AKTIV" ? 'KEY_OFF' : 'KEY_ON');
         }
 
-        // --- Logjika dinamike e Butonit të Engine (Normal per Admin, Sekuence per Guest) ---
         window.handleEngineClick = function() {
             const role = (typeof userRole !== 'undefined') ? userRole : 'guest';
             const engText = document.getElementById('val-engine').innerText;
@@ -743,16 +788,13 @@
 
             if (role === 'guest') {
                 if (!isRunning) {
-                    // Për Guest: Fikur -> Hap -> Ndiz
                     sendCommand('UNLOCK');
                     setTimeout(() => { sendCommand('START'); }, 1200);
                 } else {
-                    // Për Guest: Ndezur -> Fik -> Kyç
                     sendCommand('STOP');
                     setTimeout(() => { sendCommand('LOCK'); }, 1200);
                 }
             } else {
-                // Për Admin: Funksion Normal (S'ka trip sekuence në buton, mund ta përdorësh butonin trip)
                 if (!isRunning) {
                     sendCommand('START');
                 } else {
@@ -1039,12 +1081,10 @@
                 const isRunning = (engText === 'ON' || (typeof isEngineRunning !== 'undefined' && isEngineRunning));
 
                 if (!isRunning) {
-                    // Sekuenca e Ndezjes Trip 
                     showFeedback('🔓⏳ NDEZJE SEKUENCIALE...');
                     sendCommand('UNLOCK');
                     setTimeout(() => { sendCommand('START'); }, 1200); 
                 } else {
-                    // Sekuenca e Fikjes Trip
                     showFeedback('🛑⏳ FIKJE & KYÇJE...');
                     sendCommand('STOP');
                     setTimeout(() => { sendCommand('LOCK'); }, 1200);

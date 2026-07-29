@@ -80,20 +80,20 @@
         .screen.active { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ===== LOGIN SCREEN (I zbritur poshte fare per ta perdorur me nje dore) ===== */
+        /* ===== LOGIN SCREEN (I vendosur lart fare) ===== */
         #screen-login.active { 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: flex-end; 
+            justify-content: flex-start; /* E ngjit ne krye te ekranit */
             width: 100%;
             height: 100%;
-            padding-bottom: 5px;
+            padding-top: 10px;
         }
-        .logo-login { width: 85px; height: 85px; border-radius: 20%; margin-bottom: 10px; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 4px 15px var(--dash-glow); }
-        #pin-input { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: white; font-size: 22px; padding: 12px; border-radius: 10px; width: 180px; text-align: center; margin-bottom: 12px; letter-spacing: 10px; outline: none; -webkit-text-security: disc;}
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 260px; margin-bottom: 0px; }
-        .num-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 12px; font-size: 20px; border-radius: 10px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;}
+        .logo-login { width: 75px; height: 75px; border-radius: 20%; margin-bottom: 8px; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 4px 15px var(--dash-glow); }
+        #pin-input { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: white; font-size: 22px; padding: 10px; border-radius: 10px; width: 180px; text-align: center; margin-bottom: 10px; letter-spacing: 10px; outline: none; -webkit-text-security: disc;}
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; max-width: 260px; margin-bottom: 0px; }
+        .num-btn { background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px; font-size: 18px; border-radius: 10px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;}
         .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
 
         /* ===== DASHBOARD ===== */
@@ -238,8 +238,8 @@
         
         <!-- EKRANI LOGIN -->
         <div id="screen-login" class="screen active">
-            <h2 style="margin: 0 0 2px 0; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-size: 1.3rem;">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
-            <div style="margin-bottom: 10px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.95rem; color: #aaa; letter-spacing: 1px;">
+            <h2 style="margin: 0 0 2px 0; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-size: 1.2rem;">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
+            <div style="margin-bottom: 8px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.85rem; color: #aaa; letter-spacing: 1px;">
                 Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
             </div>
             <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login">
@@ -532,7 +532,6 @@
             if(el) el.classList.add('active');
         }
 
-        // --- APLIKIMI I KONFIGURIMEVE TË PAMJES ---
         function applyAppConfig() {
             db.ref('adminConfig').once('value').then((snap) => {
                 const cfg = snap.val();
@@ -572,7 +571,6 @@
             applyAppConfig();
         }
 
-        // --- ORËT E PUNËS ---
         function formatHours(dec) {
             if (!dec || isNaN(dec)) return "0h 0m";
             let h = Math.floor(dec); let m = Math.round((dec - h) * 60);
@@ -628,7 +626,6 @@
             });
         }
 
-        // --- GUEST USERS & SETTINGS ---
         function addGuestPin() {
             const name = document.getElementById('new-guest-name').value.trim();
             const pin = document.getElementById('new-guest-pin').value;
@@ -692,7 +689,6 @@
             if(vonesa > 0) { alert("Dërguar!"); document.getElementById('cfg-t-kandele').value = ""; document.getElementById('cfg-t-xhamat').value = ""; } 
         }
 
-        // --- MQTT BAZICS ---
         function setOnlineState(state, text, color) {
             const el1 = document.getElementById('val-online'); el1.innerText = text; el1.style.color = color;
             const el2 = document.getElementById('top-mqtt-status'); el2.innerText = state; el2.style.color = color;

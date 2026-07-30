@@ -36,7 +36,7 @@
             --text-main: #ffffff;
             --text-sub: #7a8291;
             --btn-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            --car-glow: radial-gradient(ellipse at center, rgba(0, 210, 255, 0.25) 0%, rgba(0, 0, 0, 0.6) 80%);
+            --car-glow: radial-gradient(ellipse at center, rgba(0, 210, 255, 0.3) 0%, rgba(3, 8, 15, 0.85) 85%);
         }
 
         body { 
@@ -56,7 +56,7 @@
             --text-main: #1d2128;
             --text-sub: #8e95a3;
             --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            --car-glow: radial-gradient(ellipse at center, rgba(0, 168, 255, 0.15) 0%, rgba(220, 230, 242, 0.9) 80%);
+            --car-glow: radial-gradient(ellipse at center, rgba(0, 168, 255, 0.15) 0%, rgba(225, 232, 240, 0.95) 85%);
         }
 
         .txt-green { color: #34c759 !important; }
@@ -88,20 +88,29 @@
         #screen-dash { 
             max-width: 500px; width: 100%; height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
             overflow-y: auto; 
-            /* Hequr hapësira e tepërt lart, optimizuar për t'u shfaqur pa scroll */
-            padding: calc(env(safe-area-inset-top, 5px) + 8px) 12px calc(env(safe-area-inset-bottom, 10px) + 65px) 12px; 
+            padding: calc(env(safe-area-inset-top, 5px) + 6px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px; 
             box-sizing: border-box;
         }
 
         .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 2px 0; }
         .header-icon { font-size: 20px; color: var(--text-sub); cursor: pointer; -webkit-tap-highlight-color: transparent;}
         
-        /* Stili i ri i kreut me pershendetjen te kuqe */
-        .dash-title { font-size: 14px; font-weight: 700; color: var(--text-main); letter-spacing: 0.3px; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
-        .dash-title i { font-style: italic; font-weight: 800; color: #58a9ff; font-size: 16px;}
-        .dash-title span { font-size: 10px; font-weight: 800; margin-top: 1px; color: var(--danger); letter-spacing: 0.5px; }
+        /* KREU I RI (Fiks si në Foto 3) */
+        .dash-top-box {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--box-bg); border: 1px solid rgba(0, 210, 255, 0.35); border-radius: 12px;
+            padding: 8px 12px; margin-bottom: 8px; box-shadow: var(--btn-shadow);
+        }
+        .dash-brand { font-size: 15px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; text-align: left; }
+        .dash-brand strong { color: #58a9ff; font-style: italic; font-size: 18px; font-weight: 800; }
+        .dash-brand span { color: var(--text-sub); font-style: italic; font-size: 11px; }
 
-        /* STATUSI LART ME 2 KOLONA KUDRATA TË NDARA */
+        .dash-user-info { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+        #user-greeting { font-size: 10.5px; font-weight: 800; color: var(--danger); letter-spacing: 0.3px; }
+        .dash-sub-status { font-size: 9px; color: var(--text-sub); font-weight: 600; display: flex; gap: 6px; align-items: center; }
+        .dash-sub-status b { color: var(--text-main); font-size: 9px; }
+
+        /* STATUSI LART ME 2 KOLONA KUDRATA */
         .i30-main-status {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -122,9 +131,9 @@
         .i30-status-row:last-child { border-bottom: 0; }
         .i30-status-row b { color: var(--text-main); font-size: 10px; text-align: right; white-space: nowrap; }
 
-        /* 3D VIEWER (Optimizuar madhësia) */
+        /* 3D VIEWER (I hapur dhe i zmadhuar më shumë) */
         .viewer-container { 
-            position: relative; width: 100%; height: 215px; margin-bottom: 10px; border-radius: 12px; 
+            position: relative; width: 100%; height: 255px; margin-bottom: 10px; border-radius: 12px; 
             background: var(--car-glow); border: 1px solid var(--box-border); overflow: hidden; box-shadow: var(--btn-shadow);
         }
         #car-3d-canvas { width: 100% !important; height: 100% !important; display: block; position: relative; z-index: 2;}
@@ -139,7 +148,7 @@
         }
         #car-3d-feedback.show { opacity: 1; }
 
-        /* BUTONAT (3-3-2 kompaltë) */
+        /* BUTONAT (3-3-2) */
         .action-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
         .action-btn {
             background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 10px; padding: 10px 2px;
@@ -213,13 +222,23 @@
         <!-- EKRANI DASHBOARD -->
         <div id="screen-dash" class="screen">
             
-            <!-- HEADER I OPTIMIZUAR -->
-            <div class="dash-header">
-                <div class="header-icon">≡</div>
-                <div class="dash-title">
-                    <i>i30</i> DIGITAL REMOTE
-                    <span id="user-greeting">PËRSHËNDETJE!</span>
+            <!-- KREU I RI (Fiks si në Foto 3) -->
+            <div class="dash-top-box">
+                <div class="dash-brand">
+                    <strong>i30</strong> <span>REMOTE</span>
                 </div>
+                <div class="dash-user-info">
+                    <div id="user-greeting">PËRSHËNDETJE!</div>
+                    <div class="dash-sub-status">
+                        <span>MQTT: <b id="top-mqtt-status" class="txt-orange">CON...</b></span>
+                        <span><b id="top-clock">--:--:--</b></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HEADER ACTIONS (Theme & Menu) -->
+            <div class="dash-header" style="display:none;">
+                <div class="header-icon">≡</div>
                 <div class="header-icon" onclick="toggleTheme()" id="theme-btn">⚙️</div>
             </div>
 
@@ -235,7 +254,7 @@
 
                 <div class="i30-status-card">
                     <div class="i30-card-title">SISTEMI & ORËT</div>
-                    <div class="i30-status-row"><span>MQTT</span><b id="top-mqtt-status" class="txt-orange">CON...</b></div>
+                    <div class="i30-status-row"><span>TEMA</span><b style="cursor:pointer; color:var(--accent);" onclick="toggleTheme()">NDRYSHO ⚙️</b></div>
                     <div class="i30-status-row"><span>ÇELËSI</span><b id="val-key">--</b></div>
                     <div class="i30-status-row" id="row-hours1"><span>ORË SOT</span><b id="val-hours-today">0.0h</b></div>
                     <div class="i30-status-row" id="row-hours2"><span>ORË TOTALE</span><b id="val-work-hours">0.0h</b></div>
@@ -400,20 +419,24 @@
         function applySavedTheme() {
             if (localStorage.getItem("theme") === "light") {
                 document.body.classList.add("light-mode");
-                document.getElementById("theme-btn").innerText = "☀️";
+                const tBtn = document.getElementById("theme-btn");
+                if(tBtn) tBtn.innerText = "☀️";
             } else {
                 document.body.classList.remove("light-mode");
-                document.getElementById("theme-btn").innerText = "⚙️";
+                const tBtn = document.getElementById("theme-btn");
+                if(tBtn) tBtn.innerText = "⚙️";
             }
         }
         function toggleTheme() {
             document.body.classList.toggle("light-mode");
             if (document.body.classList.contains("light-mode")) {
                 localStorage.setItem("theme", "light");
-                document.getElementById("theme-btn").innerText = "☀️";
+                const tBtn = document.getElementById("theme-btn");
+                if(tBtn) tBtn.innerText = "☀️";
             } else {
                 localStorage.setItem("theme", "dark");
-                document.getElementById("theme-btn").innerText = "⚙️";
+                const tBtn = document.getElementById("theme-btn");
+                if(tBtn) tBtn.innerText = "⚙️";
             }
         }
         
@@ -486,7 +509,7 @@
             userRole = sessionStorage.getItem("role");
             const uName = sessionStorage.getItem("userName") || "PËRDORUES";
 
-            document.getElementById('user-greeting').innerText = `${uName.toUpperCase()}`;
+            document.getElementById('user-greeting').innerText = `👋 PËRSHËNDETJE, ${uName.toUpperCase()}!`;
             
             if (userRole === "guest") {
                 document.getElementById('nav-serv').style.display = 'none';

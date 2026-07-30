@@ -87,37 +87,42 @@
 
         #screen-dash { 
             max-width: 500px; width: 100%; height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 35px) 14px calc(env(safe-area-inset-bottom, 10px) + 60px) 14px; box-sizing: border-box;
+            overflow-y: auto; 
+            /* Ulur sa më në fund aplikacioni me padding të shtuar lart dhe poshtë */
+            padding: calc(env(safe-area-inset-top, 10px) + 50px) 14px calc(env(safe-area-inset-bottom, 10px) + 75px) 14px; 
+            box-sizing: border-box;
         }
 
-        .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 5px 0; }
+        .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 5px 0; }
         .header-icon { font-size: 22px; color: var(--text-sub); cursor: pointer; -webkit-tap-highlight-color: transparent;}
         .dash-title { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; }
         .dash-title i { font-style: italic; font-weight: 800; color: #58a9ff; font-size: 20px;}
 
-        /* BORDER / GRIDA E STATUSIT LART */
-        .status-top-panel {
-            background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 12px; padding: 10px; margin-bottom: 12px; box-shadow: var(--btn-shadow);
+        /* STATUSI LART ME 2 KOLONA KUDRATA TË NDARA (Sikur te Foto 1/3) */
+        .i30-main-status {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
         }
-        .status-top-title { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 8px; letter-spacing: 0.5px; text-align: left; border-bottom: 1px solid var(--box-border); padding-bottom: 4px; }
-        
-        .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
-        .info-box {
-            background: rgba(100,100,100,0.05); border: 1px solid var(--box-border); border-radius: 8px; padding: 6px 2px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        .i30-status-card {
+            background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 12px; padding: 10px; box-shadow: var(--btn-shadow);
+            text-align: left; display: flex; flex-direction: column; justify-content: space-between;
         }
-        .info-box span { font-size: 7.5px; color: var(--text-sub); font-weight: 700; letter-spacing: 0.3px; margin-bottom: 2px; display: flex; align-items: center; gap: 2px;}
-        .info-box b { font-size: 9.5px; color: var(--text-main); white-space: nowrap; }
-        .dot-green { width: 5px; height: 5px; background-color: #34c759; border-radius: 50%; display: inline-block; box-shadow: 0 0 4px #34c759; }
+        .i30-card-title {
+            color: #4aa9ff; font-size: 11px; font-weight: 700; margin-bottom: 6px; letter-spacing: .5px; border-bottom: 1px solid var(--box-border); padding-bottom: 3px;
+        }
+        .i30-status-row {
+            display: flex; justify-content: space-between; align-items: center; gap: 4px;
+            padding: 4px 0; border-bottom: 1px solid var(--box-border); font-size: 9.5px; color: var(--text-sub); font-weight: 600;
+        }
+        .i30-status-row:last-child { border-bottom: 0; }
+        .i30-status-row b { color: var(--text-main); font-size: 10.5px; text-align: right; white-space: nowrap; }
 
-        .status-rows-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 10px; text-align: left; border-top: 1px solid var(--box-border); padding-top: 6px; }
-        .s-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-sub); padding: 2px 0; }
-        .s-row b { color: var(--text-main); font-size: 10px; }
-
-        /* 3D VIEWER */
-        .viewer-container { position: relative; width: 100%; height: 220px; margin-bottom: 15px; border-radius: 14px; }
+        /* 3D VIEWER (I zmadhuar pak më shumë) */
+        .viewer-container { position: relative; width: 100%; height: 275px; margin-bottom: 15px; border-radius: 14px; }
         #car-3d-canvas { width: 100% !important; height: 100% !important; display: block; position: relative; z-index: 2;}
-        .car-glow { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 85%; height: 40px; background: var(--car-glow); border-radius: 50%; pointer-events: none; z-index: 1; transition: background 0.4s ease; }
+        .car-glow { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 85%; height: 45px; background: var(--car-glow); border-radius: 50%; pointer-events: none; z-index: 1; transition: background 0.4s ease; }
         .dots-indicator { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 3; }
         .dots-indicator div { width: 5px; height: 5px; border-radius: 50%; background: var(--text-sub); opacity: 0.5; }
         .dots-indicator div.active { opacity: 1; background: var(--text-main); }
@@ -144,7 +149,7 @@
         /* ===== SERVISET & SETTINGS ===== */
         #screen-serv {
             height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 35px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px; box-sizing: border-box;
+            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 50px) 12px calc(env(safe-area-inset-bottom, 10px) + 75px) 12px; box-sizing: border-box;
         }
         .input-group { text-align: left; margin-bottom: 12px; background: var(--box-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--box-border); box-shadow: var(--btn-shadow);}
         .input-group h3 { margin-top: 0; color: var(--text-main); font-size: 13px; border-bottom: 1px solid var(--box-border); padding-bottom: 6px; }
@@ -166,7 +171,7 @@
         /* NAV BAR */
         .nav-bar { 
             display: none; justify-content: space-around; background: var(--bg-dark); 
-            padding: 8px 0 calc(env(safe-area-inset-bottom, 15px) + 4px) 0; 
+            padding: 8px 0 calc(env(safe-area-inset-bottom, 15px) + 6px) 0; 
             border-top: 1px solid var(--box-border); position: fixed; bottom: 0; left: 0; width: 100vw; 
             z-index: 1000; transition: background 0.4s ease;
         }
@@ -210,28 +215,28 @@
                 <div class="header-icon" onclick="toggleTheme()" id="theme-btn">⚙️</div>
             </div>
 
-            <!-- PANEL I STATUSIT LART (Si te Foto 1, por stil i integruar) -->
-            <div class="status-top-panel">
-                <div class="status-top-title">TELEMETRIA & STATUSI I MAKINËS</div>
-                <div class="info-grid">
-                    <div class="info-box"><span>SERVER</span><b>EUROPE</b></div>
-                    <div class="info-box"><span>MQTT</span><b id="top-mqtt-status" class="txt-green">CON...</b></div>
-                    <div class="info-box"><span>ORA</span><b id="top-clock">--:--:--</b></div>
-                    <div class="info-box"><span>DATA</span><b id="top-date">--/--/--</b></div>
+            <!-- STATUSI LART ME 2 KOLONA KUDRATA TË NDARA -->
+            <div class="i30-main-status">
+                <!-- Kolona e Parë -->
+                <div class="i30-status-card">
+                    <div class="i30-card-title">STATUSI I MAKINËS</div>
+                    <div class="i30-status-row"><span>RRJETI</span><b id="val-online">--</b></div>
+                    <div class="i30-status-row"><span>MOTORRI</span><b id="val-engine">--</b></div>
+                    <div class="i30-status-row"><span>DYERT</span><b id="val-locks">--</b></div>
+                    <div class="i30-status-row"><span>BATERI</span><b id="grid-battery">--.-V</b></div>
                 </div>
-                <div class="status-rows-grid">
-                    <div class="s-row"><span>ONLINE:</span> <b class="txt-green">i30 ONLINE</b></div>
-                    <div class="s-row"><span>MOTORRI:</span> <b id="val-engine">OFF</b></div>
-                    <div class="s-row"><span>DYERT:</span> <b id="val-locks">--</b></div>
-                    <div class="s-row"><span>XHAMAT:</span> <b id="val-windows">JO AKTIV</b></div>
-                    <div class="s-row"><span>BATERIA:</span> <b id="grid-battery">--.-V</b></div>
-                    <div class="s-row"><span>ÇELËSI:</span> <b id="val-key">JO AKTIV</b></div>
-                    <div class="s-row" id="row-hours1"><span>ORË SOT:</span> <b id="val-hours-today">0.0h</b></div>
-                    <div class="s-row" id="row-hours2"><span>ORË TOTALE:</span> <b id="val-work-hours">0.0h</b></div>
+
+                <!-- Kolona e Dytë -->
+                <div class="i30-status-card">
+                    <div class="i30-card-title">SISTEMI & ORËT</div>
+                    <div class="i30-status-row"><span>MQTT</span><b id="top-mqtt-status" class="txt-orange">CON...</b></div>
+                    <div class="i30-status-row"><span>ÇELËSI</span><b id="val-key">--</b></div>
+                    <div class="i30-status-row" id="row-hours1"><span>ORË SOT</span><b id="val-hours-today">0.0h</b></div>
+                    <div class="i30-status-row" id="row-hours2"><span>ORË TOTALE</span><b id="val-work-hours">0.0h</b></div>
                 </div>
             </div>
 
-            <!-- 3D VIEWER -->
+            <!-- 3D VIEWER (I zmadhuar) -->
             <div class="viewer-container" id="car-3d-viewer">
                 <canvas id="car-3d-canvas"></canvas>
                 <div class="car-glow"></div>
@@ -240,37 +245,46 @@
                 <div id="car-3d-loading" style="position: absolute; top:50%; width: 100%; text-align: center; font-size: 12px;">Duke ngarkuar...</div>
             </div>
 
-            <!-- BUTONAT (3-3-2) -->
+            <!-- BUTONAT (3-3-2) - Butona të ndarë START/STOP dhe HAP/MBYLL -->
             <div class="action-grid">
-                <div class="action-btn" onclick="handleEngineClick()">
-                    <div class="icon txt-green" id="icon-engine">⏻</div>
-                    <div class="label txt-green" id="lbl-engine">START / STOP</div>
+                <!-- 1. Butoni START -->
+                <div class="action-btn" onclick="sendCommand('START')">
+                    <div class="icon txt-green">⏻</div>
+                    <div class="label txt-green">START</div>
                 </div>
-                <div class="action-btn" id="btn-locks-admin" onclick="toggleLocks()">
-                    <div class="icon txt-red" id="icon-locks">🔒</div>
-                    <div class="label txt-red" id="lbl-locks">LOCK / UNLOCK</div>
+                <!-- 2. Butoni STOP -->
+                <div class="action-btn" onclick="sendCommand('STOP')">
+                    <div class="icon txt-red">🛑</div>
+                    <div class="label txt-red">STOP</div>
                 </div>
+                <!-- 3. Windows -->
                 <div class="action-btn" onclick="sendCommand('WINDOWS')">
                     <div class="icon txt-blue">🪟</div>
                     <div class="label txt-blue">WINDOWS</div>
                 </div>
                 
-                <div class="action-btn" id="btn-unlock-guest" style="display:none;" onclick="sendCommand('UNLOCK')">
-                    <div class="icon txt-green">🔓</div><div class="label txt-green">UNLOCK</div>
+                <!-- 4. Butoni HAP -->
+                <div class="action-btn" onclick="sendCommand('UNLOCK')">
+                    <div class="icon txt-green">🔓</div>
+                    <div class="label txt-green">HAP</div>
                 </div>
-                <div class="action-btn" id="btn-lock-guest" style="display:none;" onclick="sendCommand('LOCK')">
-                    <div class="icon txt-red">🔒</div><div class="label txt-red">LOCK</div>
+                <!-- 5. Butoni MBYLL -->
+                <div class="action-btn" onclick="sendCommand('LOCK')">
+                    <div class="icon txt-red">🔒</div>
+                    <div class="label txt-red">MBYLL</div>
                 </div>
-
+                <!-- 6. Sunroof -->
                 <div class="action-btn" id="btn-sunroof" onclick="sendCommand('SUNROOF')">
                     <div class="icon txt-orange">🌅</div>
                     <div class="label txt-orange">SUNROOF</div>
                 </div>
-                <div class="action-btn" onclick="sendCommand('TRIP_MODE')">
+
+                <!-- 7 & 8 të gjera -->
+                <div class="action-btn wide" onclick="sendCommand('TRIP_MODE')">
                     <div class="icon txt-purple">🚀</div>
                     <div class="label txt-purple">TRIP MODE</div>
                 </div>
-                <div class="action-btn" onclick="sendCommand('GPS')">
+                <div class="action-btn wide" onclick="sendCommand('GPS')">
                     <div class="icon txt-green">📍</div>
                     <div class="label txt-green">GPS / HARTA</div>
                 </div>
@@ -393,7 +407,6 @@
 
         let carTimer;
         let isMqttConnected = false;
-        let isEngineRunning = false; 
         let userRole = "guest"; 
         let pinEntry = "";
         
@@ -489,13 +502,7 @@
                 document.getElementById('nav-serv').style.display = 'none';
                 document.getElementById('row-hours1').style.display = 'none';
                 document.getElementById('row-hours2').style.display = 'none';
-                document.getElementById('btn-locks-admin').style.display = 'none';
-                document.getElementById('btn-unlock-guest').style.display = 'flex';
-                document.getElementById('btn-lock-guest').style.display = 'flex';
             } else {
-                document.getElementById('btn-locks-admin').style.display = 'flex';
-                document.getElementById('btn-unlock-guest').style.display = 'none';
-                document.getElementById('btn-lock-guest').style.display = 'none';
                 loadGuestPins();
                 lexoOretNgaFirebase(); 
             }
@@ -647,21 +654,34 @@
                     mqttClient.subscribe(topicStatus);
                     document.getElementById('top-mqtt-status').innerText = "OK";
                     document.getElementById('top-mqtt-status').className = "txt-green";
+                    document.getElementById('val-online').innerText = "ONLINE";
+                    document.getElementById('val-online').className = "txt-green";
                     try { const msg = new Paho.Message("REFRESH"); msg.destinationName = topicCmd; msg.qos = 1; mqttClient.send(msg); } catch(e) {}
                 },
                 onFailure: (err) => { 
                     document.getElementById('top-mqtt-status').innerText = "ERR";
                     document.getElementById('top-mqtt-status').className = "txt-red";
+                    document.getElementById('val-online').innerText = "OFFLINE";
+                    document.getElementById('val-online').className = "txt-red";
                     setTimeout(initMQTT, 2500); 
                 }
             });
         }
 
-        mqttClient.onConnectionLost = () => { isMqttConnected = false; document.getElementById('top-mqtt-status').innerText = "ERR"; document.getElementById('top-mqtt-status').className = "txt-red"; };
+        mqttClient.onConnectionLost = () => { 
+            isMqttConnected = false; 
+            document.getElementById('top-mqtt-status').innerText = "ERR"; 
+            document.getElementById('top-mqtt-status').className = "txt-red";
+            document.getElementById('val-online').innerText = "OFFLINE";
+            document.getElementById('val-online').className = "txt-red";
+        };
 
         mqttClient.onMessageArrived = (msg) => {
             clearTimeout(carTimer);
-            document.getElementById('top-mqtt-status').innerText = "OK"; document.getElementById('top-mqtt-status').className = "txt-green";
+            document.getElementById('top-mqtt-status').innerText = "OK"; 
+            document.getElementById('top-mqtt-status').className = "txt-green";
+            document.getElementById('val-online').innerText = "ONLINE";
+            document.getElementById('val-online').className = "txt-green";
             
             try {
                 const data = JSON.parse(msg.payloadString);
@@ -673,19 +693,10 @@
                 }
 
                 if(data.e !== undefined) {
-                    isEngineRunning = (data.e === 1); 
-                    const iconEng = document.getElementById('icon-engine'); 
-                    const lblEng = document.getElementById('lbl-engine');
-                    document.getElementById('val-engine').innerText = isEngineRunning ? "ON" : "OFF";
-                    document.getElementById('val-engine').className = isEngineRunning ? "txt-red" : "txt-green";
-
-                    if(isEngineRunning) {
-                        if(iconEng) { iconEng.className = "icon txt-red"; iconEng.innerText = "🛑"; }
-                        if(lblEng) { lblEng.className = "label txt-red"; }
-                    } else {
-                        if(iconEng) { iconEng.className = "icon txt-green"; iconEng.innerText = "⏻"; }
-                        if(lblEng) { lblEng.className = "label txt-green"; }
-                    }
+                    const isEngineRunning = (data.e === 1); 
+                    const elEng = document.getElementById('val-engine');
+                    elEng.innerText = isEngineRunning ? "ON" : "OFF";
+                    elEng.className = isEngineRunning ? "txt-red" : "txt-green";
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('engine', isEngineRunning);
                 }
 
@@ -701,19 +712,9 @@
                 }
 
                 if(data.l !== undefined) {
-                    const iconLocks = document.getElementById('icon-locks');
-                    const lblLocks = document.getElementById('lbl-locks');
                     const elLocks = document.getElementById('val-locks');
                     elLocks.innerText = (data.l === 1) ? "TË MBYLLURA" : "HAPUR"; 
                     elLocks.className = (data.l === 1) ? "txt-green" : "txt-red";
-
-                    if(data.l === 1) {
-                        if(iconLocks) { iconLocks.className = "icon txt-red"; iconLocks.innerText = "🔒"; }
-                        if(lblLocks) { lblLocks.className = "label txt-red"; }
-                    } else {
-                        if(iconLocks) { iconLocks.className = "icon txt-green"; iconLocks.innerText = "🔓"; }
-                        if(lblLocks) { lblLocks.className = "label txt-green"; }
-                    }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', data.l === 0);
                 }
 
@@ -724,7 +725,12 @@
                 }
             } catch (e) { }
             
-            carTimer = setTimeout(() => { document.getElementById('top-mqtt-status').innerText = "ERR"; document.getElementById('top-mqtt-status').className = "txt-red"; }, 35000); 
+            carTimer = setTimeout(() => { 
+                document.getElementById('top-mqtt-status').innerText = "ERR"; 
+                document.getElementById('top-mqtt-status').className = "txt-red";
+                document.getElementById('val-online').innerText = "OFFLINE";
+                document.getElementById('val-online').className = "txt-red";
+            }, 35000); 
         };
 
         window.sendCommand = (cmd) => {
@@ -732,28 +738,10 @@
             } catch (error) { alert("Duke u rilidhur..."); }
         };
 
-        window.toggleLocks = function() {
-            const elLocks = document.getElementById('val-locks').innerText;
-            if (elLocks.indexOf('MBYLLURA') !== -1 || elLocks === '--') { sendCommand('UNLOCK'); } else { sendCommand('LOCK'); }
-        };
-
         window.toggleKey = function() {
             const status = document.getElementById('val-key').innerText;
             sendCommand(status === "AKTIV" ? 'KEY_OFF' : 'KEY_ON');
         }
-
-        window.handleEngineClick = function() {
-            const role = (typeof userRole !== 'undefined') ? userRole : 'guest';
-            const engText = document.getElementById('val-engine').innerText;
-            const isRunning = (engText === 'ON' || (typeof isEngineRunning !== 'undefined' && isEngineRunning));
-
-            if (role === 'guest') {
-                if (!isRunning) { sendCommand('UNLOCK'); setTimeout(() => { sendCommand('START'); }, 1200);
-                } else { sendCommand('STOP'); setTimeout(() => { sendCommand('LOCK'); }, 1200); }
-            } else {
-                if (!isRunning) { sendCommand('START'); } else { sendCommand('STOP'); }
-            }
-        };
 
         window.onload = () => {
             applySavedTheme();
@@ -957,7 +945,8 @@
                 const center = box.getCenter(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z) || 1;
                 
-                const scale = 11.0 / maxDim; 
+                // Zmadhuar pak më shumë (nga 11.0 në 12.2) siç kërkove
+                const scale = 12.2 / maxDim; 
                 carModel.scale.setScalar(scale);
                 carModel.position.x = -center.x * scale;
                 carModel.position.z = -center.z * scale;
@@ -975,7 +964,8 @@
                 controls.update();
                 loadingEl.style.display = 'none';
 
-                if (typeof isEngineRunning !== 'undefined') window.setCarPartState('engine', isEngineRunning);
+                const engText = document.getElementById('val-engine').innerText;
+                window.setCarPartState('engine', engText === 'ON');
                 const lockText = document.getElementById('val-locks').innerText;
                 window.setCarPartState('doors', lockText.includes('HAPUR'));
 
@@ -1029,25 +1019,22 @@
             if (part === 'door') {
                 flashMesh(mesh, 400);
                 const locksText = document.getElementById('val-locks').innerText;
-                if (locksText.indexOf('MBYLLURA') !== -1 || locksText === '--') { sendCommand('UNLOCK'); showFeedback('🔓 HAPJA E DYERVE...'); } 
+                if (locksText.indexOf('TË MBYLLURA') !== -1 || locksText === '--') { sendCommand('UNLOCK'); showFeedback('🔓 HAPJA E DYERVE...'); } 
                 else { sendCommand('LOCK'); showFeedback('🔒 MBYLLJA E DYERVE...'); }
             } else if (part === 'engine') {
                 flashMesh(mesh, 400);
                 const engText = document.getElementById('val-engine').innerText;
-                const isRunning = (engText === 'ON' || (typeof isEngineRunning !== 'undefined' && isEngineRunning));
-
-                if (!isRunning) {
+                if (engText !== 'ON') {
                     showFeedback('🔓⏳ NDEZJE SEKUENCIALE...');
                     sendCommand('UNLOCK');
                     setTimeout(() => { sendCommand('START'); }, 1200); 
                 } else {
-                    showFeedback('🛑⏳ FIKJE & KYÇJE...');
+                    showFeedback('🛑⏳ FIKJE...');
                     sendCommand('STOP');
-                    setTimeout(() => { sendCommand('LOCK'); }, 1200);
                 }
             } else if (part === 'sunroof') {
                 if (role === 'guest') { showFeedback('⛔ S\'keni akses'); return; }
-                flashMesh(mesh, 800); sendCommand('SUNROOF'); showFeedback('🪟 MBYLLJA E TAVANIT...');
+                flashMesh(mesh, 800); sendCommand('SUNROOF'); showFeedback('🪟 TAVANI...');
             }
         }
 

@@ -31,7 +31,6 @@
             --bg-dark: #070a10;
             --bg-light: #eef2f6;
             
-            /* Ngjyrat e elementeve (Dark Mode Default) */
             --box-bg: rgba(255, 255, 255, 0.03);
             --box-border: rgba(255, 255, 255, 0.08);
             --text-main: #ffffff;
@@ -44,20 +43,12 @@
             background-color: var(--bg-dark); 
             color: var(--text-main); 
             font-family: '-apple-system', 'Segoe UI', Tahoma, sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            height: 100vh; 
-            height: 100dvh; 
-            width: 100vw;
-            overflow: hidden;
-            position: fixed;
-            transition: background 0.4s ease;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: pan-y;
+            margin: 0; padding: 0; height: 100vh; height: 100dvh; width: 100vw;
+            overflow: hidden; position: fixed;
+            background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed; 
+            transition: background 0.4s ease; user-select: none; -webkit-user-select: none; touch-action: pan-y;
         }
 
-        /* ===== LIGHT MODE (FOTO 4) ===== */
         body.light-mode {
             background-color: var(--bg-light);
             --box-bg: #ffffff;
@@ -68,7 +59,6 @@
             --car-glow: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
         }
 
-        /* NGJYRAT PËR TEKSTET/IKONAT (Mbeten njelloj për kontrast në të dyja mode-t) */
         .txt-green { color: #34c759 !important; }
         .txt-red { color: #ff3b30 !important; }
         .txt-blue { color: #00a8ff !important; }
@@ -76,28 +66,15 @@
         .txt-purple { color: #bf5af2 !important; }
         .txt-gray { color: #8e8e93 !important; }
 
-        .overlay { 
-            width: 100%; 
-            height: 100%; 
-            box-sizing: border-box; 
-            position: relative;
-            overflow: hidden;
-        }
+        .overlay { width: 100%; height: 100%; box-sizing: border-box; position: relative; overflow: hidden; background: rgba(0,0,0,0.2); }
         
-        .screen { 
-            display: none; 
-            text-align: center; 
-            width: 100%; 
-            max-width: 500px; 
-            box-sizing: border-box; 
-        }
+        .screen { display: none; text-align: center; width: 100%; max-width: 500px; box-sizing: border-box; }
         .screen.active { display: block; animation: fadeIn 0.4s ease forwards; }
         @keyframes fadeIn { 
             from { opacity: 0; transform: translate(-50%, 8px); } 
             to { opacity: 1; transform: translate(-50%, 0); } 
         }
 
-        /* ===== LOGIN SCREEN ===== */
         #screen-login.active { 
             display: flex; flex-direction: column; align-items: center; justify-content: flex-end; 
             position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 280px; padding-bottom: calc(env(safe-area-inset-bottom, 5px));
@@ -108,75 +85,40 @@
         .num-btn { background: rgba(100,100,100,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(200,200,200,0.2); color: var(--text-main); padding: 8px 0; font-size: 17px; border-radius: 8px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
         .num-btn:active { background: rgba(200,200,200,0.3); transform: scale(0.95); }
 
-        /* ===== DASHBOARD (NEW LAYOUT) ===== */
         #screen-dash { 
-            max-width: 500px; 
-            width: 100%; 
-            height: 100%;
-            position: absolute;
-            top: 0; left: 50%;
-            transform: translateX(-50%);
-            overflow-y: auto; 
-            padding: calc(env(safe-area-inset-top, 10px) + 5px) 14px calc(env(safe-area-inset-bottom, 10px) + 60px) 14px;
-            box-sizing: border-box;
+            max-width: 500px; width: 100%; height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 35px) 14px calc(env(safe-area-inset-bottom, 10px) + 60px) 14px; box-sizing: border-box;
         }
 
-        /* HEADER i Pastër */
-        .dash-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 12px; padding: 5px 0;
-        }
+        .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 5px 0; }
         .header-icon { font-size: 22px; color: var(--text-sub); cursor: pointer; -webkit-tap-highlight-color: transparent;}
         .dash-title { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; }
         .dash-title i { font-style: italic; font-weight: 800; color: #58a9ff; font-size: 20px;}
 
-        /* GRIDA E INFORMACIONIT LART (4x2) */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 15px;
+        /* BORDER / GRIDA E STATUSIT LART */
+        .status-top-panel {
+            background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 12px; padding: 10px; margin-bottom: 12px; box-shadow: var(--btn-shadow);
         }
+        .status-top-title { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 8px; letter-spacing: 0.5px; text-align: left; border-bottom: 1px solid var(--box-border); padding-bottom: 4px; }
+        
+        .info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
         .info-box {
-            background: var(--box-bg);
-            border: 1px solid var(--box-border);
-            border-radius: 10px;
-            padding: 8px 4px;
+            background: rgba(100,100,100,0.05); border: 1px solid var(--box-border); border-radius: 8px; padding: 6px 2px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            box-shadow: var(--btn-shadow);
         }
-        .info-box span { font-size: 8px; color: var(--text-sub); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px; display: flex; align-items: center; gap: 3px;}
-        .info-box b { font-size: 10px; color: var(--text-main); white-space: nowrap; }
-        
-        .dot-green { width: 6px; height: 6px; background-color: #34c759; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px #34c759; }
+        .info-box span { font-size: 7.5px; color: var(--text-sub); font-weight: 700; letter-spacing: 0.3px; margin-bottom: 2px; display: flex; align-items: center; gap: 2px;}
+        .info-box b { font-size: 9.5px; color: var(--text-main); white-space: nowrap; }
+        .dot-green { width: 5px; height: 5px; background-color: #34c759; border-radius: 50%; display: inline-block; box-shadow: 0 0 4px #34c759; }
 
-        /* ZONA E MAKINËS 3D (Pa kornizë, me hije eliptike poshtë) */
-        .viewer-container {
-            position: relative;
-            width: 100%;
-            height: 240px;
-            margin-bottom: 25px;
-        }
+        .status-rows-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 10px; text-align: left; border-top: 1px solid var(--box-border); padding-top: 6px; }
+        .s-row { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-sub); padding: 2px 0; }
+        .s-row b { color: var(--text-main); font-size: 10px; }
+
+        /* 3D VIEWER */
+        .viewer-container { position: relative; width: 100%; height: 220px; margin-bottom: 15px; border-radius: 14px; }
         #car-3d-canvas { width: 100% !important; height: 100% !important; display: block; position: relative; z-index: 2;}
-        
-        .car-glow {
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 85%;
-            height: 45px;
-            background: var(--car-glow);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            transition: background 0.4s ease;
-        }
-
-        .dots-indicator {
-            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-            display: flex; gap: 4px; z-index: 3;
-        }
+        .car-glow { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 85%; height: 40px; background: var(--car-glow); border-radius: 50%; pointer-events: none; z-index: 1; transition: background 0.4s ease; }
+        .dots-indicator { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 3; }
         .dots-indicator div { width: 5px; height: 5px; border-radius: 50%; background: var(--text-sub); opacity: 0.5; }
         .dots-indicator div.active { opacity: 1; background: var(--text-main); }
 
@@ -187,39 +129,22 @@
         }
         #car-3d-feedback.show { opacity: 1; }
 
-        /* GRIDA E BUTONAVE (3-3-2) */
-        .action-grid {
-            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-        }
+        /* BUTONAT (3-3-2) */
+        .action-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         .action-btn {
-            background: var(--box-bg);
-            border: 1px solid var(--box-border);
-            border-radius: 12px;
-            padding: 12px 2px;
-            width: calc(33.333% - 6px); /* 3 në një rresht */
-            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
-            box-shadow: var(--btn-shadow);
-            cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;
-            box-sizing: border-box;
+            background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 12px; padding: 12px 2px;
+            width: calc(33.333% - 6px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+            box-shadow: var(--btn-shadow); cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; box-sizing: border-box;
         }
-        .action-btn.wide {
-            width: calc(50% - 4px); /* 2 në një rresht për reshtin e fundit */
-            padding: 14px 2px;
-        }
+        .action-btn.wide { width: calc(50% - 4px); padding: 14px 2px; }
         .action-btn:active { transform: scale(0.95); }
         .action-btn .icon { font-size: 24px; line-height: 1; }
         .action-btn .label { font-size: 9px; font-weight: 700; letter-spacing: 0.3px; }
 
-        /* FOOTER HINT */
-        .footer-hint {
-            margin-top: 20px; font-size: 10px; color: var(--text-sub); text-align: center;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-
-        /* ===== SERVISET EKRAN (I përditësuar për temën e re) ===== */
+        /* ===== SERVISET & SETTINGS ===== */
         #screen-serv {
             height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 5px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px; box-sizing: border-box;
+            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 35px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px; box-sizing: border-box;
         }
         .input-group { text-align: left; margin-bottom: 12px; background: var(--box-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--box-border); box-shadow: var(--btn-shadow);}
         .input-group h3 { margin-top: 0; color: var(--text-main); font-size: 13px; border-bottom: 1px solid var(--box-border); padding-bottom: 6px; }
@@ -250,7 +175,6 @@
         .nav-icon span { font-size: 9px; margin-top: 2px; font-weight: bold; letter-spacing: 0.5px;}
         .nav-icon.active { color: var(--text-main); transform: translateY(-2px); }
 
-        /* Elemente te fshehura per logjiken e vjeter */
         #hidden-logic { display: none; }
     </style>
 </head>
@@ -276,7 +200,7 @@
             </div>
         </div>
 
-        <!-- EKRANI DASHBOARD (VERSIONI 2.0 - IDENTIK ME FOTON) -->
+        <!-- EKRANI DASHBOARD -->
         <div id="screen-dash" class="screen">
             
             <!-- HEADER -->
@@ -286,23 +210,29 @@
                 <div class="header-icon" onclick="toggleTheme()" id="theme-btn">⚙️</div>
             </div>
 
-            <!-- INFO GRID (4x2) -->
-            <div class="info-grid">
-                <!-- Rreshti 1 -->
-                <div class="info-box"><span>SERVER</span><b>EUROPE</b></div>
-                <div class="info-box"><span>MQTT</span><b id="top-mqtt-status" class="txt-green">CONNECTING</b></div>
-                <div class="info-box"><span>ORA</span><b id="top-clock">--:--:--</b></div>
-                <div class="info-box"><span>DATA</span><b id="top-date">--/--/----</b></div>
-                
-                <!-- Rreshti 2 -->
-                <div class="info-box"><span><span class="dot-green"></span> ONLINE</span><b class="txt-green">i30 ONLINE</b></div>
-                <div class="info-box"><span><span class="txt-green">📍</span> GPS</span><b class="txt-green">AKTIV</b></div>
-                <div class="info-box"><span><span class="txt-blue">📶</span> SINJALI</span><b>100%</b></div>
-                <div class="info-box"><span><span class="txt-green">🔋</span> BATERIA</span><b id="grid-battery">--.-V</b></div>
+            <!-- PANEL I STATUSIT LART (Si te Foto 1, por stil i integruar) -->
+            <div class="status-top-panel">
+                <div class="status-top-title">TELEMETRIA & STATUSI I MAKINËS</div>
+                <div class="info-grid">
+                    <div class="info-box"><span>SERVER</span><b>EUROPE</b></div>
+                    <div class="info-box"><span>MQTT</span><b id="top-mqtt-status" class="txt-green">CON...</b></div>
+                    <div class="info-box"><span>ORA</span><b id="top-clock">--:--:--</b></div>
+                    <div class="info-box"><span>DATA</span><b id="top-date">--/--/--</b></div>
+                </div>
+                <div class="status-rows-grid">
+                    <div class="s-row"><span>ONLINE:</span> <b class="txt-green">i30 ONLINE</b></div>
+                    <div class="s-row"><span>MOTORRI:</span> <b id="val-engine">OFF</b></div>
+                    <div class="s-row"><span>DYERT:</span> <b id="val-locks">--</b></div>
+                    <div class="s-row"><span>XHAMAT:</span> <b id="val-windows">JO AKTIV</b></div>
+                    <div class="s-row"><span>BATERIA:</span> <b id="grid-battery">--.-V</b></div>
+                    <div class="s-row"><span>ÇELËSI:</span> <b id="val-key">JO AKTIV</b></div>
+                    <div class="s-row" id="row-hours1"><span>ORË SOT:</span> <b id="val-hours-today">0.0h</b></div>
+                    <div class="s-row" id="row-hours2"><span>ORË TOTALE:</span> <b id="val-work-hours">0.0h</b></div>
+                </div>
             </div>
 
             <!-- 3D VIEWER -->
-            <div class="viewer-container">
+            <div class="viewer-container" id="car-3d-viewer">
                 <canvas id="car-3d-canvas"></canvas>
                 <div class="car-glow"></div>
                 <div class="dots-indicator"><div class="active"></div><div></div><div></div></div>
@@ -312,7 +242,6 @@
 
             <!-- BUTONAT (3-3-2) -->
             <div class="action-grid">
-                <!-- 3 të parat -->
                 <div class="action-btn" onclick="handleEngineClick()">
                     <div class="icon txt-green" id="icon-engine">⏻</div>
                     <div class="label txt-green" id="lbl-engine">START / STOP</div>
@@ -326,7 +255,6 @@
                     <div class="label txt-blue">WINDOWS</div>
                 </div>
                 
-                <!-- Butonat për Guest (Zëvendësojnë LOCK/UNLOCK admin nëse logohën si Guest) -->
                 <div class="action-btn" id="btn-unlock-guest" style="display:none;" onclick="sendCommand('UNLOCK')">
                     <div class="icon txt-green">🔓</div><div class="label txt-green">UNLOCK</div>
                 </div>
@@ -334,7 +262,6 @@
                     <div class="icon txt-red">🔒</div><div class="label txt-red">LOCK</div>
                 </div>
 
-                <!-- 3 të dytat -->
                 <div class="action-btn" id="btn-sunroof" onclick="sendCommand('SUNROOF')">
                     <div class="icon txt-orange">🌅</div>
                     <div class="label txt-orange">SUNROOF</div>
@@ -348,7 +275,6 @@
                     <div class="label txt-green">GPS / HARTA</div>
                 </div>
 
-                <!-- 2 të fundit (të gjera) -->
                 <div class="action-btn wide" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
                     <div class="icon txt-gray" style="font-size: 28px; line-height: 0.85;">🚘</div>
                     <div class="label txt-gray">ALL CLOSE</div>
@@ -359,15 +285,7 @@
                 </div>
             </div>
 
-            <!-- FOOTER -->
-            <div class="footer-hint">
-                <span style="font-size: 14px;">👆</span> Prek makinën ose përdor butonat për komandat.
-            </div>
-
-            <!-- DIV i fshehur qe kodi i JS te mos jape Error kur kerkon keto ID -->
             <div id="hidden-logic">
-                <b id="val-online">--</b> <b id="val-engine">--</b> <b id="val-locks">--</b> <b id="val-key">--</b>
-                <b id="val-battery">--</b> <b id="val-hours-today">--</b> <b id="val-work-hours">--</b>
                 <span id="user-greeting"></span>
             </div>
         </div>
@@ -376,6 +294,32 @@
         <div id="screen-serv" class="screen">
             <h2 style="margin-bottom: 15px; text-shadow: 0 2px 5px rgba(0,0,0,0.2); font-style: italic;">SISTEMI & <span class="txt-blue">SERVISET</span></h2>
             
+            <div class="input-group">
+                <h3>🎨 PERSONALIZIMI I PAMJES</h3>
+                <label>URL e Logos (Login):</label>
+                <input type="text" id="set-logo-url" placeholder="http://...">
+                <label>URL e Sfondit (Aplikacioni):</label>
+                <input type="text" id="set-bg-url" placeholder="http://...">
+                <label>URL e Sfondit 3D (Zëvendëson hijen):</label>
+                <input type="text" id="set-bg-3d-url" placeholder="http://...">
+                <button class="btn-primary" onclick="saveAppConfig()">RUAJ PAMJEN</button>
+            </div>
+
+            <div class="input-group">
+                <h3>📊 HISTORIKU I ORËVE TË PUNËS</h3>
+                <div style="display:flex; gap:10px;">
+                    <select id="history-month" style="width:50%;">
+                        <option value="1">Janar</option> <option value="2">Shkurt</option> <option value="3">Mars</option>
+                        <option value="4">Prill</option> <option value="5">Maj</option> <option value="6">Qershor</option>
+                        <option value="7">Korrik</option> <option value="8">Gusht</option> <option value="9">Shtator</option>
+                        <option value="10">Tetor</option> <option value="11">Nëntor</option> <option value="12">Dhjetor</option>
+                    </select>
+                    <input type="number" id="history-year" style="width:50%;" placeholder="Viti (2026)">
+                </div>
+                <button class="btn-primary" onclick="loadWorkHistory()">SHFAQ TË DHËNAT</button>
+                <div id="work-history-table" style="margin-top:10px; overflow-x:auto;"></div>
+            </div>
+
             <div class="input-group">
                 <h3>👥 SHTO PËRDORUES GUEST</h3>
                 <input type="text" id="new-guest-name" placeholder="Emri (p.sh. Vëllai)">
@@ -387,22 +331,7 @@
             </div>
 
             <div class="input-group">
-                <h3>📊 HISTORIKU I ORËVE</h3>
-                <div style="display:flex; gap:10px;">
-                    <select id="history-month" style="width:50%;">
-                        <option value="1">Janar</option> <option value="2">Shkurt</option> <option value="3">Mars</option>
-                        <option value="4">Prill</option> <option value="5">Maj</option> <option value="6">Qershor</option>
-                        <option value="7">Korrik</option> <option value="8">Gusht</option> <option value="9">Shtator</option>
-                        <option value="10">Tetor</option> <option value="11">Nëntor</option> <option value="12">Dhjetor</option>
-                    </select>
-                    <input type="number" id="history-year" style="width:50%;" placeholder="Viti (2026)">
-                </div>
-                <button class="btn-primary" onclick="loadWorkHistory()">SHFAQ</button>
-                <div id="work-history-table" style="margin-top:10px; overflow-x:auto;"></div>
-            </div>
-
-            <div class="input-group">
-                <h3>🔧 REGJISTRO SERVIS</h3>
+                <h3>🔧 REGJISTRO SERVIS & HISTORIKU</h3>
                 <input type="number" id="service-km" placeholder="Kilometrat: 150000">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top: 5px;">
                     <div class="service-tick"><input type="checkbox" id="srv-oil"> Vaj Motorri</div>
@@ -468,7 +397,6 @@
         let userRole = "guest"; 
         let pinEntry = "";
         
-        // --- TEMA E APLIKACIONIT (DARK/LIGHT) ---
         function applySavedTheme() {
             if (localStorage.getItem("theme") === "light") {
                 document.body.classList.add("light-mode");
@@ -488,8 +416,41 @@
                 document.getElementById("theme-btn").innerText = "⚙️";
             }
         }
-        applySavedTheme(); // Aplikoje sapo te hapet faqja
         
+        function applyAppConfig() {
+            db.ref('adminConfig').once('value').then((snap) => {
+                const cfg = snap.val();
+                if (!cfg) return;
+                if (cfg.bgUrl && cfg.bgUrl.trim() !== "") { document.body.style.backgroundImage = `url('${cfg.bgUrl}')`; } 
+                else { document.body.style.backgroundImage = "none"; }
+                document.getElementById('set-bg-url').value = cfg.bgUrl || "";
+                
+                if (cfg.logoUrl && cfg.logoUrl.trim() !== "") { document.getElementById('login-logo-img').src = cfg.logoUrl; } 
+                else { document.getElementById('login-logo-img').src = "login.png"; }
+                document.getElementById('set-logo-url').value = cfg.logoUrl || "";
+
+                if (cfg.bg3dUrl && cfg.bg3dUrl.trim() !== "") {
+                    document.getElementById('car-3d-viewer').style.setProperty('background', `url('${cfg.bg3dUrl}') center/cover no-repeat`, 'important');
+                    document.querySelector('.car-glow').style.display = 'none';
+                } else {
+                    document.getElementById('car-3d-viewer').style.background = 'transparent';
+                    document.querySelector('.car-glow').style.display = 'block';
+                }
+                document.getElementById('set-bg-3d-url').value = cfg.bg3dUrl || "";
+            });
+        }
+
+        function saveAppConfig() {
+            const bg = document.getElementById('set-bg-url').value; 
+            const logo = document.getElementById('set-logo-url').value;
+            const bg3d = document.getElementById('set-bg-3d-url').value;
+            db.ref('adminConfig/bgUrl').set(bg); 
+            db.ref('adminConfig/logoUrl').set(logo);
+            db.ref('adminConfig/bg3dUrl').set(bg3d);
+            alert("Ndryshimet e pamjes u ruajtën!"); 
+            applyAppConfig();
+        }
+
         function addPin(num) {
             if(pinEntry.length < 4) { pinEntry += num; document.getElementById('pin-input').value = pinEntry; }
         }
@@ -526,6 +487,8 @@
             
             if (userRole === "guest") {
                 document.getElementById('nav-serv').style.display = 'none';
+                document.getElementById('row-hours1').style.display = 'none';
+                document.getElementById('row-hours2').style.display = 'none';
                 document.getElementById('btn-locks-admin').style.display = 'none';
                 document.getElementById('btn-unlock-guest').style.display = 'flex';
                 document.getElementById('btn-lock-guest').style.display = 'flex';
@@ -538,6 +501,7 @@
             }
 
             initMQTT();
+            loadServices();
             document.getElementById('history-year').value = new Date().getFullYear();
         }
 
@@ -646,14 +610,21 @@
             db.ref('serviceHistory').once('value').then((snap) => {
                 const data = snap.val() || {};
                 let html = `<table><tr><th>Data</th><th>KM</th><th>Vaj</th><th>F.Vaj</th><th>F.Ajri</th><th>F.AC</th><th>F.Naft</th></tr>`;
-                Object.keys(data).reverse().forEach(key => {
-                    const s = data[key];
-                    html += `<tr><td>${s.date}</td><td>${s.km}</td>
-                        <td>${s.oil ? '✔' : '-'}</td><td>${s.oilFilter ? '✔' : '-'}</td>
-                        <td>${s.air ? '✔' : '-'}</td><td>${s.ac ? '✔' : '-'}</td>
-                        <td>${s.fuel ? '✔' : '-'}</td></tr>`;
-                });
-                html += `</table>`; document.getElementById('service-history').innerHTML = html;
+                const keys = Object.keys(data);
+                if(keys.length === 0) {
+                    html += `<tr><td colspan="7" style="text-align:center;">Nuk ka shërbime të regjistruara.</td></tr>`;
+                } else {
+                    keys.reverse().forEach(key => {
+                        const s = data[key];
+                        html += `<tr><td>${s.date}</td><td>${s.km}</td>
+                            <td>${s.oil ? '✔' : '-'}</td><td>${s.oilFilter ? '✔' : '-'}</td>
+                            <td>${s.air ? '✔' : '-'}</td><td>${s.ac ? '✔' : '-'}</td>
+                            <td>${s.fuel ? '✔' : '-'}</td></tr>`;
+                    });
+                }
+                html += `</table>`; 
+                const elHist = document.getElementById('service-history');
+                if(elHist) elHist.innerHTML = html;
             });
         }
         function ruajKohet() {
@@ -666,7 +637,7 @@
 
         function initMQTT() {
             if (isMqttConnected) return; 
-            document.getElementById('top-mqtt-status').innerText = "CONNECTING";
+            document.getElementById('top-mqtt-status').innerText = "CON...";
             document.getElementById('top-mqtt-status').className = "txt-orange";
 
             mqttClient.connect({
@@ -674,23 +645,23 @@
                 onSuccess: () => {
                     isMqttConnected = true; 
                     mqttClient.subscribe(topicStatus);
-                    document.getElementById('top-mqtt-status').innerText = "CONNECTED";
+                    document.getElementById('top-mqtt-status').innerText = "OK";
                     document.getElementById('top-mqtt-status').className = "txt-green";
                     try { const msg = new Paho.Message("REFRESH"); msg.destinationName = topicCmd; msg.qos = 1; mqttClient.send(msg); } catch(e) {}
                 },
                 onFailure: (err) => { 
-                    document.getElementById('top-mqtt-status').innerText = "ERROR";
+                    document.getElementById('top-mqtt-status').innerText = "ERR";
                     document.getElementById('top-mqtt-status').className = "txt-red";
                     setTimeout(initMQTT, 2500); 
                 }
             });
         }
 
-        mqttClient.onConnectionLost = () => { isMqttConnected = false; document.getElementById('top-mqtt-status').innerText = "OFFLINE"; document.getElementById('top-mqtt-status').className = "txt-red"; };
+        mqttClient.onConnectionLost = () => { isMqttConnected = false; document.getElementById('top-mqtt-status').innerText = "ERR"; document.getElementById('top-mqtt-status').className = "txt-red"; };
 
         mqttClient.onMessageArrived = (msg) => {
             clearTimeout(carTimer);
-            document.getElementById('top-mqtt-status').innerText = "CONNECTED"; document.getElementById('top-mqtt-status').className = "txt-green";
+            document.getElementById('top-mqtt-status').innerText = "OK"; document.getElementById('top-mqtt-status').className = "txt-green";
             
             try {
                 const data = JSON.parse(msg.payloadString);
@@ -705,7 +676,8 @@
                     isEngineRunning = (data.e === 1); 
                     const iconEng = document.getElementById('icon-engine'); 
                     const lblEng = document.getElementById('lbl-engine');
-                    document.getElementById('val-engine').innerText = isEngineRunning ? "ON" : "OFF"; // Për funksionin click
+                    document.getElementById('val-engine').innerText = isEngineRunning ? "ON" : "OFF";
+                    document.getElementById('val-engine').className = isEngineRunning ? "txt-red" : "txt-green";
 
                     if(isEngineRunning) {
                         if(iconEng) { iconEng.className = "icon txt-red"; iconEng.innerText = "🛑"; }
@@ -731,9 +703,11 @@
                 if(data.l !== undefined) {
                     const iconLocks = document.getElementById('icon-locks');
                     const lblLocks = document.getElementById('lbl-locks');
-                    document.getElementById('val-locks').innerText = (data.l === 1) ? "MBYLLUR" : "HAPUR"; 
+                    const elLocks = document.getElementById('val-locks');
+                    elLocks.innerText = (data.l === 1) ? "TË MBYLLURA" : "HAPUR"; 
+                    elLocks.className = (data.l === 1) ? "txt-green" : "txt-red";
 
-                    if(data.l === 1) { // Mbyllur
+                    if(data.l === 1) {
                         if(iconLocks) { iconLocks.className = "icon txt-red"; iconLocks.innerText = "🔒"; }
                         if(lblLocks) { lblLocks.className = "label txt-red"; }
                     } else {
@@ -744,11 +718,13 @@
                 }
 
                 if(data.k !== undefined) {
-                    document.getElementById('val-key').innerText = (data.k === 1) ? "AKTIV" : "JO AKTIV";
+                    const strStatus = (data.k === 1) ? "AKTIV" : "JO AKTIV";
+                    document.getElementById('val-key').innerText = strStatus;
+                    document.getElementById('val-key').className = (data.k === 1) ? "txt-purple" : "";
                 }
             } catch (e) { }
             
-            carTimer = setTimeout(() => { document.getElementById('top-mqtt-status').innerText = "DISCONNECTED"; document.getElementById('top-mqtt-status').className = "txt-red"; }, 35000); 
+            carTimer = setTimeout(() => { document.getElementById('top-mqtt-status').innerText = "ERR"; document.getElementById('top-mqtt-status').className = "txt-red"; }, 35000); 
         };
 
         window.sendCommand = (cmd) => {
@@ -758,7 +734,7 @@
 
         window.toggleLocks = function() {
             const elLocks = document.getElementById('val-locks').innerText;
-            if (elLocks === 'MBYLLUR' || elLocks === '--') { sendCommand('UNLOCK'); } else { sendCommand('LOCK'); }
+            if (elLocks.indexOf('MBYLLURA') !== -1 || elLocks === '--') { sendCommand('UNLOCK'); } else { sendCommand('LOCK'); }
         };
 
         window.toggleKey = function() {
@@ -780,6 +756,8 @@
         };
 
         window.onload = () => {
+            applySavedTheme();
+            applyAppConfig(); 
             if (sessionStorage.getItem("isAuth")) showApp();
         };
 
@@ -1051,7 +1029,7 @@
             if (part === 'door') {
                 flashMesh(mesh, 400);
                 const locksText = document.getElementById('val-locks').innerText;
-                if (locksText.indexOf('MBYLLUR') === 0 || locksText === '--') { sendCommand('UNLOCK'); showFeedback('🔓 HAPJA E DYERVE...'); } 
+                if (locksText.indexOf('MBYLLURA') !== -1 || locksText === '--') { sendCommand('UNLOCK'); showFeedback('🔓 HAPJA E DYERVE...'); } 
                 else { sendCommand('LOCK'); showFeedback('🔒 MBYLLJA E DYERVE...'); }
             } else if (part === 'engine') {
                 flashMesh(mesh, 400);

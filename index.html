@@ -9,16 +9,15 @@
     <meta name="apple-mobile-web-app-title" content="i30 Control">
     <title>i30 DIGITAL REMOTE</title>
 
-    <!-- Ikona e Aplikacionit -->
-    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/aglien21/ab592no/refs/heads/main/logo.png">
-    <link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/aglien21/ab592no/refs/heads/main/logo.png">
-    <link rel="shortcut icon" href="https://raw.githubusercontent.com/aglien21/ab592no/refs/heads/main/logo.png">
+    <link rel="apple-touch-icon" href="./car.jpg">
+    <link rel="icon" type="image/png" href="./car.jpg">
+    <link rel="shortcut icon" href="./car.jpg">
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
 
-    <!-- THREE.JS -->
+    <!-- THREE.JS per modelin 3D interaktiv -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -45,11 +44,12 @@
             font-family: '-apple-system', 'Segoe UI', Tahoma, sans-serif; 
             margin: 0; padding: 0; height: 100vh; height: 100dvh; width: 100vw;
             overflow: hidden; position: fixed;
+            background-image: url('./bg.jpg');
             background-size: cover; background-position: center center; background-repeat: no-repeat; background-attachment: fixed; 
             transition: background 0.4s ease; user-select: none; -webkit-user-select: none; touch-action: pan-y;
         }
 
-        body.light-mode {
+        body.light-hud {
             background-color: var(--bg-light);
             --box-bg: #ffffff;
             --box-border: rgba(0, 0, 0, 0.06);
@@ -58,6 +58,8 @@
             --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
             --car-glow: radial-gradient(ellipse at center, rgba(0, 168, 255, 0.15) 0%, rgba(225, 232, 240, 0.95) 85%);
         }
+        body.light-hud .v-screen { color: #003366; }
+        body.light-hud .v-val { color: #001f3f; }
 
         .txt-green { color: #34c759 !important; }
         .txt-red { color: #ff3b30 !important; }
@@ -92,9 +94,6 @@
             box-sizing: border-box;
         }
 
-        .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 2px 0; }
-        .header-icon { font-size: 20px; color: var(--text-sub); cursor: pointer; -webkit-tap-highlight-color: transparent;}
-        
         /* KREU I RI (Fiks si në Foto 3) */
         .dash-top-box {
             display: flex; align-items: center; justify-content: space-between;
@@ -131,10 +130,11 @@
         .i30-status-row:last-child { border-bottom: 0; }
         .i30-status-row b { color: var(--text-main); font-size: 10px; text-align: right; white-space: nowrap; }
 
-        /* 3D VIEWER (I hapur dhe i zmadhuar më shumë) */
+        /* 3D VIEWER (Lartësia 255px) */
         .viewer-container { 
-            position: relative; width: 100%; height: 280px; margin-bottom: 10px; border-radius: 12px; 
+            position: relative; width: 100%; height: 255px; margin-bottom: 10px; border-radius: 12px; 
             background: var(--car-glow); border: 1px solid var(--box-border); overflow: hidden; box-shadow: var(--btn-shadow);
+            touch-action: none;
         }
         #car-3d-canvas { width: 100% !important; height: 100% !important; display: block; position: relative; z-index: 2;}
         .dots-indicator { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 3; }
@@ -154,6 +154,7 @@
             background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 10px; padding: 10px 2px;
             width: calc(33.333% - 5px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
             box-shadow: var(--btn-shadow); cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; box-sizing: border-box;
+            color: white; font-weight: bold;
         }
         .action-btn.wide { width: calc(50% - 4px); padding: 11px 2px; }
         .action-btn:active { transform: scale(0.95); }
@@ -163,7 +164,7 @@
         /* ===== SERVISET & SETTINGS ===== */
         #screen-serv {
             height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 20px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px; box-sizing: border-box;
+            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 20px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px; box-sizing: border-box; text-align: left;
         }
         .input-group { text-align: left; margin-bottom: 10px; background: var(--box-bg); padding: 10px; border-radius: 10px; border: 1px solid var(--box-border); box-shadow: var(--btn-shadow);}
         .input-group h3 { margin-top: 0; color: var(--text-main); font-size: 12px; border-bottom: 1px solid var(--box-border); padding-bottom: 5px; }
@@ -189,12 +190,10 @@
             border-top: 1px solid var(--box-border); position: fixed; bottom: 0; left: 0; width: 100vw; 
             z-index: 1000; transition: background 0.4s ease;
         }
-        body.light-mode .nav-bar { background: #ffffff; }
+        body.light-hud .nav-bar { background: #ffffff; }
         .nav-icon { font-size: 18px; cursor: pointer; color: var(--text-sub); transition: 0.3s; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;}
         .nav-icon span { font-size: 8.5px; margin-top: 2px; font-weight: bold; letter-spacing: 0.5px;}
         .nav-icon.active { color: var(--text-main); transform: translateY(-2px); }
-
-        #hidden-logic { display: none; }
     </style>
 </head>
 <body>
@@ -206,7 +205,7 @@
             <div style="margin-bottom: 4px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.8rem; color: #888; letter-spacing: 1px;">
                 Created by <span style="color: #58a9ff;">Aglien</span>
             </div>
-            <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login">
+            <img id="login-logo-img" src="./logo.png?v=2" class="logo-login">
             <input type="password" id="pin-input" readonly placeholder="****">
             
             <div class="numpad">
@@ -236,12 +235,6 @@
                 </div>
             </div>
 
-            <!-- HEADER ACTIONS (Theme & Menu) -->
-            <div class="dash-header" style="display:none;">
-                <div class="header-icon">≡</div>
-                <div class="header-icon" onclick="toggleTheme()" id="theme-btn">⚙️</div>
-            </div>
-
             <!-- STATUSI LART ME 2 KOLONA KUDRATA -->
             <div class="i30-main-status">
                 <div class="i30-status-card">
@@ -249,12 +242,12 @@
                     <div class="i30-status-row"><span>RRJETI</span><b id="val-online">--</b></div>
                     <div class="i30-status-row"><span>MOTORRI</span><b id="val-engine">--</b></div>
                     <div class="i30-status-row"><span>DYERT</span><b id="val-locks">--</b></div>
-                    <div class="i30-status-row"><span>BATERI</span><b id="grid-battery">--.-V</b></div>
+                    <div class="i30-status-row"><span>BATERI</span><b id="val-battery">--.-V</b></div>
                 </div>
 
                 <div class="i30-status-card">
                     <div class="i30-card-title">SISTEMI & ORËT</div>
-                    <div class="i30-status-row"><span>TEMA</span><b style="cursor:pointer; color:var(--accent);" onclick="toggleTheme()">NDRYSHO ⚙️</b></div>
+                    <div class="i30-status-row"><span>TEMA</span><b style="cursor:pointer; color:var(--accent);" onclick="toggleDarkMode()">NDRYSHO ⚙️</b></div>
                     <div class="i30-status-row"><span>ÇELËSI</span><b id="val-key">--</b></div>
                     <div class="i30-status-row" id="row-hours1"><span>ORË SOT</span><b id="val-hours-today">0.0h</b></div>
                     <div class="i30-status-row" id="row-hours2"><span>ORË TOTALE</span><b id="val-work-hours">0.0h</b></div>
@@ -263,64 +256,64 @@
 
             <!-- 3D VIEWER -->
             <div class="viewer-container" id="car-3d-viewer">
+                <div id="car-3d-hint" style="position: absolute; top: 8px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--accent); background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 6px; pointer-events: none; z-index: 5;">🚗 Prek pjesën për ta kontrolluar</div>
                 <canvas id="car-3d-canvas"></canvas>
                 <div class="dots-indicator"><div class="active"></div><div></div><div></div></div>
                 <div id="car-3d-feedback"></div>
-                <div id="car-3d-loading" style="position: absolute; top:50%; width: 100%; text-align: center; font-size: 11px;">Duke ngarkuar...</div>
+                <div id="car-3d-loading" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); z-index: 6; font-size: 11px;"><div style="width: 18px; height: 18px; border: 2px solid rgba(0,210,255,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin3d 0.8s linear infinite; margin-right: 6px;"></div>Duke ngarkuar 3D...</div>
             </div>
 
             <!-- BUTONAT (3-3-2) -->
             <div class="action-grid">
-                <div class="action-btn" id="btn-engine-main" onclick="handleEngineClick()">
-                    <div class="icon txt-green" id="icon-engine">⏻</div>
+                <div class="action-btn" id="btn-engine" onclick="sendCommand('START')">
+                    <div class="icon txt-green" id="icon-engine">⚡</div>
                     <div class="label txt-green" id="lbl-engine">START</div>
                 </div>
-                <div class="action-btn" id="btn-locks-main" onclick="toggleLocks()">
+                <div class="action-btn" id="btn-locks" onclick="sendCommand('UNLOCK')">
                     <div class="icon txt-green" id="icon-locks">🔓</div>
-                    <div class="label txt-green" id="lbl-locks">HAP</div>
+                    <div class="label txt-green" id="lbl-locks">SHKYÇ</div>
                 </div>
-                <div class="action-btn" onclick="sendCommand('WINDOWS')">
-                    <div class="icon txt-blue">🪟</div>
-                    <div class="label txt-blue">WINDOWS</div>
+                <div class="action-btn" id="btn-sunroof" onclick="sendCommand('SUNROOF')">
+                    <div class="icon txt-orange">🪟</div>
+                    <div class="label txt-orange">TAVANI</div>
                 </div>
                 
-                <div class="action-btn" id="btn-sunroof" onclick="sendCommand('SUNROOF')">
-                    <div class="icon txt-orange">🌅</div>
-                    <div class="label txt-orange">SUNROOF</div>
+                <div class="action-btn" id="btn-windows" onclick="sendCommand('WINDOWS')">
+                    <div class="icon txt-blue">🪟</div>
+                    <div class="label txt-blue">XHAMAT</div>
                 </div>
-                <div class="action-btn" onclick="sendCommand('TRIP_MODE')">
+                <div class="action-btn" id="btn-trip" onclick="sendCommand('TRIP_MODE')">
                     <div class="icon txt-purple">🚀</div>
-                    <div class="label txt-purple">TRIP MODE</div>
+                    <div class="label txt-purple">UDHËTIM</div>
                 </div>
-                <div class="action-btn" onclick="sendCommand('GPS')">
+                <div class="action-btn" id="btn-gps" onclick="sendCommand('GPS')">
                     <div class="icon txt-green">📍</div>
-                    <div class="label txt-green">GPS / HARTA</div>
+                    <div class="label txt-green">GPS</div>
                 </div>
 
-                <div class="action-btn wide" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
-                    <div class="icon txt-gray" style="font-size: 26px; line-height: 0.85;">🚘</div>
-                    <div class="label txt-gray">ALL CLOSE</div>
+                <div class="action-btn wide" id="btn-allclose" onclick="if(confirm('A je i sigurt që do të bësh Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
+                    <div class="icon txt-gray" style="font-size: 24px; line-height: 0.85;">🛡️</div>
+                    <div class="label txt-gray">MBYLLJE TOTALE</div>
                 </div>
-                <div class="action-btn wide" onclick="toggleKey()">
-                    <div class="icon txt-purple">🔧</div>
-                    <div class="label txt-purple">KEY / SERVIS</div>
+                <div class="action-btn wide" id="btn-key" onclick="toggleKey()">
+                    <div class="icon txt-purple">🚫</div>
+                    <div class="label txt-purple" id="lbl-key-txt">ÇELËSI: JO AKTIV</div>
                 </div>
             </div>
         </div>
 
         <!-- EKRANI SERVISET -->
         <div id="screen-serv" class="screen">
-            <h2 style="margin-bottom: 12px; text-shadow: 0 2px 5px rgba(0,0,0,0.2); font-style: italic; font-size: 1.2rem;">SISTEMI & <span class="txt-blue">SERVISET</span></h2>
+            <h2 style="margin-bottom: 12px; font-style: italic; font-size: 1.2rem;">SISTEMI & <span class="txt-blue">SERVISET</span></h2>
             
             <div class="input-group">
-                <h3>🎨 PERSONALIZIMI I PAMJES</h3>
-                <label>URL e Logos (Login):</label>
-                <input type="text" id="set-logo-url" placeholder="http://...">
-                <label>URL e Sfondit (Aplikacioni):</label>
-                <input type="text" id="set-bg-url" placeholder="http://...">
-                <label>URL e Sfondit 3D:</label>
-                <input type="text" id="set-bg-3d-url" placeholder="http://...">
-                <button class="btn-primary" onclick="saveAppConfig()">RUAJ PAMJEN</button>
+                <h3>👥 SHTO PËRDORUES GUEST</h3>
+                <input type="text" id="new-guest-name" placeholder="Emri (p.sh. Vëllai)">
+                <div style="display:flex; gap:8px;">
+                    <input type="number" id="new-guest-pin" placeholder="PIN (****)" style="width:65%;">
+                    <button class="btn-primary" style="width:35%; margin-top:0;" onclick="addGuestPin()">SHTO</button>
+                </div>
+                <div id="guest-list" style="margin-top:8px;"></div>
             </div>
 
             <div class="input-group">
@@ -339,16 +332,6 @@
             </div>
 
             <div class="input-group">
-                <h3>👥 SHTO PËRDORUES GUEST</h3>
-                <input type="text" id="new-guest-name" placeholder="Emri (p.sh. Vëllai)">
-                <div style="display:flex; gap:8px;">
-                    <input type="number" id="new-guest-pin" placeholder="PIN (****)" style="width:65%;">
-                    <button class="btn-primary" style="width:35%; margin-top:0;" onclick="addGuestPin()">SHTO</button>
-                </div>
-                <div id="guest-list" style="margin-top:8px;"></div>
-            </div>
-
-            <div class="input-group">
                 <h3>🔧 REGJISTRO SERVIS & HISTORIKU</h3>
                 <input type="number" id="service-km" placeholder="Kilometrat: 150000">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top: 4px;">
@@ -360,6 +343,15 @@
                 </div>
                 <button class="btn-primary txt-green" style="border-color: #34c759;" onclick="saveService()">RUAJ SERVISIN</button>
                 <div id="service-history" style="margin-top:10px; overflow-x:auto;"></div>
+            </div>
+
+            <div class="input-group">
+                <h3>🎨 PERSONALIZIMI I PAMJES</h3>
+                <label>URL e Logos (Login):</label>
+                <input type="text" id="set-logo-url" placeholder="http://...">
+                <label>URL e Sfondit (Aplikacioni):</label>
+                <input type="text" id="set-bg-url" placeholder="http://...">
+                <button class="btn-primary" onclick="saveAppConfig()">RUAJ PAMJEN</button>
             </div>
 
             <div class="input-group">
@@ -390,7 +382,7 @@
         </div>
     </div>
 
-    <!-- LOGJIKA BAZË FIREBASE & MQTT -->
+    <!-- LOGJIKA BAZË -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyB5vAdwGuUd7oFjhxsyhuUSH84TXXSbtQo",
@@ -408,70 +400,15 @@
         const topicCmd = "jon_i30_S3kr3t_998877/komanda";
         const topicStatus = "jon_i30_S3kr3t_998877/statusi";
         const mqttClient = new Paho.Client("broker.hivemq.com", 8884, "App_" + Math.random().toString(16).slice(2, 8));
+        const botToken = "8896728336:AAFQJvTq9tE1HNDrX-E4aoCr0EQcGh2nZo8";
+        const chatId = "5461448562";
 
         let carTimer;
         let isMqttConnected = false;
-        let isEngineRunning = false;
-        let isCarLocked = true;
+        let isEngineRunning = false; 
         let userRole = "guest"; 
         let pinEntry = "";
         
-        function applySavedTheme() {
-            if (localStorage.getItem("theme") === "light") {
-                document.body.classList.add("light-mode");
-                const tBtn = document.getElementById("theme-btn");
-                if(tBtn) tBtn.innerText = "☀️";
-            } else {
-                document.body.classList.remove("light-mode");
-                const tBtn = document.getElementById("theme-btn");
-                if(tBtn) tBtn.innerText = "⚙️";
-            }
-        }
-        function toggleTheme() {
-            document.body.classList.toggle("light-mode");
-            if (document.body.classList.contains("light-mode")) {
-                localStorage.setItem("theme", "light");
-                const tBtn = document.getElementById("theme-btn");
-                if(tBtn) tBtn.innerText = "☀️";
-            } else {
-                localStorage.setItem("theme", "dark");
-                const tBtn = document.getElementById("theme-btn");
-                if(tBtn) tBtn.innerText = "⚙️";
-            }
-        }
-        
-        function applyAppConfig() {
-            db.ref('adminConfig').once('value').then((snap) => {
-                const cfg = snap.val();
-                if (!cfg) return;
-                if (cfg.bgUrl && cfg.bgUrl.trim() !== "") { document.body.style.backgroundImage = `url('${cfg.bgUrl}')`; } 
-                else { document.body.style.backgroundImage = "none"; }
-                document.getElementById('set-bg-url').value = cfg.bgUrl || "";
-                
-                if (cfg.logoUrl && cfg.logoUrl.trim() !== "") { document.getElementById('login-logo-img').src = cfg.logoUrl; } 
-                else { document.getElementById('login-logo-img').src = "login.png"; }
-                document.getElementById('set-logo-url').value = cfg.logoUrl || "";
-
-                if (cfg.bg3dUrl && cfg.bg3dUrl.trim() !== "") {
-                    document.getElementById('car-3d-viewer').style.setProperty('background', `url('${cfg.bg3dUrl}') center/cover no-repeat`, 'important');
-                } else {
-                    document.getElementById('car-3d-viewer').style.background = '';
-                }
-                document.getElementById('set-bg-3d-url').value = cfg.bg3dUrl || "";
-            });
-        }
-
-        function saveAppConfig() {
-            const bg = document.getElementById('set-bg-url').value; 
-            const logo = document.getElementById('set-logo-url').value;
-            const bg3d = document.getElementById('set-bg-3d-url').value;
-            db.ref('adminConfig/bgUrl').set(bg); 
-            db.ref('adminConfig/logoUrl').set(logo);
-            db.ref('adminConfig/bg3dUrl').set(bg3d);
-            alert("Ndryshimet e pamjes u ruajtën!"); 
-            applyAppConfig();
-        }
-
         function addPin(num) {
             if(pinEntry.length < 4) { pinEntry += num; document.getElementById('pin-input').value = pinEntry; }
         }
@@ -491,10 +428,13 @@
                         if (snapGuest.exists()) {
                             sessionStorage.setItem("isAuth", "true");
                             sessionStorage.setItem("role", "guest");
-                            sessionStorage.setItem("userName", snapGuest.val());
+                            let gName = snapGuest.val();
+                            if(gName === true) gName = "Përdorues"; 
+                            sessionStorage.setItem("userName", gName);
                             showApp();
                         } else {
-                            alert("PIN i gabuar!"); clearPin();
+                            alert("PIN i gabuar ose llogaria nuk ekziston!");
+                            clearPin();
                         }
                     });
                 }
@@ -510,19 +450,37 @@
             const uName = sessionStorage.getItem("userName") || "PËRDORUES";
 
             document.getElementById('user-greeting').innerText = `👋 PËRSHËNDETJE, ${uName.toUpperCase()}!`;
-            
+
             if (userRole === "guest") {
-                document.getElementById('nav-serv').style.display = 'none';
+                document.getElementById('btn-sunroof').style.display = 'none';
+                document.getElementById('btn-windows').style.display = 'none';
+                document.getElementById('btn-gps').style.display = 'none';
+                document.getElementById('btn-allclose').style.display = 'none';
+                document.getElementById('btn-trip').style.width = '100%';
                 document.getElementById('row-hours1').style.display = 'none';
                 document.getElementById('row-hours2').style.display = 'none';
+                document.getElementById('nav-serv').style.display = 'none';
             } else {
                 loadGuestPins();
                 lexoOretNgaFirebase(); 
             }
 
+            if (localStorage.getItem("dashTheme") === "light") {
+                document.body.classList.add("light-hud");
+            }
+
+            applyAppConfig();
             initMQTT();
-            loadServices();
             document.getElementById('history-year').value = new Date().getFullYear();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("light-hud");
+            if (document.body.classList.contains("light-hud")) {
+                localStorage.setItem("dashTheme", "light");
+            } else {
+                localStorage.setItem("dashTheme", "dark");
+            }
         }
 
         function logout() { sessionStorage.clear(); location.reload(); }
@@ -535,7 +493,7 @@
         }
 
         function formatHours(dec) {
-            if (!dec || isNaN(dec)) return "0h 0m";
+            if (!dec) return "0h 0m";
             let h = Math.floor(dec); let m = Math.round((dec - h) * 60);
             if (m === 60) { h += 1; m = 0; }
             return h + "h " + m + "m";
@@ -543,9 +501,11 @@
         
         function lexoOretNgaFirebase() {
             db.ref("statistika/ore_pune").on('value', (snap) => {
-                const data = snap.val() || { ore_totale: 0 };
-                const oreTotale = data.ore_totale || 0;
-                document.getElementById('val-work-hours').innerText = formatHours(oreTotale);
+                const data = snap.val() || { ore_totale: 0, lajmerimi_derguar: false };
+                const el = document.getElementById('val-work-hours');
+                el.innerText = formatHours(data.ore_totale);
+                if(data.ore_totale >= 230) { el.style.color = "var(--danger)"; el.innerText = "🚨 " + el.innerText; } 
+                else { el.style.color = "#fff"; }
             });
             const now = new Date();
             db.ref(`workHours/${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`).on('value', (snap) => {
@@ -554,20 +514,22 @@
         }
 
         function updateWorkHours(oreTeReja) {
-            if(isNaN(oreTeReja) || oreTeReja <= 0) return;
             db.ref("statistika/ore_pune").transaction(function(dataAktuale) {
-                if (!dataAktuale) dataAktuale = { ore_totale: 0 };
+                if (!dataAktuale) dataAktuale = { ore_totale: 0, lajmerimi_derguar: false };
                 dataAktuale.ore_totale += oreTeReja; return dataAktuale;
+            }, function(error, committed, snapshot) {
+                if (committed) {
+                    const data = snapshot.val();
+                    if (data.ore_totale >= 230 && !data.lajmerimi_derguar) dergoLajmerimTelegram(data.ore_totale);
+                }
             });
             const now = new Date();
-            db.ref(`workHours/${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`).transaction(function(oretEKaluara) { 
-                return (oretEKaluara || 0) + oreTeReja; 
-            });
+            db.ref(`workHours/${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`).transaction(function(oretEKaluara) { return (oretEKaluara || 0) + oreTeReja; });
         }
 
         function loadWorkHistory() {
             const muaji = document.getElementById('history-month').value; const viti = document.getElementById('history-year').value;
-            if(!viti) return alert("Vendos vitin!");
+            if(!viti) return alert("Vendos vitin fillimisht (p.sh. 2026)");
             db.ref(`workHours/${viti}/${muaji}`).once('value').then((snap) => {
                 const data = snap.val();
                 let html = '<table><tr><th>Data</th><th style="text-align:right;">Orët</th></tr>';
@@ -578,41 +540,86 @@
                         let oreDita = data[dita]; totaliMuajit += oreDita;
                         html += `<tr><td>${dita}/${muaji}/${viti}</td><td style="text-align:right;">${formatHours(oreDita)}</td></tr>`;
                     });
-                    html += `<tr><td style="font-weight:bold;">TOTALI:</td><td style="text-align:right; font-weight:bold;">${formatHours(totaliMuajit)}</td></tr>`;
+                    html += `<tr><td style="font-weight:bold; color:var(--accent);">TOTALI:</td><td style="text-align:right; font-weight:bold; color:var(--accent);">${formatHours(totaliMuajit)}</td></tr>`;
                 }
                 html += '</table>';
                 document.getElementById('work-history-table').innerHTML = html;
             });
         }
 
+        function dergoLajmerimTelegram(oret) {
+            if(!botToken || botToken === "FUT_TOKEN_KËTU") return;
+            const teksti = `🚨 ALARM I30: Motorri ka arritur ${oret.toFixed(1)} orë pune! Është koha për të ndërruar vajin dhe filtrat.`;
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(teksti)}`;
+            fetch(url).then(() => { db.ref("statistika/ore_pune").update({ lajmerimi_derguar: true }); });
+        }
+
         function addGuestPin() {
             const name = document.getElementById('new-guest-name').value.trim();
             const pin = document.getElementById('new-guest-pin').value;
-            if (!name) return alert("Shkruaj emrin!");
-            if (pin.length < 4) return alert("PIN min 4 shifra!");
+            if (!name) return alert("Të lutem shkruaj emrin e personit!");
+            if (pin.length < 4) return alert("PIN duhet të ketë të paktën 4 shifra!");
             db.ref('guestUsers/' + pin).set(name).then(() => {
-                alert("U shtua!"); document.getElementById('new-guest-name').value = ""; document.getElementById('new-guest-pin').value = ""; loadGuestPins();
+                alert("Përdoruesi u shtua me sukses!");
+                document.getElementById('new-guest-name').value = "";
+                document.getElementById('new-guest-pin').value = "";
+                loadGuestPins();
             });
         }
+
         function deleteGuestPin(pin) {
-            if(confirm(`Fshi këtë PIN?`)) { db.ref('guestUsers/' + pin).remove().then(() => { loadGuestPins(); }); }
+            if(confirm(`A je i sigurt që do të fshish këtë PIN?`)) {
+                db.ref('guestUsers/' + pin).remove().then(() => { loadGuestPins(); });
+            }
         }
+
         function loadGuestPins() {
             db.ref('guestUsers').on('value', (snap) => {
-                const guests = snap.val(); let html = "";
+                const guests = snap.val();
+                let html = "";
                 if (guests) {
                     Object.keys(guests).forEach(pin => {
-                        html += `<div class="guest-item"><span class="guest-pin">👤 ${guests[pin]} (${pin})</span><button class="btn-delete" onclick="deleteGuestPin('${pin}')">X</button></div>`;
+                        let gName = guests[pin];
+                        if (gName === true) gName = "Pa Emër"; 
+                        html += `
+                        <div class="guest-item">
+                            <span class="guest-pin">👤 ${gName} <br><span style="font-size:10px; font-weight:normal;">PIN: ${pin}</span></span>
+                            <button class="btn-delete" onclick="deleteGuestPin('${pin}')">X</button>
+                        </div>`;
                     });
-                } else { html = "<span style='color:var(--text-sub);'>S'ka.</span>"; }
+                } else { html = "<span style='color:var(--text-sub);'>Nuk ka asnjë përdorues shtesë.</span>"; }
                 document.getElementById('guest-list').innerHTML = html;
             });
         }
+
         function updatePin() {
             const newPin = document.getElementById('new-pin').value;
             if (newPin.length < 4) return alert("Min 4 shifra!");
-            db.ref('adminConfig/password').set(newPin).then(() => { alert("PIN u ndryshua!"); document.getElementById('new-pin').value = ""; });
+            db.ref('adminConfig/password').set(newPin).then(() => {
+                alert("PIN i Adminit u ndryshua me sukses!");
+                document.getElementById('new-pin').value = "";
+            });
         }
+
+        function applyAppConfig() {
+            db.ref('adminConfig').once('value').then((snap) => {
+                const cfg = snap.val();
+                if (!cfg) return;
+                if (cfg.bgUrl && cfg.bgUrl.trim() !== "") { document.body.style.backgroundImage = `url('${cfg.bgUrl}')`; } 
+                else { document.body.style.backgroundImage = "url('./bg.jpg')"; }
+                if (cfg.logoUrl && cfg.logoUrl.trim() !== "") { document.getElementById('login-logo-img').src = cfg.logoUrl + "?t=" + new Date().getTime(); } 
+                else { document.getElementById('login-logo-img').src = "./logo.png?v=2"; }
+                document.getElementById('set-bg-url').value = cfg.bgUrl || "";
+                document.getElementById('set-logo-url').value = cfg.logoUrl || "";
+            });
+        }
+
+        function saveAppConfig() {
+            const bg = document.getElementById('set-bg-url').value; const logo = document.getElementById('set-logo-url').value;
+            db.ref('adminConfig/bgUrl').set(bg); db.ref('adminConfig/logoUrl').set(logo);
+            alert("Ndryshimet u ruajtën! Rifresko faqen."); applyAppConfig();
+        }
+
         function saveService() {
             const km = document.getElementById('service-km').value;
             if (!km) return alert("Vendos kilometrat!");
@@ -622,10 +629,12 @@
                 date: new Date().toLocaleDateString()
             };
             db.ref('serviceHistory/' + Date.now()).set(service).then(() => {
-                alert("Servisi u ruajt!"); document.getElementById('service-km').value = "";
-                ['srv-oil', 'srv-oilfilter', 'srv-air', 'srv-ac', 'srv-fuel'].forEach(id => document.getElementById(id).checked = false); loadServices();
+                alert("Servisi u ruajt me sukses!"); document.getElementById('service-km').value = "";
+                ['srv-oil', 'srv-oilfilter', 'srv-air', 'srv-ac', 'srv-fuel'].forEach(id => document.getElementById(id).checked = false);
+                loadServices();
             });
         }
+
         function loadServices() {
             db.ref('serviceHistory').once('value').then((snap) => {
                 const data = snap.val() || {};
@@ -647,21 +656,31 @@
                 if(elHist) elHist.innerHTML = html;
             });
         }
+
         function ruajKohet() {
             const tKandele = document.getElementById('cfg-t-kandele').value; const tXhamat = document.getElementById('cfg-t-xhamat').value;
             let vonesa = 0;
             if (tKandele) { setTimeout(() => sendCommand("CFG:T_KANDELE:" + tKandele), vonesa); vonesa += 1000; }
             if (tXhamat) { setTimeout(() => sendCommand("CFG:T_XHAMAT:" + tXhamat), vonesa); }
-            if(vonesa > 0) { alert("Dërguar!"); document.getElementById('cfg-t-kandele').value = ""; document.getElementById('cfg-t-xhamat').value = ""; } 
+            if(vonesa > 0) {
+                alert("Kohët e reja po dërgohen!");
+                document.getElementById('cfg-t-kandele').value = ""; document.getElementById('cfg-t-xhamat').value = "";
+            } else { alert("Nuk ke plotësuar asnjë vlerë."); }
+        }
+
+        function toggleKey() {
+            if (document.getElementById('val-key').innerText === "AKTIV") sendCommand('KEY_OFF'); else sendCommand('KEY_ON');
         }
 
         function initMQTT() {
             if (isMqttConnected) return; 
             document.getElementById('top-mqtt-status').innerText = "CON...";
             document.getElementById('top-mqtt-status').className = "txt-orange";
+            document.getElementById('val-online').innerText = "Duke u lidhur...";
+            document.getElementById('val-online').className = "txt-orange";
 
             mqttClient.connect({
-                useSSL: true, reconnect: true, timeout: 5, keepAliveInterval: 60,
+                useSSL: true, reconnect: true, timeout: 10, keepAliveInterval: 30,
                 onSuccess: () => {
                     isMqttConnected = true; 
                     mqttClient.subscribe(topicStatus);
@@ -669,21 +688,22 @@
                     document.getElementById('top-mqtt-status').className = "txt-green";
                     document.getElementById('val-online').innerText = "ONLINE";
                     document.getElementById('val-online').className = "txt-green";
-                    try { const msg = new Paho.Message("REFRESH"); msg.destinationName = topicCmd; msg.qos = 1; mqttClient.send(msg); } catch(e) {}
+                    pingCar(false);
                 },
                 onFailure: (err) => { 
+                    isMqttConnected = false; 
                     document.getElementById('top-mqtt-status').innerText = "ERR";
                     document.getElementById('top-mqtt-status').className = "txt-red";
                     document.getElementById('val-online').innerText = "OFFLINE";
                     document.getElementById('val-online').className = "txt-red";
-                    setTimeout(initMQTT, 2500); 
+                    setTimeout(initMQTT, 5000); 
                 }
             });
         }
 
-        mqttClient.onConnectionLost = () => { 
+        mqttClient.onConnectionLost = () => {
             isMqttConnected = false; 
-            document.getElementById('top-mqtt-status').innerText = "ERR"; 
+            document.getElementById('top-mqtt-status').innerText = "ERR";
             document.getElementById('top-mqtt-status').className = "txt-red";
             document.getElementById('val-online').innerText = "OFFLINE";
             document.getElementById('val-online').className = "txt-red";
@@ -691,7 +711,7 @@
 
         mqttClient.onMessageArrived = (msg) => {
             clearTimeout(carTimer);
-            document.getElementById('top-mqtt-status').innerText = "OK"; 
+            document.getElementById('top-mqtt-status').innerText = "OK";
             document.getElementById('top-mqtt-status').className = "txt-green";
             document.getElementById('val-online').innerText = "ONLINE";
             document.getElementById('val-online').className = "txt-green";
@@ -700,7 +720,7 @@
                 const data = JSON.parse(msg.payloadString);
                 
                 if(data.v !== undefined) {
-                    const elBat = document.getElementById('grid-battery');
+                    const elBat = document.getElementById('val-battery');
                     elBat.innerText = data.v.toFixed(2) + "V"; 
                     elBat.className = (data.v > 12.0) ? "txt-green" : "txt-red";
                 }
@@ -710,16 +730,18 @@
                     const elEng = document.getElementById('val-engine');
                     const iconEng = document.getElementById('icon-engine');
                     const lblEng = document.getElementById('lbl-engine');
+                    const btnEng = document.getElementById('btn-engine');
                     
-                    elEng.innerText = isEngineRunning ? "ON" : "OFF";
-                    elEng.className = isEngineRunning ? "txt-red" : "txt-green";
-
-                    if (isEngineRunning) {
+                    if(data.e === 1) {
+                        elEng.innerText = "Ndezur"; elEng.className = "txt-red";
                         iconEng.className = "icon txt-red"; iconEng.innerText = "🛑";
                         lblEng.className = "label txt-red"; lblEng.innerText = "STOP";
+                        btnEng.onclick = () => sendCommand("STOP");
                     } else {
-                        iconEng.className = "icon txt-green"; iconEng.innerText = "⏻";
+                        elEng.innerText = "Fikur"; elEng.className = "txt-green";
+                        iconEng.className = "icon txt-green"; iconEng.innerText = "⚡";
                         lblEng.className = "label txt-green"; lblEng.innerText = "START";
+                        btnEng.onclick = () => sendCommand("START");
                     }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('engine', isEngineRunning);
                 }
@@ -727,7 +749,7 @@
                 if(data.wh !== undefined && data.wh > 0 && userRole === "admin") {
                     db.ref("statistika/lock_oreve").transaction(function(lockData) {
                         const tani = Date.now(); if (!lockData || (tani - lockData > 10000)) return tani; return undefined; 
-                    }, function(error, committed) {
+                    }, function(error, committed, snapshot) {
                         if (committed) {
                             updateWorkHours(data.wh); 
                             try { const msgConf = new Paho.Message("SAVED_HOURS"); msgConf.destinationName = topicCmd; msgConf.qos = 1; mqttClient.send(msgConf); } catch(e) {}
@@ -736,37 +758,37 @@
                 }
 
                 if(data.l !== undefined) {
-                    isCarLocked = (data.l === 1);
                     const elLocks = document.getElementById('val-locks');
                     const iconLocks = document.getElementById('icon-locks');
                     const lblLocks = document.getElementById('lbl-locks');
+                    const btnLocks = document.getElementById('btn-locks');
                     
-                    elLocks.innerText = isCarLocked ? "TË MBYLLURA" : "HAPUR"; 
-                    elLocks.className = isCarLocked ? "txt-green" : "txt-red";
-
-                    if (isCarLocked) {
+                    if(data.l === 1) {
+                        elLocks.innerText = "Mbyllur"; elLocks.className = "txt-green";
                         iconLocks.className = "icon txt-green"; iconLocks.innerText = "🔓";
-                        lblLocks.className = "label txt-green"; lblLocks.innerText = "HAP";
-                    } else {
+                        lblLocks.className = "label txt-green"; lblLocks.innerText = "SHKYÇ";
+                        btnLocks.onclick = () => sendCommand("UNLOCK");
+                    } else if(data.l === 0) {
+                        elLocks.innerText = "HAPUR"; elLocks.className = "txt-red";
                         iconLocks.className = "icon txt-red"; iconLocks.innerText = "🔒";
                         lblLocks.className = "label txt-red"; lblLocks.innerText = "MBYLL";
+                        btnLocks.onclick = () => sendCommand("LOCK");
                     }
-                    if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', !isCarLocked);
+                    if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', data.l === 0);
                 }
 
                 if(data.k !== undefined) {
-                    const strStatus = (data.k === 1) ? "AKTIV" : "JO AKTIV";
-                    document.getElementById('val-key').innerText = strStatus;
-                    document.getElementById('val-key').className = (data.k === 1) ? "txt-purple" : "";
+                    const elKey = document.getElementById('val-key');
+                    const lblKey = document.getElementById('lbl-key-txt');
+                    if(data.k === 1) {
+                        elKey.innerText = "AKTIV"; elKey.className = "txt-purple";
+                        lblKey.innerText = "ÇELËSI: AKTIV"; if(userRole === "admin") db.ref("statistika/celes_servisi").set(true); 
+                    } else if(data.k === 0) {
+                        elKey.innerText = "JO AKTIV"; elKey.className = "txt-gray";
+                        lblKey.innerText = "ÇELËSI: JO AKTIV"; if(userRole === "admin") db.ref("statistika/celes_servisi").set(false);
+                    }
                 }
             } catch (e) { }
-            
-            carTimer = setTimeout(() => { 
-                document.getElementById('top-mqtt-status').innerText = "ERR"; 
-                document.getElementById('top-mqtt-status').className = "txt-red";
-                document.getElementById('val-online').innerText = "OFFLINE";
-                document.getElementById('val-online').className = "txt-red";
-            }, 35000); 
         };
 
         window.sendCommand = (cmd) => {
@@ -774,47 +796,34 @@
             } catch (error) { alert("Duke u rilidhur..."); }
         };
 
-        window.handleEngineClick = function() {
-            if (!isEngineRunning) {
-                if (userRole === 'guest') {
-                    sendCommand('UNLOCK');
-                    setTimeout(() => { sendCommand('START'); }, 1200);
-                } else {
-                    sendCommand('START');
-                }
-            } else {
-                sendCommand('STOP');
-            }
-        };
-
-        window.toggleLocks = function() {
-            if (isCarLocked) {
-                sendCommand('UNLOCK');
-            } else {
-                sendCommand('LOCK');
-            }
-        };
-
-        window.toggleKey = function() {
-            const status = document.getElementById('val-key').innerText;
-            sendCommand(status === "AKTIV" ? 'KEY_OFF' : 'KEY_ON');
+        function pingCar(manual) {
+            try { const msg = new Paho.Message("REFRESH"); msg.destinationName = topicCmd; msg.qos = 1; mqttClient.send(msg); } catch(e) {}
+            carTimer = setTimeout(() => { 
+                document.getElementById('top-mqtt-status').innerText = "ERR"; 
+                document.getElementById('top-mqtt-status').className = "txt-red";
+                document.getElementById('val-online').innerText = "OFFLINE";
+                document.getElementById('val-online').className = "txt-red";
+            }, 12000); 
         }
 
         window.onload = () => {
-            applySavedTheme();
-            applyAppConfig(); 
+            loadServices();
             if (sessionStorage.getItem("isAuth")) showApp();
+            else applyAppConfig(); 
         };
 
         setInterval(() => {
             const now = new Date();
             const elClock = document.getElementById('top-clock');
             if (elClock) elClock.textContent = now.toLocaleTimeString('sq-AL', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-            const elDate = document.getElementById('top-date');
-            const strD = now.getDate().toString().padStart(2, '0') + '/' + (now.getMonth() + 1).toString().padStart(2, '0') + '/' + now.getFullYear();
-            if (elDate) elDate.textContent = strD;
         }, 1000);
 
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === 'visible' && sessionStorage.getItem("isAuth")) {
+                if(userRole === "admin") lexoOretNgaFirebase(); 
+                if (!isMqttConnected) { initMQTT(); } else { pingCar(false); }
+            }
+        });
     </script>
 
     <!-- ===== 3D INTERACTIVE CAR MODEL (Three.js) ===== -->
@@ -825,7 +834,7 @@
         let scene, camera, renderer, controls, carModel, sunroofMesh, raycaster, pointer;
         let initialized = false;
         const canvas = document.getElementById('car-3d-canvas');
-        const viewer = document.querySelector('.viewer-container');
+        const viewer = document.getElementById('car-3d-viewer');
         const feedbackEl = document.getElementById('car-3d-feedback');
         const loadingEl = document.getElementById('car-3d-loading');
 
@@ -941,13 +950,13 @@
             if (typeof THREE === 'undefined') { loadingEl.innerText = "Three.js nuk u ngarkua."; return; }
             initialized = true;
 
-            const w = viewer.clientWidth;
-            const h = viewer.clientHeight;
+            const w = Math.max(viewer.clientWidth, 100);
+            const h = Math.max(viewer.clientHeight, 100);
 
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
             
-            camera.position.set(-7.5, 4.5, 6.5);
+            camera.position.set(-5, 4.5, 6);
 
             renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
             renderer.setPixelRatio(window.devicePixelRatio);
@@ -962,11 +971,10 @@
             controls.enableDamping = true;
             controls.dampingFactor = 0.1;
             controls.enablePan = false;
-            controls.minDistance = 5;
+            controls.minDistance = 3;
             controls.maxDistance = 14;
             controls.maxPolarAngle = Math.PI / 2.05;
-            
-            controls.target.set(-0.7, 0.7, 1.2); 
+            controls.target.set(0, 0.6, 0);
 
             raycaster = new THREE.Raycaster();
             pointer = new THREE.Vector2();
@@ -974,12 +982,6 @@
             const loader = new THREE.GLTFLoader();
             loader.load(MODEL_URL, (gltf) => {
                 carModel = gltf.scene;
-
-                carModel.traverse(obj => {
-                    if (obj.isMesh && /licenseplate|license_plate|numberplate|number_plate/i.test(obj.name || '')) {
-                        obj.visible = false;
-                    }
-                });
 
                 const pearlWhite = new THREE.Color(0xF2F4F5);
                 carModel.traverse(obj => {
@@ -1002,12 +1004,11 @@
                 const center = box.getCenter(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z) || 1;
                 
-                const scale = 12.2 / maxDim; 
+                const scale = 7.9 / maxDim; 
                 carModel.scale.setScalar(scale);
                 carModel.position.x = -center.x * scale;
                 carModel.position.z = -center.z * scale;
-                carModel.position.y = (-box.min.y * scale) - 1.1;
-                
+                carModel.position.y = -box.min.y * scale;
                 scene.add(carModel);
 
                 const sunroofGeo = new THREE.PlaneGeometry(size.x * 0.28, size.z * 0.20);
@@ -1017,11 +1018,12 @@
                 sunroofMesh.position.set(center.x, box.max.y, center.z - size.z * 0.12);
                 carModel.add(sunroofMesh);
 
+                controls.target.set(0, (size.y * scale) / 2, 0);
                 controls.update();
+
                 loadingEl.style.display = 'none';
 
-                const engText = document.getElementById('val-engine').innerText;
-                window.setCarPartState('engine', engText === 'ON');
+                if (typeof isEngineRunning !== 'undefined') window.setCarPartState('engine', isEngineRunning);
                 const lockText = document.getElementById('val-locks').innerText;
                 window.setCarPartState('doors', lockText.includes('HAPUR'));
 
@@ -1049,57 +1051,69 @@
             pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
             raycaster.setFromCamera(pointer, camera);
             const hits = raycaster.intersectObject(carModel, true);
-            if (!hits.length) return;
+            if (!hits.length) { showFeedback("🚗 Prek një pjesë të makinës"); return; }
 
             const hit = hits[0];
             let obj = hit.object;
 
             if (obj === sunroofMesh) { triggerPart('sunroof', obj); return; }
             
-            let checkObj = obj; let matchedName = "";
+            let checkObj = obj;
+            let matchedName = "";
             while (checkObj && checkObj !== scene) {
-                const n = (checkObj.name || '').toLowerCase(); if (n) matchedName += " " + n; checkObj = checkObj.parent;
+                const n = (checkObj.name || '').toLowerCase();
+                if (n) matchedName += " " + n;
+                checkObj = checkObj.parent;
             }
 
             let part = null;
-            if (matchedName.includes('upper') || matchedName.includes('roof') || matchedName.includes('sunroof') || matchedName.includes('panoram') || matchedName.includes('tavan')) { part = 'sunroof'; }
-            else if (matchedName.includes('door') || matchedName.includes('dyr') || matchedName.includes('porta') || matchedName.includes('detach_door')) { part = 'door'; } 
-            else if (matchedName.includes('hood') || matchedName.includes('bonnet') || matchedName.includes('kapot')) { part = 'engine'; } 
-            else { return; }
+            if (matchedName.includes('upper') || matchedName.includes('roof') || matchedName.includes('sunroof') || matchedName.includes('panoram') || matchedName.includes('tavan')) {
+                part = 'sunroof';
+            } else if (matchedName.includes('door') || matchedName.includes('dyr') || matchedName.includes('porta') || matchedName.includes('detach_door')) {
+                part = 'door';
+            } else if (matchedName.includes('hood') || matchedName.includes('bonnet') || matchedName.includes('kapot')) {
+                part = 'engine';
+            } else {
+                showFeedback("🤔 Pjesë e panjohur");
+                return;
+            }
 
             triggerPart(part, hit.object);
         }
 
         function triggerPart(part, mesh) {
             const role = (typeof userRole !== 'undefined') ? userRole : 'guest';
+
             if (part === 'door') {
                 flashMesh(mesh, 400);
-                if (isCarLocked) { sendCommand('UNLOCK'); showFeedback('🔓 HAPJA E DYERVE...'); } 
-                else { sendCommand('LOCK'); showFeedback('🔒 MBYLLJA E DYERVE...'); }
+                const locksText = document.getElementById('val-locks').innerText;
+                if (locksText.indexOf('Mbyllur') === 0 || locksText === '--') {
+                    sendCommand('UNLOCK'); showFeedback('🔓 Duke shkyçur dyert...');
+                } else {
+                    sendCommand('LOCK'); showFeedback('🔒 Duke mbyllur dyert...');
+                }
             } else if (part === 'engine') {
                 flashMesh(mesh, 400);
                 const engText = document.getElementById('val-engine').innerText;
-                if (engText !== 'ON') {
-                    showFeedback('🔓⏳ NDEZJE SEKUENCIALE...');
-                    if (role === 'guest') {
-                        sendCommand('UNLOCK');
-                        setTimeout(() => { sendCommand('START'); }, 1200);
-                    } else {
-                        sendCommand('START');
-                    }
-                } else {
-                    showFeedback('🛑⏳ FIKJE...');
+                if (engText === 'Ndezur' || (typeof isEngineRunning !== 'undefined' && isEngineRunning)) {
                     sendCommand('STOP');
+                    setTimeout(() => { sendCommand('LOCK'); }, 500); 
+                    showFeedback('🛑 Motorri u fik & Dyert u kyçën!');
+                } else {
+                    sendCommand('TRIP_MODE');
+                    showFeedback('🚀 Trip Mode u aktivizua!');
                 }
             } else if (part === 'sunroof') {
-                if (role === 'guest') { showFeedback('⛔ S\'keni akses'); return; }
-                flashMesh(mesh, 800); sendCommand('SUNROOF'); showFeedback('🪟 TAVANI...');
+                if (role === 'guest') { showFeedback('⛔ Nuk keni akses për tavanin'); return; }
+                flashMesh(mesh, 8000); 
+                sendCommand('SUNROOF'); showFeedback('🪟 Duke lëvizur tavanin...');
             }
         }
 
         function onResize() {
             if (!renderer) return;
-            const w = viewer.clientWidth; const h = viewer.clientHeight;
+            const w = Math.max(viewer.clientWidth, 100);
+            const h = Math.max(viewer.clientHeight, 100);
             camera.aspect = w / h; camera.updateProjectionMatrix();
             renderer.setSize(w, h);
         }
@@ -1112,7 +1126,9 @@
 
         const dash = document.getElementById('screen-dash');
         const observer = new MutationObserver(() => {
-            if (dash.classList.contains('active')) { requestAnimationFrame(() => init3D()); }
+            if (dash.classList.contains('active')) {
+                requestAnimationFrame(() => init3D());
+            }
         });
         observer.observe(dash, { attributes: true, attributeFilter: ['class'] });
     })();

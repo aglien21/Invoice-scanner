@@ -70,8 +70,13 @@
             max-width: 500px; 
             box-sizing: border-box; 
         }
-        .screen.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .screen.active { display: block; animation: fadeIn 0.4s ease forwards; }
+        
+        /* ZGJIDHJA: U shtua translateX(-50%) brenda animacionit që të mos e humbasë qendrën */
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translate(-50%, 8px); } 
+            to { opacity: 1; transform: translate(-50%, 0); } 
+        }
 
         /* ===== LOGIN SCREEN (Fiks ne Fund te Ekranit) ===== */
         #screen-login.active { 

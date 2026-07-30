@@ -36,7 +36,7 @@
             --text-main: #ffffff;
             --text-sub: #7a8291;
             --btn-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            --car-glow: radial-gradient(ellipse at center, rgba(0, 168, 255, 0.45) 0%, rgba(0, 168, 255, 0) 70%);
+            --car-glow: radial-gradient(ellipse at center, rgba(0, 210, 255, 0.25) 0%, rgba(0, 0, 0, 0.6) 80%);
         }
 
         body { 
@@ -56,7 +56,7 @@
             --text-main: #1d2128;
             --text-sub: #8e95a3;
             --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-            --car-glow: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            --car-glow: radial-gradient(ellipse at center, rgba(0, 168, 255, 0.15) 0%, rgba(220, 230, 242, 0.9) 80%);
         }
 
         .txt-green { color: #34c759 !important; }
@@ -66,12 +66,12 @@
         .txt-purple { color: #bf5af2 !important; }
         .txt-gray { color: #8e8e93 !important; }
 
-        .overlay { width: 100%; height: 100%; box-sizing: border-box; position: relative; overflow: hidden; background: rgba(0,0,0,0.2); }
+        .overlay { width: 100%; height: 100%; box-sizing: border-box; position: relative; overflow: hidden; background: rgba(0,0,0,0.15); }
         
         .screen { display: none; text-align: center; width: 100%; max-width: 500px; box-sizing: border-box; }
-        .screen.active { display: block; animation: fadeIn 0.4s ease forwards; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease forwards; }
         @keyframes fadeIn { 
-            from { opacity: 0; transform: translate(-50%, 8px); } 
+            from { opacity: 0; transform: translate(-50%, 4px); } 
             to { opacity: 1; transform: translate(-50%, 0); } 
         }
 
@@ -88,96 +88,101 @@
         #screen-dash { 
             max-width: 500px; width: 100%; height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
             overflow-y: auto; 
-            padding: calc(env(safe-area-inset-top, 10px) + 50px) 14px calc(env(safe-area-inset-bottom, 10px) + 75px) 14px; 
+            /* Hequr hapësira e tepërt lart, optimizuar për t'u shfaqur pa scroll */
+            padding: calc(env(safe-area-inset-top, 5px) + 8px) 12px calc(env(safe-area-inset-bottom, 10px) + 65px) 12px; 
             box-sizing: border-box;
         }
 
-        .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 5px 0; }
-        .header-icon { font-size: 22px; color: var(--text-sub); cursor: pointer; -webkit-tap-highlight-color: transparent;}
-        .dash-title { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; display: flex; flex-direction: column; align-items: center; }
-        .dash-title i { font-style: italic; font-weight: 800; color: #58a9ff; font-size: 18px;}
-        .dash-title span { font-size: 10px; font-weight: bold; margin-top: 1px; letter-spacing: 0.3px; }
+        .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 2px 0; }
+        .header-icon { font-size: 20px; color: var(--text-sub); cursor: pointer; -webkit-tap-highlight-color: transparent;}
+        
+        /* Stili i ri i kreut me pershendetjen te kuqe */
+        .dash-title { font-size: 14px; font-weight: 700; color: var(--text-main); letter-spacing: 0.3px; display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+        .dash-title i { font-style: italic; font-weight: 800; color: #58a9ff; font-size: 16px;}
+        .dash-title span { font-size: 10px; font-weight: 800; margin-top: 1px; color: var(--danger); letter-spacing: 0.5px; }
 
         /* STATUSI LART ME 2 KOLONA KUDRATA TË NDARA */
         .i30-main-status {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 6px;
+            margin-bottom: 8px;
         }
         .i30-status-card {
-            background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 12px; padding: 10px; box-shadow: var(--btn-shadow);
+            background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 10px; padding: 6px 8px; box-shadow: var(--btn-shadow);
             text-align: left; display: flex; flex-direction: column; justify-content: space-between;
         }
         .i30-card-title {
-            color: #4aa9ff; font-size: 11px; font-weight: 700; margin-bottom: 6px; letter-spacing: .5px; border-bottom: 1px solid var(--box-border); padding-bottom: 3px;
+            color: #4aa9ff; font-size: 10px; font-weight: 700; margin-bottom: 4px; letter-spacing: .5px; border-bottom: 1px solid var(--box-border); padding-bottom: 2px;
         }
         .i30-status-row {
             display: flex; justify-content: space-between; align-items: center; gap: 4px;
-            padding: 4px 0; border-bottom: 1px solid var(--box-border); font-size: 9.5px; color: var(--text-sub); font-weight: 600;
+            padding: 2.5px 0; border-bottom: 1px solid var(--box-border); font-size: 9px; color: var(--text-sub); font-weight: 600;
         }
         .i30-status-row:last-child { border-bottom: 0; }
-        .i30-status-row b { color: var(--text-main); font-size: 10.5px; text-align: right; white-space: nowrap; }
+        .i30-status-row b { color: var(--text-main); font-size: 10px; text-align: right; white-space: nowrap; }
 
-        /* 3D VIEWER (I zmadhuar) */
-        .viewer-container { position: relative; width: 100%; height: 275px; margin-bottom: 15px; border-radius: 14px; }
+        /* 3D VIEWER (Optimizuar madhësia) */
+        .viewer-container { 
+            position: relative; width: 100%; height: 215px; margin-bottom: 10px; border-radius: 12px; 
+            background: var(--car-glow); border: 1px solid var(--box-border); overflow: hidden; box-shadow: var(--btn-shadow);
+        }
         #car-3d-canvas { width: 100% !important; height: 100% !important; display: block; position: relative; z-index: 2;}
-        .car-glow { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 85%; height: 45px; background: var(--car-glow); border-radius: 50%; pointer-events: none; z-index: 1; transition: background 0.4s ease; }
-        .dots-indicator { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 3; }
-        .dots-indicator div { width: 5px; height: 5px; border-radius: 50%; background: var(--text-sub); opacity: 0.5; }
+        .dots-indicator { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 3; }
+        .dots-indicator div { width: 4px; height: 4px; border-radius: 50%; background: var(--text-sub); opacity: 0.5; }
         .dots-indicator div.active { opacity: 1; background: var(--text-main); }
 
         #car-3d-feedback {
-            position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: bold;
-            color: #fff; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
+            position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: bold;
+            color: #fff; background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
             opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; z-index: 10; backdrop-filter: blur(4px);
         }
         #car-3d-feedback.show { opacity: 1; }
 
-        /* BUTONAT (3-3-2) */
-        .action-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        /* BUTONAT (3-3-2 kompaltë) */
+        .action-grid { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
         .action-btn {
-            background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 12px; padding: 12px 2px;
-            width: calc(33.333% - 6px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+            background: var(--box-bg); border: 1px solid var(--box-border); border-radius: 10px; padding: 10px 2px;
+            width: calc(33.333% - 5px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
             box-shadow: var(--btn-shadow); cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; box-sizing: border-box;
         }
-        .action-btn.wide { width: calc(50% - 4px); padding: 14px 2px; }
+        .action-btn.wide { width: calc(50% - 4px); padding: 11px 2px; }
         .action-btn:active { transform: scale(0.95); }
-        .action-btn .icon { font-size: 24px; line-height: 1; }
-        .action-btn .label { font-size: 9px; font-weight: 700; letter-spacing: 0.3px; }
+        .action-btn .icon { font-size: 22px; line-height: 1; }
+        .action-btn .label { font-size: 8.5px; font-weight: 700; letter-spacing: 0.3px; }
 
         /* ===== SERVISET & SETTINGS ===== */
         #screen-serv {
             height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 50px) 12px calc(env(safe-area-inset-bottom, 10px) + 75px) 12px; box-sizing: border-box;
+            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 20px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px; box-sizing: border-box;
         }
-        .input-group { text-align: left; margin-bottom: 12px; background: var(--box-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--box-border); box-shadow: var(--btn-shadow);}
-        .input-group h3 { margin-top: 0; color: var(--text-main); font-size: 13px; border-bottom: 1px solid var(--box-border); padding-bottom: 6px; }
-        .input-group label { display: block; font-size: 11px; color: var(--text-sub); margin-bottom: 4px; margin-top: 8px; }
-        input[type="text"], input[type="number"], input[type="password"], select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--box-border); background: transparent; color: var(--text-main); font-size: 13px; margin-bottom: 8px; outline: none; box-sizing: border-box;}
+        .input-group { text-align: left; margin-bottom: 10px; background: var(--box-bg); padding: 10px; border-radius: 10px; border: 1px solid var(--box-border); box-shadow: var(--btn-shadow);}
+        .input-group h3 { margin-top: 0; color: var(--text-main); font-size: 12px; border-bottom: 1px solid var(--box-border); padding-bottom: 5px; }
+        .input-group label { display: block; font-size: 10.5px; color: var(--text-sub); margin-bottom: 3px; margin-top: 6px; }
+        input[type="text"], input[type="number"], input[type="password"], select { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--box-border); background: transparent; color: var(--text-main); font-size: 12px; margin-bottom: 6px; outline: none; box-sizing: border-box;}
         
-        .service-tick { display: flex; align-items: center; margin-bottom: 6px; font-size: 12px; color: var(--text-main); }
-        .service-tick input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px; accent-color: var(--text-main); cursor: pointer; }
-        .btn-primary { background: rgba(0,168,255,0.1); border: 1px solid var(--text-main); color: var(--text-main); padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 700; width: 100%; text-transform: uppercase; font-size: 12px; margin-top: 5px;}
+        .service-tick { display: flex; align-items: center; margin-bottom: 5px; font-size: 11px; color: var(--text-main); }
+        .service-tick input[type="checkbox"] { width: 15px; height: 15px; margin-right: 8px; accent-color: var(--text-main); cursor: pointer; }
+        .btn-primary { background: rgba(0,168,255,0.1); border: 1px solid var(--text-main); color: var(--text-main); padding: 9px; border-radius: 6px; cursor: pointer; font-weight: 700; width: 100%; text-transform: uppercase; font-size: 11px; margin-top: 4px;}
 
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
-        th, td { padding: 6px; border-bottom: 1px solid var(--box-border); text-align: left; }
+        table { width: 100%; border-collapse: collapse; font-size: 10.5px; margin-top: 8px; }
+        th, td { padding: 5px; border-bottom: 1px solid var(--box-border); text-align: left; }
         th { color: var(--text-main); }
         
-        .guest-item { display: flex; justify-content: space-between; align-items: center; background: rgba(100,100,100,0.1); padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; }
-        .guest-pin { font-size: 12px; font-weight: 700; }
-        .btn-delete { background: var(--danger); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px;}
+        .guest-item { display: flex; justify-content: space-between; align-items: center; background: rgba(100,100,100,0.1); padding: 6px 8px; border-radius: 6px; margin-bottom: 5px; }
+        .guest-pin { font-size: 11px; font-weight: 700; }
+        .btn-delete { background: var(--danger); border: none; color: white; padding: 3px 6px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 9px;}
 
         /* NAV BAR */
         .nav-bar { 
             display: none; justify-content: space-around; background: var(--bg-dark); 
-            padding: 8px 0 calc(env(safe-area-inset-bottom, 15px) + 6px) 0; 
+            padding: 6px 0 calc(env(safe-area-inset-bottom, 12px) + 4px) 0; 
             border-top: 1px solid var(--box-border); position: fixed; bottom: 0; left: 0; width: 100vw; 
             z-index: 1000; transition: background 0.4s ease;
         }
         body.light-mode .nav-bar { background: #ffffff; }
-        .nav-icon { font-size: 20px; cursor: pointer; color: var(--text-sub); transition: 0.3s; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;}
-        .nav-icon span { font-size: 9px; margin-top: 2px; font-weight: bold; letter-spacing: 0.5px;}
+        .nav-icon { font-size: 18px; cursor: pointer; color: var(--text-sub); transition: 0.3s; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;}
+        .nav-icon span { font-size: 8.5px; margin-top: 2px; font-weight: bold; letter-spacing: 0.5px;}
         .nav-icon.active { color: var(--text-main); transform: translateY(-2px); }
 
         #hidden-logic { display: none; }
@@ -208,19 +213,18 @@
         <!-- EKRANI DASHBOARD -->
         <div id="screen-dash" class="screen">
             
-            <!-- HEADER -->
+            <!-- HEADER I OPTIMIZUAR -->
             <div class="dash-header">
                 <div class="header-icon">≡</div>
                 <div class="dash-title">
                     <i>i30</i> DIGITAL REMOTE
-                    <span id="user-greeting">👋 PËRSHËNDETJE!</span>
+                    <span id="user-greeting">PËRSHËNDETJE!</span>
                 </div>
                 <div class="header-icon" onclick="toggleTheme()" id="theme-btn">⚙️</div>
             </div>
 
-            <!-- STATUSI LART ME 2 KOLONA KUDRATA TË NDARA -->
+            <!-- STATUSI LART ME 2 KOLONA KUDRATA -->
             <div class="i30-main-status">
-                <!-- Kolona e Parë -->
                 <div class="i30-status-card">
                     <div class="i30-card-title">STATUSI I MAKINËS</div>
                     <div class="i30-status-row"><span>RRJETI</span><b id="val-online">--</b></div>
@@ -229,7 +233,6 @@
                     <div class="i30-status-row"><span>BATERI</span><b id="grid-battery">--.-V</b></div>
                 </div>
 
-                <!-- Kolona e Dytë -->
                 <div class="i30-status-card">
                     <div class="i30-card-title">SISTEMI & ORËT</div>
                     <div class="i30-status-row"><span>MQTT</span><b id="top-mqtt-status" class="txt-orange">CON...</b></div>
@@ -239,52 +242,44 @@
                 </div>
             </div>
 
-            <!-- 3D VIEWER (I zmadhuar) -->
+            <!-- 3D VIEWER -->
             <div class="viewer-container" id="car-3d-viewer">
                 <canvas id="car-3d-canvas"></canvas>
-                <div class="car-glow"></div>
                 <div class="dots-indicator"><div class="active"></div><div></div><div></div></div>
                 <div id="car-3d-feedback"></div>
-                <div id="car-3d-loading" style="position: absolute; top:50%; width: 100%; text-align: center; font-size: 12px;">Duke ngarkuar...</div>
+                <div id="car-3d-loading" style="position: absolute; top:50%; width: 100%; text-align: center; font-size: 11px;">Duke ngarkuar...</div>
             </div>
 
-            <!-- BUTONAT (3-3-2) - Butona dinamikë Start/Stop dhe Hap/Mbyll -->
+            <!-- BUTONAT (3-3-2) -->
             <div class="action-grid">
-                <!-- 1. Butoni Dinamik Start/Stop -->
                 <div class="action-btn" id="btn-engine-main" onclick="handleEngineClick()">
                     <div class="icon txt-green" id="icon-engine">⏻</div>
                     <div class="label txt-green" id="lbl-engine">START</div>
                 </div>
-                <!-- 2. Butoni Dinamik Hap/Mbyll -->
                 <div class="action-btn" id="btn-locks-main" onclick="toggleLocks()">
-                    <div class="icon txt-red" id="icon-locks">🔒</div>
-                    <div class="label txt-red" id="lbl-locks">MBYLL</div>
+                    <div class="icon txt-green" id="icon-locks">🔓</div>
+                    <div class="label txt-green" id="lbl-locks">HAP</div>
                 </div>
-                <!-- 3. Windows -->
                 <div class="action-btn" onclick="sendCommand('WINDOWS')">
                     <div class="icon txt-blue">🪟</div>
                     <div class="label txt-blue">WINDOWS</div>
                 </div>
                 
-                <!-- 4. Sunroof -->
                 <div class="action-btn" id="btn-sunroof" onclick="sendCommand('SUNROOF')">
                     <div class="icon txt-orange">🌅</div>
                     <div class="label txt-orange">SUNROOF</div>
                 </div>
-                <!-- 5. Trip Mode -->
                 <div class="action-btn" onclick="sendCommand('TRIP_MODE')">
                     <div class="icon txt-purple">🚀</div>
                     <div class="label txt-purple">TRIP MODE</div>
                 </div>
-                <!-- 6. GPS -->
                 <div class="action-btn" onclick="sendCommand('GPS')">
                     <div class="icon txt-green">📍</div>
                     <div class="label txt-green">GPS / HARTA</div>
                 </div>
 
-                <!-- 7 & 8 të gjera -->
                 <div class="action-btn wide" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
-                    <div class="icon txt-gray" style="font-size: 28px; line-height: 0.85;">🚘</div>
+                    <div class="icon txt-gray" style="font-size: 26px; line-height: 0.85;">🚘</div>
                     <div class="label txt-gray">ALL CLOSE</div>
                 </div>
                 <div class="action-btn wide" onclick="toggleKey()">
@@ -296,7 +291,7 @@
 
         <!-- EKRANI SERVISET -->
         <div id="screen-serv" class="screen">
-            <h2 style="margin-bottom: 15px; text-shadow: 0 2px 5px rgba(0,0,0,0.2); font-style: italic;">SISTEMI & <span class="txt-blue">SERVISET</span></h2>
+            <h2 style="margin-bottom: 12px; text-shadow: 0 2px 5px rgba(0,0,0,0.2); font-style: italic; font-size: 1.2rem;">SISTEMI & <span class="txt-blue">SERVISET</span></h2>
             
             <div class="input-group">
                 <h3>🎨 PERSONALIZIMI I PAMJES</h3>
@@ -304,14 +299,14 @@
                 <input type="text" id="set-logo-url" placeholder="http://...">
                 <label>URL e Sfondit (Aplikacioni):</label>
                 <input type="text" id="set-bg-url" placeholder="http://...">
-                <label>URL e Sfondit 3D (Zëvendëson hijen):</label>
+                <label>URL e Sfondit 3D:</label>
                 <input type="text" id="set-bg-3d-url" placeholder="http://...">
                 <button class="btn-primary" onclick="saveAppConfig()">RUAJ PAMJEN</button>
             </div>
 
             <div class="input-group">
                 <h3>📊 HISTORIKU I ORËVE TË PUNËS</h3>
-                <div style="display:flex; gap:10px;">
+                <div style="display:flex; gap:8px;">
                     <select id="history-month" style="width:50%;">
                         <option value="1">Janar</option> <option value="2">Shkurt</option> <option value="3">Mars</option>
                         <option value="4">Prill</option> <option value="5">Maj</option> <option value="6">Qershor</option>
@@ -321,23 +316,23 @@
                     <input type="number" id="history-year" style="width:50%;" placeholder="Viti (2026)">
                 </div>
                 <button class="btn-primary" onclick="loadWorkHistory()">SHFAQ TË DHËNAT</button>
-                <div id="work-history-table" style="margin-top:10px; overflow-x:auto;"></div>
+                <div id="work-history-table" style="margin-top:8px; overflow-x:auto;"></div>
             </div>
 
             <div class="input-group">
                 <h3>👥 SHTO PËRDORUES GUEST</h3>
                 <input type="text" id="new-guest-name" placeholder="Emri (p.sh. Vëllai)">
-                <div style="display:flex; gap:10px;">
+                <div style="display:flex; gap:8px;">
                     <input type="number" id="new-guest-pin" placeholder="PIN (****)" style="width:65%;">
                     <button class="btn-primary" style="width:35%; margin-top:0;" onclick="addGuestPin()">SHTO</button>
                 </div>
-                <div id="guest-list" style="margin-top:10px;"></div>
+                <div id="guest-list" style="margin-top:8px;"></div>
             </div>
 
             <div class="input-group">
                 <h3>🔧 REGJISTRO SERVIS & HISTORIKU</h3>
                 <input type="number" id="service-km" placeholder="Kilometrat: 150000">
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top: 5px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top: 4px;">
                     <div class="service-tick"><input type="checkbox" id="srv-oil"> Vaj Motorri</div>
                     <div class="service-tick"><input type="checkbox" id="srv-oilfilter"> Filtër Vaji</div>
                     <div class="service-tick"><input type="checkbox" id="srv-air"> Filtër Ajri</div>
@@ -345,14 +340,14 @@
                     <div class="service-tick"><input type="checkbox" id="srv-fuel"> Filtër Nafte</div>
                 </div>
                 <button class="btn-primary txt-green" style="border-color: #34c759;" onclick="saveService()">RUAJ SERVISIN</button>
-                <div id="service-history" style="margin-top:15px; overflow-x:auto;"></div>
+                <div id="service-history" style="margin-top:10px; overflow-x:auto;"></div>
             </div>
 
             <div class="input-group">
                 <h3>🔑 PIN I ADMINIT & KOHËT</h3>
                 <input type="password" id="new-pin" placeholder="PIN i ri admin">
                 <button class="btn-primary txt-red" style="border-color: #ff3b30;" onclick="updatePin()">NDRYSHO PIN</button>
-                <hr style="border: 0; border-bottom: 1px solid var(--box-border); margin: 15px 0;">
+                <hr style="border: 0; border-bottom: 1px solid var(--box-border); margin: 12px 0;">
                 <input type="number" id="cfg-t-kandele" placeholder="Kandelet (ms)">
                 <input type="number" id="cfg-t-xhamat" placeholder="Xhamat (ms)">
                 <button class="btn-primary txt-orange" style="border-color: #ff9f0a;" onclick="ruajKohet()">DËRGO KOHËT</button>
@@ -398,6 +393,7 @@
         let carTimer;
         let isMqttConnected = false;
         let isEngineRunning = false;
+        let isCarLocked = true;
         let userRole = "guest"; 
         let pinEntry = "";
         
@@ -435,10 +431,8 @@
 
                 if (cfg.bg3dUrl && cfg.bg3dUrl.trim() !== "") {
                     document.getElementById('car-3d-viewer').style.setProperty('background', `url('${cfg.bg3dUrl}') center/cover no-repeat`, 'important');
-                    document.querySelector('.car-glow').style.display = 'none';
                 } else {
-                    document.getElementById('car-3d-viewer').style.background = 'transparent';
-                    document.querySelector('.car-glow').style.display = 'block';
+                    document.getElementById('car-3d-viewer').style.background = '';
                 }
                 document.getElementById('set-bg-3d-url').value = cfg.bg3dUrl || "";
             });
@@ -492,17 +486,15 @@
             userRole = sessionStorage.getItem("role");
             const uName = sessionStorage.getItem("userName") || "PËRDORUES";
 
-            document.getElementById('user-greeting').innerText = `👋 PËRSHËNDETJE, ${uName.toUpperCase()}!`;
+            document.getElementById('user-greeting').innerText = `${uName.toUpperCase()}`;
             
             if (userRole === "guest") {
                 document.getElementById('nav-serv').style.display = 'none';
                 document.getElementById('row-hours1').style.display = 'none';
                 document.getElementById('row-hours2').style.display = 'none';
-                document.getElementById('user-greeting').style.color = "orange";
             } else {
                 loadGuestPins();
                 lexoOretNgaFirebase(); 
-                document.getElementById('user-greeting').style.color = "var(--accent)";
             }
 
             initMQTT();
@@ -721,22 +713,22 @@
                 }
 
                 if(data.l !== undefined) {
+                    isCarLocked = (data.l === 1);
                     const elLocks = document.getElementById('val-locks');
                     const iconLocks = document.getElementById('icon-locks');
                     const lblLocks = document.getElementById('lbl-locks');
                     
-                    const isLocked = (data.l === 1);
-                    elLocks.innerText = isLocked ? "TË MBYLLURA" : "HAPUR"; 
-                    elLocks.className = isLocked ? "txt-green" : "txt-red";
+                    elLocks.innerText = isCarLocked ? "TË MBYLLURA" : "HAPUR"; 
+                    elLocks.className = isCarLocked ? "txt-green" : "txt-red";
 
-                    if (isLocked) {
-                        iconLocks.className = "icon txt-red"; iconLocks.innerText = "🔒";
-                        lblLocks.className = "label txt-red"; lblLocks.innerText = "MBYLL";
-                    } else {
+                    if (isCarLocked) {
                         iconLocks.className = "icon txt-green"; iconLocks.innerText = "🔓";
                         lblLocks.className = "label txt-green"; lblLocks.innerText = "HAP";
+                    } else {
+                        iconLocks.className = "icon txt-red"; iconLocks.innerText = "🔒";
+                        lblLocks.className = "label txt-red"; lblLocks.innerText = "MBYLL";
                     }
-                    if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', !isLocked);
+                    if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', !isCarLocked);
                 }
 
                 if(data.k !== undefined) {
@@ -773,8 +765,7 @@
         };
 
         window.toggleLocks = function() {
-            const elLocks = document.getElementById('val-locks').innerText;
-            if (elLocks.indexOf('TË MBYLLURA') !== -1 || elLocks === '--') {
+            if (isCarLocked) {
                 sendCommand('UNLOCK');
             } else {
                 sendCommand('LOCK');
@@ -1060,8 +1051,7 @@
             const role = (typeof userRole !== 'undefined') ? userRole : 'guest';
             if (part === 'door') {
                 flashMesh(mesh, 400);
-                const locksText = document.getElementById('val-locks').innerText;
-                if (locksText.indexOf('TË MBYLLURA') !== -1 || locksText === '--') { sendCommand('UNLOCK'); showFeedback('🔓 HAPJA E DYERVE...'); } 
+                if (isCarLocked) { sendCommand('UNLOCK'); showFeedback('🔓 HAPJA E DYERVE...'); } 
                 else { sendCommand('LOCK'); showFeedback('🔒 MBYLLJA E DYERVE...'); }
             } else if (part === 'engine') {
                 flashMesh(mesh, 400);

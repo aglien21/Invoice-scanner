@@ -28,14 +28,21 @@
             --accent: #00d2ff;
             --danger: #ff3b30;
             --success: #34c759;
-            --dash-bg: linear-gradient(135deg, rgba(20, 24, 33, 0.9), rgba(10, 12, 16, 0.95));
-            --dash-border: rgba(0, 210, 255, 0.4);
-            --dash-glow: rgba(0, 210, 255, 0.15);
+            --bg-dark: #070a10;
+            --bg-light: #eef2f6;
+            
+            /* Ngjyrat e elementeve (Dark Mode Default) */
+            --box-bg: rgba(255, 255, 255, 0.03);
+            --box-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-sub: #7a8291;
+            --btn-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            --car-glow: radial-gradient(ellipse at center, rgba(0, 168, 255, 0.45) 0%, rgba(0, 168, 255, 0) 70%);
         }
 
         body { 
-            background-color: #0b0c10; 
-            color: #fff; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
             font-family: '-apple-system', 'Segoe UI', Tahoma, sans-serif; 
             margin: 0; 
             padding: 0; 
@@ -44,18 +51,32 @@
             width: 100vw;
             overflow: hidden;
             position: fixed;
-            background-image: url('bg.jpg');
-            background-size: cover; 
-            background-position: center center; 
-            background-repeat: no-repeat;
-            background-attachment: fixed; 
+            transition: background 0.4s ease;
             user-select: none;
             -webkit-user-select: none;
             touch-action: pan-y;
         }
 
+        /* ===== LIGHT MODE (FOTO 4) ===== */
+        body.light-mode {
+            background-color: var(--bg-light);
+            --box-bg: #ffffff;
+            --box-border: rgba(0, 0, 0, 0.06);
+            --text-main: #1d2128;
+            --text-sub: #8e95a3;
+            --btn-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --car-glow: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+        }
+
+        /* NGJYRAT PËR TEKSTET/IKONAT (Mbeten njelloj për kontrast në të dyja mode-t) */
+        .txt-green { color: #34c759 !important; }
+        .txt-red { color: #ff3b30 !important; }
+        .txt-blue { color: #00a8ff !important; }
+        .txt-orange { color: #ff9f0a !important; }
+        .txt-purple { color: #bf5af2 !important; }
+        .txt-gray { color: #8e8e93 !important; }
+
         .overlay { 
-            background: rgba(0, 0, 0, 0.5); 
             width: 100%; 
             height: 100%; 
             box-sizing: border-box; 
@@ -71,241 +92,176 @@
             box-sizing: border-box; 
         }
         .screen.active { display: block; animation: fadeIn 0.4s ease forwards; }
-        
-        /* ZGJIDHJA: U shtua translateX(-50%) brenda animacionit që të mos e humbasë qendrën */
         @keyframes fadeIn { 
             from { opacity: 0; transform: translate(-50%, 8px); } 
             to { opacity: 1; transform: translate(-50%, 0); } 
         }
 
-        /* ===== LOGIN SCREEN (Fiks ne Fund te Ekranit) ===== */
+        /* ===== LOGIN SCREEN ===== */
         #screen-login.active { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: flex-end; 
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 280px;
-            padding-bottom: calc(env(safe-area-inset-bottom, 5px));
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end; 
+            position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 100%; max-width: 280px; padding-bottom: calc(env(safe-area-inset-bottom, 5px));
         }
+        .logo-login { width: 60px; height: 60px; border-radius: 18%; margin-bottom: 4px; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 4px 15px rgba(0,210,255, 0.15); }
+        #pin-input { background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); border: 1px solid var(--accent); color: white; font-size: 19px; padding: 6px; border-radius: 8px; width: 150px; text-align: center; margin-bottom: 6px; letter-spacing: 8px; outline: none; -webkit-text-security: disc; }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; width: 100%; }
+        .num-btn { background: rgba(100,100,100,0.2); backdrop-filter: blur(8px); border: 1px solid rgba(200,200,200,0.2); color: var(--text-main); padding: 8px 0; font-size: 17px; border-radius: 8px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; }
+        .num-btn:active { background: rgba(200,200,200,0.3); transform: scale(0.95); }
 
-        .logo-login { 
-            width: 60px; 
-            height: 60px; 
-            border-radius: 18%; 
-            margin-bottom: 4px; 
-            border: 2px solid var(--accent); 
-            object-fit: cover; 
-            box-shadow: 0 4px 15px var(--dash-glow); 
-        }
-        
-        #pin-input { 
-            background: rgba(0,0,0,0.7); 
-            backdrop-filter: blur(10px); 
-            border: 1px solid var(--accent); 
-            color: white; 
-            font-size: 19px; 
-            padding: 6px; 
-            border-radius: 8px; 
-            width: 150px; 
-            text-align: center; 
-            margin-bottom: 6px; 
-            letter-spacing: 8px; 
-            outline: none; 
-            -webkit-text-security: disc;
-        }
-        
-        .numpad { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 5px; 
-            width: 100%; 
-        }
-        
-        .num-btn { 
-            background: rgba(255,255,255,0.1); 
-            backdrop-filter: blur(8px); 
-            border: 1px solid rgba(255,255,255,0.2); 
-            color: white; 
-            padding: 8px 0; 
-            font-size: 17px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            -webkit-tap-highlight-color: transparent;
-        }
-        .num-btn:active { background: rgba(255,255,255,0.3); transform: scale(0.95); }
-
-        /* ===== DASHBOARD ===== */
+        /* ===== DASHBOARD (NEW LAYOUT) ===== */
         #screen-dash { 
             max-width: 500px; 
             width: 100%; 
             height: 100%;
             position: absolute;
-            top: 0;
-            left: 50%;
+            top: 0; left: 50%;
             transform: translateX(-50%);
             overflow-y: auto; 
-            padding: calc(env(safe-area-inset-top, 10px) + 5px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px;
+            padding: calc(env(safe-area-inset-top, 10px) + 5px) 14px calc(env(safe-area-inset-bottom, 10px) + 60px) 14px;
             box-sizing: border-box;
         }
 
-        .i30-topbar {
-            display:flex; align-items:center; justify-content:space-between; gap:8px;
-            padding:10px; margin:0 0 10px; border:1px solid rgba(0,210,255,.45);
-            border-radius:12px; background:rgba(3,10,18,.82);
-            box-shadow:0 0 15px rgba(0,210,255,.08);
+        /* HEADER i Pastër */
+        .dash-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 12px; padding: 5px 0;
         }
-        .i30-brand { font-size:16px; white-space:nowrap; }
-        .i30-brand strong { color:#58a9ff; font-style:italic; font-size:22px; }
-        .i30-brand span { color:#eee; font-style:italic; font-size: 12px; }
-        .i30-top-status {
-            display:flex; flex-direction: column; align-items:flex-end; gap:3px;
-            color:#aaa; font-size:10px; letter-spacing:.5px; white-space:nowrap;
-        }
-        .i30-top-status b { color:#44e36a; }
+        .header-icon { font-size: 22px; color: var(--text-sub); cursor: pointer; -webkit-tap-highlight-color: transparent;}
+        .dash-title { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; }
+        .dash-title i { font-style: italic; font-weight: 800; color: #58a9ff; font-size: 20px;}
 
-        .i30-main-status {
-            display:grid;
-            grid-template-columns: 165px 1fr; 
-            gap:8px;
-            margin-bottom:10px;
+        /* GRIDA E INFORMACIONIT LART (4x2) */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
         }
-
-        .i30-status-card {
-            padding:10px; border:1px solid rgba(0,210,255,.35); border-radius:12px;
-            background:rgba(4,11,20,.82); box-shadow:inset 0 0 15px rgba(0,210,255,.04);
-            text-align:left; display: flex; flex-direction: column; justify-content: space-between;
+        .info-box {
+            background: var(--box-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 10px;
+            padding: 8px 4px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: var(--btn-shadow);
         }
-        .i30-card-title {
-            color:#4aa9ff; font-size:13px; font-weight:700;
-            margin-bottom:8px; letter-spacing:.5px; border-bottom: 1px solid rgba(0,210,255,0.2); padding-bottom: 4px;
-        }
-        .i30-status-row {
-            display:flex; justify-content:space-between; align-items: center; gap:5px;
-            padding:5px 0; border-bottom:1px solid rgba(255,255,255,.05);
-            font-size:10px; color:#ccc; font-weight: 600;
-        }
-        .i30-status-row:last-child { border-bottom:0; }
-        .i30-status-row b { 
-            color:#fff; 
-            font-size:11px; 
-            text-align: right;
-            white-space: nowrap; 
-        }
-
-        .i30-quick-grid {
-            display:grid; grid-template-columns:repeat(2,1fr); gap:6px;
-        }
-        .i30-action {
-            min-height:65px; border-radius:10px; border:1px solid rgba(255,255,255,.16);
-            color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;
-            gap:4px; font-weight:700; font-size:10px; letter-spacing:.3px; cursor:pointer;
-            box-shadow:0 4px 12px rgba(0,0,0,.3); backdrop-filter:blur(8px);
-            -webkit-tap-highlight-color: transparent; touch-action:manipulation;
-        }
-        .i30-action:active { transform:scale(.95); }
-        .i30-action-icon { font-size:22px; line-height:1; }
+        .info-box span { font-size: 8px; color: var(--text-sub); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 3px; display: flex; align-items: center; gap: 3px;}
+        .info-box b { font-size: 10px; color: var(--text-main); white-space: nowrap; }
         
-        .i30-green { background:linear-gradient(145deg,rgba(30,160,65,.78),rgba(18,95,42,.82)); }
-        .i30-red { background:linear-gradient(145deg,rgba(190,45,55,.78),rgba(100,22,30,.82)); }
-        .i30-blue { background:linear-gradient(145deg,rgba(0,100,190,.78),rgba(0,53,110,.82)); }
-        .i30-orange { background:linear-gradient(145deg,rgba(190,95,10,.82),rgba(105,45,4,.86)); }
-        .i30-purple { background:linear-gradient(145deg,rgba(120,55,185,.82),rgba(65,25,110,.86)); }
-        .i30-lime { background:linear-gradient(145deg,rgba(75,145,35,.82),rgba(42,80,20,.86)); }
-        .i30-gray { background:linear-gradient(145deg,rgba(95,102,112,.82),rgba(42,47,53,.88)); }
-        .i30-wide { grid-column:span 2; min-height: 50px;}
+        .dot-green { width: 6px; height: 6px; background-color: #34c759; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px #34c759; }
 
-        /* ===== 3D VIEWER ===== */
-        .i30-car-title {
-            display:flex; justify-content:space-between; gap:10px; padding:6px 8px; color:#c9c9c9; font-size:10px; text-align:left; letter-spacing:.4px;
-        }
-
-        #car-3d-viewer {
-            width:100% !important;
-            height: 280px !important; 
-            margin:0 0 10px !important;
-            border-radius:14px !important;
-            border:2px solid rgba(0,210,255,.42) !important;
-            background: radial-gradient(circle at center, rgba(0,210,255,.15), rgba(0,0,0,.7) 80%);
-            box-shadow:0 8px 25px rgba(0,0,0,.5), inset 0 0 20px rgba(0,210,255,.1) !important;
+        /* ZONA E MAKINËS 3D (Pa kornizë, me hije eliptike poshtë) */
+        .viewer-container {
             position: relative;
-            overflow: hidden;
-            touch-action: none;
+            width: 100%;
+            height: 240px;
+            margin-bottom: 25px;
         }
-        #car-3d-canvas { width: 100% !important; height: 100% !important; display: block; touch-action:none !important; }
-
-        #car-3d-feedback {
-            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: bold;
-            color: #fff; background: rgba(0,168,255,0.2); padding: 5px 12px; border-radius: 12px; border: 1px solid var(--accent);
-            opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; box-shadow: 0 0 12px var(--dash-glow); z-index: 10; backdrop-filter: blur(4px);
-        }
-        #car-3d-feedback.show { opacity: 1; }
-        #car-3d-loading {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            color: var(--accent); font-size: 12px; font-weight: bold; letter-spacing: 1px; text-align: center; background: rgba(0,0,0,0.8); z-index: 20;
-        }
-
-        /* ===== SERVISET & SETTINGS ===== */
-        #screen-serv {
-            height: 100%;
+        #car-3d-canvas { width: 100% !important; height: 100% !important; display: block; position: relative; z-index: 2;}
+        
+        .car-glow {
             position: absolute;
-            top: 0;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            overflow-y: auto;
-            padding: calc(env(safe-area-inset-top, 10px) + 5px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px;
+            width: 85%;
+            height: 45px;
+            background: var(--car-glow);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            transition: background 0.4s ease;
+        }
+
+        .dots-indicator {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 4px; z-index: 3;
+        }
+        .dots-indicator div { width: 5px; height: 5px; border-radius: 50%; background: var(--text-sub); opacity: 0.5; }
+        .dots-indicator div.active { opacity: 1; background: var(--text-main); }
+
+        #car-3d-feedback {
+            position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: bold;
+            color: #fff; background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2);
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; z-index: 10; backdrop-filter: blur(4px);
+        }
+        #car-3d-feedback.show { opacity: 1; }
+
+        /* GRIDA E BUTONAVE (3-3-2) */
+        .action-grid {
+            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+        }
+        .action-btn {
+            background: var(--box-bg);
+            border: 1px solid var(--box-border);
+            border-radius: 12px;
+            padding: 12px 2px;
+            width: calc(33.333% - 6px); /* 3 në një rresht */
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+            box-shadow: var(--btn-shadow);
+            cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent;
             box-sizing: border-box;
         }
-        .input-group { text-align: left; margin-bottom: 12px; background: rgba(17,22,32,0.9); padding: 12px; border-radius: 8px; border: 1px solid rgba(0,210,255,0.2); }
-        .input-group h3 { margin-top: 0; color: var(--accent); font-size: 13px; border-bottom: 1px solid rgba(0,210,255,0.2); padding-bottom: 6px; }
-        .input-group label { display: block; font-size: 11px; color: #aaa; margin-bottom: 4px; margin-top: 8px; }
-        input[type="text"], input[type="number"], input[type="password"], select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--accent); background: #0b0f19; color: #fff; font-size: 13px; margin-bottom: 8px; outline: none; box-sizing: border-box;}
-        
-        .service-tick { display: flex; align-items: center; margin-bottom: 6px; font-size: 12px; color: #ddd; }
-        .service-tick input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px; accent-color: var(--accent); cursor: pointer; }
+        .action-btn.wide {
+            width: calc(50% - 4px); /* 2 në një rresht për reshtin e fundit */
+            padding: 14px 2px;
+        }
+        .action-btn:active { transform: scale(0.95); }
+        .action-btn .icon { font-size: 24px; line-height: 1; }
+        .action-btn .label { font-size: 9px; font-weight: 700; letter-spacing: 0.3px; }
 
-        .btn-primary { background: rgba(0,168,255,0.1); border: 1px solid var(--accent); color: var(--accent); padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 700; width: 100%; text-transform: uppercase; font-size: 12px; margin-top: 5px;}
+        /* FOOTER HINT */
+        .footer-hint {
+            margin-top: 20px; font-size: 10px; color: var(--text-sub); text-align: center;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
 
-        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; background: rgba(0,0,0,0.3); }
-        th, td { padding: 6px; border-bottom: 1px solid rgba(255,255,255,0.1); text-align: left; }
-        th { color: var(--accent); }
+        /* ===== SERVISET EKRAN (I përditësuar për temën e re) ===== */
+        #screen-serv {
+            height: 100%; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            overflow-y: auto; padding: calc(env(safe-area-inset-top, 10px) + 5px) 12px calc(env(safe-area-inset-bottom, 10px) + 60px) 12px; box-sizing: border-box;
+        }
+        .input-group { text-align: left; margin-bottom: 12px; background: var(--box-bg); padding: 12px; border-radius: 12px; border: 1px solid var(--box-border); box-shadow: var(--btn-shadow);}
+        .input-group h3 { margin-top: 0; color: var(--text-main); font-size: 13px; border-bottom: 1px solid var(--box-border); padding-bottom: 6px; }
+        .input-group label { display: block; font-size: 11px; color: var(--text-sub); margin-bottom: 4px; margin-top: 8px; }
+        input[type="text"], input[type="number"], input[type="password"], select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--box-border); background: transparent; color: var(--text-main); font-size: 13px; margin-bottom: 8px; outline: none; box-sizing: border-box;}
         
-        .guest-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; }
+        .service-tick { display: flex; align-items: center; margin-bottom: 6px; font-size: 12px; color: var(--text-main); }
+        .service-tick input[type="checkbox"] { width: 16px; height: 16px; margin-right: 8px; accent-color: var(--text-main); cursor: pointer; }
+        .btn-primary { background: rgba(0,168,255,0.1); border: 1px solid var(--text-main); color: var(--text-main); padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 700; width: 100%; text-transform: uppercase; font-size: 12px; margin-top: 5px;}
+
+        table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; }
+        th, td { padding: 6px; border-bottom: 1px solid var(--box-border); text-align: left; }
+        th { color: var(--text-main); }
+        
+        .guest-item { display: flex; justify-content: space-between; align-items: center; background: rgba(100,100,100,0.1); padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; }
         .guest-pin { font-size: 12px; font-weight: 700; }
         .btn-delete { background: var(--danger); border: none; color: white; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 10px;}
 
-        /* NAV BAR FIX POSHTE */
+        /* NAV BAR */
         .nav-bar { 
-            display: none; 
-            justify-content: space-around; 
-            background: rgba(10,12,16,0.95); 
+            display: none; justify-content: space-around; background: var(--bg-dark); 
             padding: 8px 0 calc(env(safe-area-inset-bottom, 15px) + 4px) 0; 
-            border-top: 1px solid var(--dash-border); 
-            position: fixed; 
-            bottom: 0; left: 0; width: 100vw; 
-            z-index: 1000; 
-            backdrop-filter: blur(15px); 
-            -webkit-backdrop-filter: blur(15px); 
+            border-top: 1px solid var(--box-border); position: fixed; bottom: 0; left: 0; width: 100vw; 
+            z-index: 1000; transition: background 0.4s ease;
         }
-        .nav-icon { font-size: 20px; cursor: pointer; color: #777; transition: 0.3s; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;}
+        body.light-mode .nav-bar { background: #ffffff; }
+        .nav-icon { font-size: 20px; cursor: pointer; color: var(--text-sub); transition: 0.3s; display: flex; flex-direction: column; align-items: center; -webkit-tap-highlight-color: transparent;}
         .nav-icon span { font-size: 9px; margin-top: 2px; font-weight: bold; letter-spacing: 0.5px;}
-        .nav-icon.active { color: var(--accent); transform: translateY(-2px); }
+        .nav-icon.active { color: var(--text-main); transform: translateY(-2px); }
 
+        /* Elemente te fshehura per logjiken e vjeter */
+        #hidden-logic { display: none; }
     </style>
 </head>
 <body>
     <div class="overlay">
         
-        <!-- EKRANI LOGIN (Pozicionim fiks ne fund absolut) -->
+        <!-- EKRANI LOGIN -->
         <div id="screen-login" class="screen active">
-            <h2 style="margin: 0 0 2px 0; letter-spacing: 2px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-size: 1.1rem;">i30 <span style="color: var(--accent);">DIGITAL REMOTE</span></h2>
-            <div style="margin-bottom: 4px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.8rem; color: #aaa; letter-spacing: 1px;">
-                Created by <span style="color: var(--accent); text-shadow: 0 0 8px rgba(0,210,255,0.5);">Aglien</span>
+            <h2 style="margin: 0 0 2px 0; letter-spacing: 2px; font-size: 1.1rem;">i30 <span style="color: #58a9ff;">DIGITAL REMOTE</span></h2>
+            <div style="margin-bottom: 4px; font-family: 'Brush Script MT', 'Lucida Handwriting', cursive; font-size: 0.8rem; color: #888; letter-spacing: 1px;">
+                Created by <span style="color: #58a9ff;">Aglien</span>
             </div>
             <img id="login-logo-img" src="login.png" onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='" class="logo-login">
             <input type="password" id="pin-input" readonly placeholder="****">
@@ -314,105 +270,112 @@
                 <button class="num-btn" onclick="addPin('1')">1</button><button class="num-btn" onclick="addPin('2')">2</button><button class="num-btn" onclick="addPin('3')">3</button>
                 <button class="num-btn" onclick="addPin('4')">4</button><button class="num-btn" onclick="addPin('5')">5</button><button class="num-btn" onclick="addPin('6')">6</button>
                 <button class="num-btn" onclick="addPin('7')">7</button><button class="num-btn" onclick="addPin('8')">8</button><button class="num-btn" onclick="addPin('9')">9</button>
-                <button class="num-btn" style="color: var(--danger); border-color: rgba(255,59,48,0.4);" onclick="clearPin()">C</button>
+                <button class="num-btn txt-red" onclick="clearPin()">C</button>
                 <button class="num-btn" onclick="addPin('0')">0</button>
-                <button class="num-btn" style="color: var(--success); border-color: rgba(52,199,89,0.4);" onclick="checkLogin()">OK</button>
+                <button class="num-btn txt-green" onclick="checkLogin()">OK</button>
             </div>
         </div>
 
-        <!-- EKRANI DASHBOARD -->
+        <!-- EKRANI DASHBOARD (VERSIONI 2.0 - IDENTIK ME FOTON) -->
         <div id="screen-dash" class="screen">
-            <div class="i30-topbar">
-                <div class="i30-brand"><strong>i30</strong> <span>REMOTE</span></div>
-                <div class="i30-top-status">
-                    <span id="user-greeting" style="font-size: 12px; font-weight: bold; margin-bottom: 2px;"></span>
-                    <span>MQTT: <b id="top-mqtt-status">CON...</b></span>
-                    <span id="top-clock">--:--:--</span>
-                </div>
+            
+            <!-- HEADER -->
+            <div class="dash-header">
+                <div class="header-icon">≡</div>
+                <div class="dash-title"><i>i30</i> DIGITAL REMOTE</div>
+                <div class="header-icon" onclick="toggleTheme()" id="theme-btn">⚙️</div>
             </div>
 
-            <div class="i30-main-status">
-                <div class="i30-status-card">
-                    <div class="i30-card-title">STATUSI MAKINËS</div>
-                    <div class="i30-status-row"><span>RRJETI</span><b id="val-online">--</b></div>
-                    <div class="i30-status-row"><span>MOTORRI</span><b id="val-engine">--</b></div>
-                    <div class="i30-status-row"><span>DYERT</span><b id="val-locks">--</b></div>
-                    <div class="i30-status-row"><span>BATERI</span><b id="val-battery">--.- V</b></div>
-                    <div class="i30-status-row" id="row-key"><span>ÇELËSI</span><b id="val-key">--</b></div>
-                    <div class="i30-status-row" id="row-hours1"><span>ORË SOT</span><b id="val-hours-today">0.0h</b></div>
-                    <div class="i30-status-row" id="row-hours2"><span>ORË TOTALE</span><b id="val-work-hours">0.0h</b></div>
-                </div>
-
-                <div class="i30-quick-grid">
-                    <!-- 1. Butoni i Motorrit -->
-                    <button id="btn-engine" class="i30-action i30-green" onclick="handleEngineClick()">
-                        <span class="i30-action-icon">⏻</span><span id="txt-engine">START</span>
-                    </button>
-                    
-                    <!-- 2. Butoni Dinamik për Admin (Hap/Mbyll së bashku) -->
-                    <button id="btn-locks-admin" class="i30-action i30-green" onclick="toggleLocks()">
-                        <span class="i30-action-icon">🔓</span><span>HAP MAKINËN</span>
-                    </button>
-                    
-                    <!-- 3. Butonat e Ndarë për Guest (Shfaqen vetëm tek Guest) -->
-                    <button id="btn-unlock-guest" class="i30-action i30-blue" onclick="sendCommand('UNLOCK')" style="display:none;">
-                        <span class="i30-action-icon">🔓</span><span>HAP</span>
-                    </button>
-                    <button id="btn-lock-guest" class="i30-action i30-red" onclick="sendCommand('LOCK')" style="display:none;">
-                        <span class="i30-action-icon">🔒</span><span>MBYLL</span>
-                    </button>
-
-                    <!-- 4. Butonat e tjerë -->
-                    <button id="btn-sunroof" class="i30-action i30-orange" onclick="sendCommand('SUNROOF')">
-                        <span class="i30-action-icon">🌅</span><span>TAVANI</span>
-                    </button>
-                    <button id="btn-windows" class="i30-action i30-blue" onclick="sendCommand('WINDOWS')">
-                        <span class="i30-action-icon">🪟</span><span>XHAMAT</span>
-                    </button>
-                    <button id="btn-trip" class="i30-action i30-purple" onclick="sendCommand('TRIP_MODE')">
-                        <span class="i30-action-icon">🚀</span><span>TRIP</span>
-                    </button>
-                    <button id="btn-gps" class="i30-action i30-lime" onclick="sendCommand('GPS')">
-                        <span class="i30-action-icon">📍</span><span>GPS</span>
-                    </button>
-                    <button id="btn-allclose" class="i30-action i30-gray i30-wide" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
-                        <span class="i30-action-icon" style="font-size: 18px;">🚘</span><span>ALL CLOSE</span>
-                    </button>
-                </div>
+            <!-- INFO GRID (4x2) -->
+            <div class="info-grid">
+                <!-- Rreshti 1 -->
+                <div class="info-box"><span>SERVER</span><b>EUROPE</b></div>
+                <div class="info-box"><span>MQTT</span><b id="top-mqtt-status" class="txt-green">CONNECTING</b></div>
+                <div class="info-box"><span>ORA</span><b id="top-clock">--:--:--</b></div>
+                <div class="info-box"><span>DATA</span><b id="top-date">--/--/----</b></div>
+                
+                <!-- Rreshti 2 -->
+                <div class="info-box"><span><span class="dot-green"></span> ONLINE</span><b class="txt-green">i30 ONLINE</b></div>
+                <div class="info-box"><span><span class="txt-green">📍</span> GPS</span><b class="txt-green">AKTIV</b></div>
+                <div class="info-box"><span><span class="txt-blue">📶</span> SINJALI</span><b>100%</b></div>
+                <div class="info-box"><span><span class="txt-green">🔋</span> BATERIA</span><b id="grid-battery">--.-V</b></div>
             </div>
 
-            <div class="i30-car-title">
-                <span>👆 PREK NJË PJESË OSE RROTULLO MAKINËN 360°</span>
-            </div>
-
-            <div id="car-3d-viewer">
+            <!-- 3D VIEWER -->
+            <div class="viewer-container">
                 <canvas id="car-3d-canvas"></canvas>
+                <div class="car-glow"></div>
+                <div class="dots-indicator"><div class="active"></div><div></div><div></div></div>
                 <div id="car-3d-feedback"></div>
-                <div id="car-3d-loading">Duke ngarkuar 3D...</div>
+                <div id="car-3d-loading" style="position: absolute; top:50%; width: 100%; text-align: center; font-size: 12px;">Duke ngarkuar...</div>
+            </div>
+
+            <!-- BUTONAT (3-3-2) -->
+            <div class="action-grid">
+                <!-- 3 të parat -->
+                <div class="action-btn" onclick="handleEngineClick()">
+                    <div class="icon txt-green" id="icon-engine">⏻</div>
+                    <div class="label txt-green" id="lbl-engine">START / STOP</div>
+                </div>
+                <div class="action-btn" id="btn-locks-admin" onclick="toggleLocks()">
+                    <div class="icon txt-red" id="icon-locks">🔒</div>
+                    <div class="label txt-red" id="lbl-locks">LOCK / UNLOCK</div>
+                </div>
+                <div class="action-btn" onclick="sendCommand('WINDOWS')">
+                    <div class="icon txt-blue">🪟</div>
+                    <div class="label txt-blue">WINDOWS</div>
+                </div>
+                
+                <!-- Butonat për Guest (Zëvendësojnë LOCK/UNLOCK admin nëse logohën si Guest) -->
+                <div class="action-btn" id="btn-unlock-guest" style="display:none;" onclick="sendCommand('UNLOCK')">
+                    <div class="icon txt-green">🔓</div><div class="label txt-green">UNLOCK</div>
+                </div>
+                <div class="action-btn" id="btn-lock-guest" style="display:none;" onclick="sendCommand('LOCK')">
+                    <div class="icon txt-red">🔒</div><div class="label txt-red">LOCK</div>
+                </div>
+
+                <!-- 3 të dytat -->
+                <div class="action-btn" id="btn-sunroof" onclick="sendCommand('SUNROOF')">
+                    <div class="icon txt-orange">🌅</div>
+                    <div class="label txt-orange">SUNROOF</div>
+                </div>
+                <div class="action-btn" onclick="sendCommand('TRIP_MODE')">
+                    <div class="icon txt-purple">🚀</div>
+                    <div class="label txt-purple">TRIP MODE</div>
+                </div>
+                <div class="action-btn" onclick="sendCommand('GPS')">
+                    <div class="icon txt-green">📍</div>
+                    <div class="label txt-green">GPS / HARTA</div>
+                </div>
+
+                <!-- 2 të fundit (të gjera) -->
+                <div class="action-btn wide" onclick="if(confirm('Mbyllje Totale?')) { sendCommand('ALL_CLOSE'); }">
+                    <div class="icon txt-gray" style="font-size: 28px; line-height: 0.85;">🚘</div>
+                    <div class="label txt-gray">ALL CLOSE</div>
+                </div>
+                <div class="action-btn wide" onclick="toggleKey()">
+                    <div class="icon txt-purple">🔧</div>
+                    <div class="label txt-purple">KEY / SERVIS</div>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="footer-hint">
+                <span style="font-size: 14px;">👆</span> Prek makinën ose përdor butonat për komandat.
+            </div>
+
+            <!-- DIV i fshehur qe kodi i JS te mos jape Error kur kerkon keto ID -->
+            <div id="hidden-logic">
+                <b id="val-online">--</b> <b id="val-engine">--</b> <b id="val-locks">--</b> <b id="val-key">--</b>
+                <b id="val-battery">--</b> <b id="val-hours-today">--</b> <b id="val-work-hours">--</b>
+                <span id="user-greeting"></span>
             </div>
         </div>
 
         <!-- EKRANI SERVISET -->
         <div id="screen-serv" class="screen">
-            <h2 style="margin-bottom: 15px; color: #fff; text-shadow: 0 2px 5px rgba(0,0,0,0.8); font-style: italic;">SISTEMI & <span style="color: var(--accent);">SERVISET</span></h2>
+            <h2 style="margin-bottom: 15px; text-shadow: 0 2px 5px rgba(0,0,0,0.2); font-style: italic;">SISTEMI & <span class="txt-blue">SERVISET</span></h2>
             
-            <div class="input-group">
-                <h3>🎨 PERSONALIZIMI I PAMJES</h3>
-                <label>URL e Logos (Opsionale):</label>
-                <input type="text" id="set-logo-url" placeholder="http://...">
-                <label>URL e Sfondit të Aplikacionit:</label>
-                <input type="text" id="set-bg-url" placeholder="http://...">
-                <label>URL e Sfondit për 3D (Zëvendëson ngjyrën):</label>
-                <input type="text" id="set-bg-3d-url" placeholder="http://...">
-                <button class="btn-primary" onclick="saveAppConfig()">RUAJ PAMJEN</button>
-            </div>
-
-            <div class="input-group" style="border-color: #8e44ad;">
-                <h3 style="color: #8e44ad;">🔧 ÇELËSI I SERVISIT</h3>
-                <div style="font-size:12px; color:#ccc; margin-bottom:8px;">Statusi aktual: <b id="val-key-serv" style="color:#fff;">--</b></div>
-                <button class="btn-primary" style="color:#8e44ad; border-color:#8e44ad;" onclick="toggleKey()">NDRYSHO STATUSIN</button>
-            </div>
-
             <div class="input-group">
                 <h3>👥 SHTO PËRDORUES GUEST</h3>
                 <input type="text" id="new-guest-name" placeholder="Emri (p.sh. Vëllai)">
@@ -424,7 +387,7 @@
             </div>
 
             <div class="input-group">
-                <h3>📊 HISTORIKU I ORËVE TË PUNËS</h3>
+                <h3>📊 HISTORIKU I ORËVE</h3>
                 <div style="display:flex; gap:10px;">
                     <select id="history-month" style="width:50%;">
                         <option value="1">Janar</option> <option value="2">Shkurt</option> <option value="3">Mars</option>
@@ -434,14 +397,13 @@
                     </select>
                     <input type="number" id="history-year" style="width:50%;" placeholder="Viti (2026)">
                 </div>
-                <button class="btn-primary" onclick="loadWorkHistory()">SHFAQ TË DHËNAT</button>
+                <button class="btn-primary" onclick="loadWorkHistory()">SHFAQ</button>
                 <div id="work-history-table" style="margin-top:10px; overflow-x:auto;"></div>
             </div>
 
             <div class="input-group">
                 <h3>🔧 REGJISTRO SERVIS</h3>
-                <label>Kilometrat aktuale:</label>
-                <input type="number" id="service-km" placeholder="150000">
+                <input type="number" id="service-km" placeholder="Kilometrat: 150000">
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top: 5px;">
                     <div class="service-tick"><input type="checkbox" id="srv-oil"> Vaj Motorri</div>
                     <div class="service-tick"><input type="checkbox" id="srv-oilfilter"> Filtër Vaji</div>
@@ -449,23 +411,18 @@
                     <div class="service-tick"><input type="checkbox" id="srv-ac"> Filtër Kond.</div>
                     <div class="service-tick"><input type="checkbox" id="srv-fuel"> Filtër Nafte</div>
                 </div>
-                <button class="btn-primary" style="color: var(--success); border-color: var(--success);" onclick="saveService()">RUAJ TË DHËNAT</button>
+                <button class="btn-primary txt-green" style="border-color: #34c759;" onclick="saveService()">RUAJ SERVISIN</button>
                 <div id="service-history" style="margin-top:15px; overflow-x:auto;"></div>
             </div>
 
             <div class="input-group">
-                <h3>🔑 PIN I ADMINIT</h3>
-                <input type="password" id="new-pin" placeholder="PIN i ri (4 shifra)">
-                <button class="btn-primary" style="color: var(--danger); border-color: var(--danger);" onclick="updatePin()">NDRYSHO PIN</button>
-            </div>
-
-            <div class="input-group">
-                <h3>⚙️ KOHËT E MAKINËS</h3>
-                <label>Kandelet (ms) [Dimër=6000, Verë=3000]:</label>
-                <input type="number" id="cfg-t-kandele" placeholder="6000">
-                <label>Xhamat (ms):</label>
-                <input type="number" id="cfg-t-xhamat" placeholder="4500">
-                <button class="btn-primary" style="color: #ff9500; border-color: #ff9500;" onclick="ruajKohet()">DËRGO NË MAKINË</button>
+                <h3>🔑 PIN I ADMINIT & KOHËT</h3>
+                <input type="password" id="new-pin" placeholder="PIN i ri admin">
+                <button class="btn-primary txt-red" style="border-color: #ff3b30;" onclick="updatePin()">NDRYSHO PIN</button>
+                <hr style="border: 0; border-bottom: 1px solid var(--box-border); margin: 15px 0;">
+                <input type="number" id="cfg-t-kandele" placeholder="Kandelet (ms)">
+                <input type="number" id="cfg-t-xhamat" placeholder="Xhamat (ms)">
+                <button class="btn-primary txt-orange" style="border-color: #ff9f0a;" onclick="ruajKohet()">DËRGO KOHËT</button>
             </div>
         </div>
     </div>
@@ -481,7 +438,7 @@
         <div class="nav-icon" onclick="window.location.reload()">
             🔄<span>REFRESH</span>
         </div>
-        <div class="nav-icon" style="color: var(--danger);" onclick="logout()">
+        <div class="nav-icon txt-red" onclick="logout()">
             🚪<span>DIL</span>
         </div>
     </div>
@@ -511,6 +468,28 @@
         let userRole = "guest"; 
         let pinEntry = "";
         
+        // --- TEMA E APLIKACIONIT (DARK/LIGHT) ---
+        function applySavedTheme() {
+            if (localStorage.getItem("theme") === "light") {
+                document.body.classList.add("light-mode");
+                document.getElementById("theme-btn").innerText = "☀️";
+            } else {
+                document.body.classList.remove("light-mode");
+                document.getElementById("theme-btn").innerText = "⚙️";
+            }
+        }
+        function toggleTheme() {
+            document.body.classList.toggle("light-mode");
+            if (document.body.classList.contains("light-mode")) {
+                localStorage.setItem("theme", "light");
+                document.getElementById("theme-btn").innerText = "☀️";
+            } else {
+                localStorage.setItem("theme", "dark");
+                document.getElementById("theme-btn").innerText = "⚙️";
+            }
+        }
+        applySavedTheme(); // Aplikoje sapo te hapet faqja
+        
         function addPin(num) {
             if(pinEntry.length < 4) { pinEntry += num; document.getElementById('pin-input').value = pinEntry; }
         }
@@ -518,24 +497,20 @@
 
         function checkLogin() {
             if(pinEntry.length < 1) return;
-            
             db.ref('adminConfig/password').once('value').then((snapAdmin) => {
                 const adminPin = snapAdmin.val();
                 if (String(pinEntry) === String(adminPin)) {
                     sessionStorage.setItem("isAuth", "true");
                     sessionStorage.setItem("role", "admin");
-                    sessionStorage.setItem("userName", "AGLIEN"); 
                     showApp();
                 } else {
                     db.ref('guestUsers/' + pinEntry).once('value').then((snapGuest) => {
                         if (snapGuest.exists()) {
                             sessionStorage.setItem("isAuth", "true");
                             sessionStorage.setItem("role", "guest");
-                            sessionStorage.setItem("userName", snapGuest.val());
                             showApp();
                         } else {
-                            alert("PIN i gabuar!");
-                            clearPin();
+                            alert("PIN i gabuar!"); clearPin();
                         }
                     });
                 }
@@ -548,40 +523,18 @@
             document.getElementById('navbar').style.display = 'flex';
             
             userRole = sessionStorage.getItem("role");
-            const uName = sessionStorage.getItem("userName") || "PËRDORUES";
-
-            document.getElementById('user-greeting').innerText = `👋 PËRSHËNDETJE, ${uName.toUpperCase()}!`;
             
             if (userRole === "guest") {
                 document.getElementById('nav-serv').style.display = 'none';
-                document.getElementById('row-hours1').style.display = 'none';
-                document.getElementById('row-hours2').style.display = 'none';
-                document.getElementById('user-greeting').style.color = "orange";
-                
                 document.getElementById('btn-locks-admin').style.display = 'none';
-                document.getElementById('btn-windows').style.display = 'none';
-                document.getElementById('btn-gps').style.display = 'none';
-                document.getElementById('btn-allclose').style.display = 'none';
-
                 document.getElementById('btn-unlock-guest').style.display = 'flex';
                 document.getElementById('btn-lock-guest').style.display = 'flex';
-                
-                document.getElementById('btn-trip').classList.add('i30-wide');
-
             } else {
                 document.getElementById('btn-locks-admin').style.display = 'flex';
-                document.getElementById('btn-windows').style.display = 'flex';
-                document.getElementById('btn-gps').style.display = 'flex';
-                document.getElementById('btn-allclose').style.display = 'flex';
-
                 document.getElementById('btn-unlock-guest').style.display = 'none';
                 document.getElementById('btn-lock-guest').style.display = 'none';
-
-                document.getElementById('btn-trip').classList.remove('i30-wide');
-
                 loadGuestPins();
                 lexoOretNgaFirebase(); 
-                document.getElementById('user-greeting').style.color = "var(--accent)";
             }
 
             initMQTT();
@@ -597,45 +550,6 @@
             if(el) el.classList.add('active');
         }
 
-        function applyAppConfig() {
-            db.ref('adminConfig').once('value').then((snap) => {
-                const cfg = snap.val();
-                if (!cfg) return;
-                
-                if (cfg.bgUrl && cfg.bgUrl.trim() !== "") { 
-                    document.body.style.backgroundImage = `url('${cfg.bgUrl}')`; 
-                } else { 
-                    document.body.style.backgroundImage = "url('bg.jpg')"; 
-                }
-                document.getElementById('set-bg-url').value = cfg.bgUrl || "";
-                
-                if (cfg.logoUrl && cfg.logoUrl.trim() !== "") { 
-                    document.getElementById('login-logo-img').src = cfg.logoUrl; 
-                } else { 
-                    document.getElementById('login-logo-img').src = "login.png"; 
-                }
-                document.getElementById('set-logo-url').value = cfg.logoUrl || "";
-
-                if (cfg.bg3dUrl && cfg.bg3dUrl.trim() !== "") {
-                    document.getElementById('car-3d-viewer').style.setProperty('background', `url('${cfg.bg3dUrl}') center/cover no-repeat`, 'important');
-                } else {
-                    document.getElementById('car-3d-viewer').style.setProperty('background', 'radial-gradient(circle at center, rgba(0,210,255,.15), rgba(0,0,0,.7) 80%)', 'important');
-                }
-                document.getElementById('set-bg-3d-url').value = cfg.bg3dUrl || "";
-            });
-        }
-
-        function saveAppConfig() {
-            const bg = document.getElementById('set-bg-url').value; 
-            const logo = document.getElementById('set-logo-url').value;
-            const bg3d = document.getElementById('set-bg-3d-url').value;
-            db.ref('adminConfig/bgUrl').set(bg); 
-            db.ref('adminConfig/logoUrl').set(logo);
-            db.ref('adminConfig/bg3dUrl').set(bg3d);
-            alert("Ndryshimet e pamjes u ruajtën!"); 
-            applyAppConfig();
-        }
-
         function formatHours(dec) {
             if (!dec || isNaN(dec)) return "0h 0m";
             let h = Math.floor(dec); let m = Math.round((dec - h) * 60);
@@ -647,15 +561,11 @@
             db.ref("statistika/ore_pune").on('value', (snap) => {
                 const data = snap.val() || { ore_totale: 0 };
                 const oreTotale = data.ore_totale || 0;
-                const elTot = document.getElementById('val-work-hours');
-                elTot.innerText = formatHours(oreTotale);
-                elTot.style.color = (oreTotale >= 230) ? "var(--danger)" : "#fff";
+                document.getElementById('val-work-hours').innerText = formatHours(oreTotale);
             });
-
             const now = new Date();
             db.ref(`workHours/${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`).on('value', (snap) => {
-                const oreSot = snap.val() || 0;
-                document.getElementById('val-hours-today').innerText = formatHours(oreSot);
+                document.getElementById('val-hours-today').innerText = formatHours(snap.val() || 0);
             });
         }
 
@@ -684,7 +594,7 @@
                         let oreDita = data[dita]; totaliMuajit += oreDita;
                         html += `<tr><td>${dita}/${muaji}/${viti}</td><td style="text-align:right;">${formatHours(oreDita)}</td></tr>`;
                     });
-                    html += `<tr><td style="font-weight:bold; color:var(--accent);">TOTALI:</td><td style="text-align:right; font-weight:bold; color:var(--accent);">${formatHours(totaliMuajit)}</td></tr>`;
+                    html += `<tr><td style="font-weight:bold;">TOTALI:</td><td style="text-align:right; font-weight:bold;">${formatHours(totaliMuajit)}</td></tr>`;
                 }
                 html += '</table>';
                 document.getElementById('work-history-table').innerHTML = html;
@@ -710,7 +620,7 @@
                     Object.keys(guests).forEach(pin => {
                         html += `<div class="guest-item"><span class="guest-pin">👤 ${guests[pin]} (${pin})</span><button class="btn-delete" onclick="deleteGuestPin('${pin}')">X</button></div>`;
                     });
-                } else { html = "<span style='color:#aaa;'>S'ka.</span>"; }
+                } else { html = "<span style='color:var(--text-sub);'>S'ka.</span>"; }
                 document.getElementById('guest-list').innerHTML = html;
             });
         }
@@ -754,58 +664,55 @@
             if(vonesa > 0) { alert("Dërguar!"); document.getElementById('cfg-t-kandele').value = ""; document.getElementById('cfg-t-xhamat').value = ""; } 
         }
 
-        function setOnlineState(state, text, color) {
-            const el1 = document.getElementById('val-online'); el1.innerText = text; el1.style.color = color;
-            const el2 = document.getElementById('top-mqtt-status'); el2.innerText = state; el2.style.color = color;
-        }
-
         function initMQTT() {
             if (isMqttConnected) return; 
-            setOnlineState("CON...", "CONNECTING", "orange");
+            document.getElementById('top-mqtt-status').innerText = "CONNECTING";
+            document.getElementById('top-mqtt-status').className = "txt-orange";
 
             mqttClient.connect({
-                useSSL: true, 
-                reconnect: true, 
-                timeout: 5, 
-                keepAliveInterval: 60,
+                useSSL: true, reconnect: true, timeout: 5, keepAliveInterval: 60,
                 onSuccess: () => {
                     isMqttConnected = true; 
                     mqttClient.subscribe(topicStatus);
-                    setOnlineState("OK", "OK", "var(--success)");
+                    document.getElementById('top-mqtt-status').innerText = "CONNECTED";
+                    document.getElementById('top-mqtt-status').className = "txt-green";
                     try { const msg = new Paho.Message("REFRESH"); msg.destinationName = topicCmd; msg.qos = 1; mqttClient.send(msg); } catch(e) {}
                 },
-                onFailure: (err) => { setOnlineState("ERR", "ERR", "var(--danger)"); setTimeout(initMQTT, 2500); }
+                onFailure: (err) => { 
+                    document.getElementById('top-mqtt-status').innerText = "ERROR";
+                    document.getElementById('top-mqtt-status').className = "txt-red";
+                    setTimeout(initMQTT, 2500); 
+                }
             });
         }
 
-        mqttClient.onConnectionLost = () => { isMqttConnected = false; setOnlineState("ERR", "ERR", "var(--danger)"); };
+        mqttClient.onConnectionLost = () => { isMqttConnected = false; document.getElementById('top-mqtt-status').innerText = "OFFLINE"; document.getElementById('top-mqtt-status').className = "txt-red"; };
 
         mqttClient.onMessageArrived = (msg) => {
             clearTimeout(carTimer);
-            setOnlineState("OK", "OK", "var(--success)");
+            document.getElementById('top-mqtt-status').innerText = "CONNECTED"; document.getElementById('top-mqtt-status').className = "txt-green";
             
             try {
                 const data = JSON.parse(msg.payloadString);
                 
                 if(data.v !== undefined) {
-                    const elBat = document.getElementById('val-battery');
-                    elBat.innerText = data.v.toFixed(2) + "V"; elBat.style.color = (data.v > 12.0) ? "var(--success)" : "var(--danger)";
+                    const elBat = document.getElementById('grid-battery');
+                    elBat.innerText = data.v.toFixed(2) + "V"; 
+                    elBat.className = (data.v > 12.0) ? "txt-green" : "txt-red";
                 }
 
                 if(data.e !== undefined) {
                     isEngineRunning = (data.e === 1); 
-                    const elEng = document.getElementById('val-engine'); 
-                    const btnEng = document.getElementById('btn-engine');
-                    const txtEng = document.getElementById('txt-engine');
+                    const iconEng = document.getElementById('icon-engine'); 
+                    const lblEng = document.getElementById('lbl-engine');
+                    document.getElementById('val-engine').innerText = isEngineRunning ? "ON" : "OFF"; // Për funksionin click
 
-                    if(data.e === 1) {
-                        elEng.innerText = "ON"; elEng.style.color = "var(--danger)";
-                        btnEng.className = "i30-action i30-red"; 
-                        txtEng.innerText = 'FIK MOTORRIN';
+                    if(isEngineRunning) {
+                        if(iconEng) { iconEng.className = "icon txt-red"; iconEng.innerText = "🛑"; }
+                        if(lblEng) { lblEng.className = "label txt-red"; }
                     } else {
-                        elEng.innerText = "OFF"; elEng.style.color = "var(--success)";
-                        btnEng.className = "i30-action i30-green"; 
-                        txtEng.innerText = 'START';
+                        if(iconEng) { iconEng.className = "icon txt-green"; iconEng.innerText = "⏻"; }
+                        if(lblEng) { lblEng.className = "label txt-green"; }
                     }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('engine', isEngineRunning);
                 }
@@ -822,35 +729,26 @@
                 }
 
                 if(data.l !== undefined) {
-                    const elLocks = document.getElementById('val-locks');
-                    const btnLocksAdmin = document.getElementById('btn-locks-admin');
+                    const iconLocks = document.getElementById('icon-locks');
+                    const lblLocks = document.getElementById('lbl-locks');
+                    document.getElementById('val-locks').innerText = (data.l === 1) ? "MBYLLUR" : "HAPUR"; 
 
-                    if(data.l === 1) {
-                        elLocks.innerText = "MBYLLUR"; elLocks.style.color = "var(--success)"; 
-                        if (btnLocksAdmin) {
-                            btnLocksAdmin.className = "i30-action i30-green"; 
-                            btnLocksAdmin.innerHTML = '<span class="i30-action-icon">🔓</span><span>HAP MAKINËN</span>';
-                        }
-                    } else if(data.l === 0) {
-                        elLocks.innerText = "HAPUR"; elLocks.style.color = "var(--danger)"; 
-                        if (btnLocksAdmin) {
-                            btnLocksAdmin.className = "i30-action i30-red"; 
-                            btnLocksAdmin.innerHTML = '<span class="i30-action-icon">🔒</span><span>MBYLL MAKINËN</span>';
-                        }
+                    if(data.l === 1) { // Mbyllur
+                        if(iconLocks) { iconLocks.className = "icon txt-red"; iconLocks.innerText = "🔒"; }
+                        if(lblLocks) { lblLocks.className = "label txt-red"; }
+                    } else {
+                        if(iconLocks) { iconLocks.className = "icon txt-green"; iconLocks.innerText = "🔓"; }
+                        if(lblLocks) { lblLocks.className = "label txt-green"; }
                     }
                     if(typeof window.setCarPartState === 'function') window.setCarPartState('doors', data.l === 0);
                 }
 
                 if(data.k !== undefined) {
-                    const statusStr = (data.k === 1) ? "AKTIV" : "JO AKTIV";
-                    const col = (data.k === 1) ? "#8e44ad" : "#fff";
-                    document.getElementById('val-key').innerText = statusStr; document.getElementById('val-key').style.color = col;
-                    const servK = document.getElementById('val-key-serv');
-                    if(servK) { servK.innerText = statusStr; servK.style.color = col; }
+                    document.getElementById('val-key').innerText = (data.k === 1) ? "AKTIV" : "JO AKTIV";
                 }
             } catch (e) { }
             
-            carTimer = setTimeout(() => { setOnlineState("ERR", "ERR", "var(--danger)"); }, 35000); 
+            carTimer = setTimeout(() => { document.getElementById('top-mqtt-status').innerText = "DISCONNECTED"; document.getElementById('top-mqtt-status').className = "txt-red"; }, 35000); 
         };
 
         window.sendCommand = (cmd) => {
@@ -860,14 +758,10 @@
 
         window.toggleLocks = function() {
             const elLocks = document.getElementById('val-locks').innerText;
-            if (elLocks.indexOf('MBYLLUR') === 0 || elLocks === '--') {
-                sendCommand('UNLOCK');
-            } else {
-                sendCommand('LOCK');
-            }
+            if (elLocks === 'MBYLLUR' || elLocks === '--') { sendCommand('UNLOCK'); } else { sendCommand('LOCK'); }
         };
 
-        function toggleKey() {
+        window.toggleKey = function() {
             const status = document.getElementById('val-key').innerText;
             sendCommand(status === "AKTIV" ? 'KEY_OFF' : 'KEY_ON');
         }
@@ -878,31 +772,24 @@
             const isRunning = (engText === 'ON' || (typeof isEngineRunning !== 'undefined' && isEngineRunning));
 
             if (role === 'guest') {
-                if (!isRunning) {
-                    sendCommand('UNLOCK');
-                    setTimeout(() => { sendCommand('START'); }, 1200);
-                } else {
-                    sendCommand('STOP');
-                    setTimeout(() => { sendCommand('LOCK'); }, 1200);
-                }
+                if (!isRunning) { sendCommand('UNLOCK'); setTimeout(() => { sendCommand('START'); }, 1200);
+                } else { sendCommand('STOP'); setTimeout(() => { sendCommand('LOCK'); }, 1200); }
             } else {
-                if (!isRunning) {
-                    sendCommand('START');
-                } else {
-                    sendCommand('STOP');
-                }
+                if (!isRunning) { sendCommand('START'); } else { sendCommand('STOP'); }
             }
         };
 
         window.onload = () => {
-            applyAppConfig(); 
-            loadServices();
             if (sessionStorage.getItem("isAuth")) showApp();
         };
 
         setInterval(() => {
-            const el = document.getElementById('top-clock');
-            if (el) el.textContent = new Date().toLocaleTimeString('sq-AL', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+            const now = new Date();
+            const elClock = document.getElementById('top-clock');
+            if (elClock) elClock.textContent = now.toLocaleTimeString('sq-AL', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+            const elDate = document.getElementById('top-date');
+            const strD = now.getDate().toString().padStart(2, '0') + '/' + (now.getMonth() + 1).toString().padStart(2, '0') + '/' + now.getFullYear();
+            if (elDate) elDate.textContent = strD;
         }, 1000);
 
     </script>
@@ -915,7 +802,7 @@
         let scene, camera, renderer, controls, carModel, sunroofMesh, raycaster, pointer;
         let initialized = false;
         const canvas = document.getElementById('car-3d-canvas');
-        const viewer = document.getElementById('car-3d-viewer');
+        const viewer = document.querySelector('.viewer-container');
         const feedbackEl = document.getElementById('car-3d-feedback');
         const loadingEl = document.getElementById('car-3d-loading');
 

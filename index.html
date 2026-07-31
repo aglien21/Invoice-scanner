@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="i30 Control">
+<meta name="theme-color" content="#05070b">
+<title>i30 DIGITAL REMOTE</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<style>
+:root{
+  --accent:#22c6ff; --accent2:#0a84ff;
+  --danger:#ff3b30; --success:#32d74b; --orange:#ff9f0a;
+  --purple:#bf5af2; --pink:#ff5ea8; --blue:#32ade6;
+  --bg:#05070b; --panel:#0e1319; --panel2:#121821;
+  --stroke:rgba(255,255,255,.07); --stroke2:rgba(255,255,255,.045);
+  --text:#fff; --sub:#8a94a6; --sub2:#5d6779;
+  --r:16px; --gap:8px; --navh:56px;
+}
+body.light{
+  --bg:#eef1f6; --panel:#fff; --panel2:#f7f9fc;
+  --stroke:rgba(10,30,60,.10); --stroke2:rgba(10,30,60,.07);
+  --text:#0b1725; --sub:#5d6b7f; --sub2:#8a97a8; --accent:#0a84ff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:var(--bg);overscroll-behavior:none}
+body{color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;user-select:none;-webkit-user-select:none}
+button{font-family:inherit;cursor:pointer}
+svg{display:block}
+.ico{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ico-sm{width:13px;height:13px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ico-lg{width:clamp(20px,3.4vh,27px);height:clamp(20px,3.4vh,27px);stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+
+/* ============ SHELL ============ */
+#app{
+  position:fixed;inset:0;bottom:calc(var(--navh) + env(safe-area-inset-bottom));
+  max-width:560px;margin:0 auto;
+  padding:calc(6px + env(safe-area-inset-top)) 10px 4px;
+  display:flex;flex-direction:column;gap:var(--gap);overflow:hidden;
+}
+#stage{flex:1;min-height:0;display:flex;flex-direction:column}
+.view{display:none;flex-direction:column;gap:var(--gap);min-height:0}
+.view.active{display:flex}
+.view.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px}
+#view-kontrolli{flex:1;overflow:hidden}
+
+/* ============ GREETING ============ */
+.greet{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;padding:0 2px}
+.greet .g1{font-size:11px;font-weight:800;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.greet .g1 b{color:var(--accent)}
+.greet .g2{font-size:8px;font-weight:800;letter-spacing:.7px;padding:3px 8px;border-radius:20px;white-space:nowrap;
+  background:rgba(34,198,255,.13);color:var(--accent)}
+.greet .g2.adm{background:rgba(191,90,242,.15);color:var(--purple)}
+
+/* ============ HEADER ============ */
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none}
+.iconbtn{width:40px;height:34px;border-radius:11px;border:1px solid var(--stroke);background:var(--panel);color:var(--text);display:flex;align-items:center;justify-content:center}
+.iconbtn:active{transform:scale(.94)}
+.brand{flex:1;text-align:center;font-size:clamp(15px,4.4vw,19px);font-weight:800;font-style:italic;white-space:nowrap}
+.brand i{color:var(--accent);font-style:italic}
+.themepill{display:flex;align-items:center;gap:2px;padding:3px;border-radius:20px;border:1px solid var(--stroke);background:var(--panel)}
+.themepill .tp{width:28px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--sub);border:0;background:transparent}
+.themepill .tp.on{background:var(--accent2);color:#fff;box-shadow:0 0 12px rgba(10,132,255,.45)}
+
+/* ============ CHIPS ============ */
+.chips{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:none}
+.chip{background:var(--panel);border:1px solid var(--stroke);border-radius:12px;padding:6px 3px;text-align:center;overflow:hidden}
+.chip .lab{display:flex;align-items:center;justify-content:center;gap:3px;font-size:8px;font-weight:800;letter-spacing:.5px;color:var(--sub);white-space:nowrap}
+.chip .v{margin-top:2px;font-size:clamp(10px,2.9vw,12.5px);font-weight:800;white-space:nowrap}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--orange);box-shadow:0 0 8px currentColor;flex:none}
+.dot.on{background:var(--success)}
+
+/* ============ CARDS ============ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);flex:none}
+.card{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--r);padding:9px 11px}
+.card .title{font-size:10px;font-weight:800;letter-spacing:1.2px;color:var(--accent);margin-bottom:5px}
+.card.center .title{text-align:center}
+.row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0;font-size:10px;font-weight:700;letter-spacing:.3px;color:var(--sub)}
+.row + .row{border-top:1px solid var(--stroke2)}
+.row b{font-size:10.5px;font-weight:800;color:var(--text);text-align:right}
+.green{color:var(--success)!important}.red{color:var(--danger)!important}
+.orange{color:var(--orange)!important}.purple{color:var(--purple)!important}
+.gray{color:var(--sub)!important}.accent{color:var(--accent)!important}
+
+/* ============ WEATHER ============ */
+.wtop{display:flex;align-items:center;justify-content:center;gap:8px}
+.wtop .t{font-size:clamp(22px,6vw,30px);font-weight:800;line-height:1}
+.wtop .t sup{font-size:.45em;font-weight:800;vertical-align:super}
+.wdesc{text-align:center;font-size:9px;font-weight:700;letter-spacing:.4px;color:var(--sub);margin-top:4px}
+.wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:7px}
+.wcell{text-align:center}
+.wcell .i{display:flex;justify-content:center;margin-bottom:2px}
+.wcell .v{font-size:11.5px;font-weight:800}
+.wcell .k{font-size:7px;font-weight:800;letter-spacing:.6px;color:var(--sub2)}
+
+/* ============ 3D ============ */
+.viewer{position:relative;flex:1;min-height:110px;border-radius:var(--r);overflow:hidden;border:1px solid var(--stroke);
+  background:radial-gradient(ellipse at 50% 62%,rgba(34,198,255,.14),transparent 60%),#000;touch-action:none}
+body.light .viewer{background:radial-gradient(ellipse at 50% 62%,rgba(10,132,255,.14),transparent 60%),#0b1018}
+#canvas{width:100%;height:100%;display:block}
+.badge360{position:absolute;top:9px;left:9px;z-index:4;width:42px;height:42px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.28);background:rgba(0,0,0,.35);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff}
+.hint{position:absolute;top:11px;left:50%;transform:translateX(-50%);z-index:4;font-size:8px;font-weight:700;
+  color:rgba(255,255,255,.6);background:rgba(0,0,0,.4);padding:4px 9px;border-radius:20px;white-space:nowrap;pointer-events:none}
+.dots{position:absolute;left:0;right:0;bottom:9px;z-index:4;display:flex;justify-content:center;gap:5px}
+.dots b{width:6px;height:6px;border-radius:4px;background:rgba(255,255,255,.28);transition:.25s;border:0;padding:0}
+.dots b.on{width:18px;background:var(--accent)}
+#feedback{position:absolute;top:60px;left:50%;transform:translateX(-50%) translateY(-6px);z-index:6;
+  background:rgba(6,10,16,.9);border:1px solid var(--accent);color:#fff;padding:6px 12px;border-radius:11px;
+  font-size:10px;font-weight:700;white-space:nowrap;opacity:0;pointer-events:none;transition:.22s}
+#feedback.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#loading{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;text-align:center;
+  background:rgba(0,0,0,.35);font-size:9px;font-weight:700;color:var(--sub);padding:10px}
+.spin{width:20px;height:20px;margin:0 auto 6px;border:2px solid rgba(34,198,255,.18);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ============ BUTTONS ============ */
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);flex:none}
+.btn{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--r);color:var(--text);
+  padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  height:clamp(54px,8.6vh,74px);transition:transform .12s}
+.btn:active{transform:scale(.965)}
+.btn .lbl{font-size:clamp(9px,2.6vw,11px);font-weight:800;letter-spacing:.3px;text-align:center;line-height:1.1}
+.btn .sub{font-size:8.5px;font-weight:700;opacity:.85;line-height:1}
+.btn.bgreen{color:var(--success)}.btn.bred{color:var(--danger)}.btn.borange{color:var(--orange)}
+.btn.bblue{color:var(--blue)}.btn.bpurple{color:var(--purple)}.btn.bpink{color:var(--pink)}.btn.bgray{color:var(--sub)}
+.rowbtns{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);flex:none}
+.wide{flex-direction:row;gap:7px;height:clamp(38px,5.4vh,48px);padding:6px 8px}
+.wide .lbl{font-size:clamp(8.5px,2.4vw,10.5px)}
+.btn.auto{height:auto;min-height:44px;padding:11px 8px}
+
+/* ============ NAV ============ */
+#nav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;justify-content:space-around;
+  background:rgba(8,11,16,.94);backdrop-filter:blur(18px);border-top:1px solid var(--stroke);
+  height:calc(var(--navh) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom)}
+body.light #nav{background:rgba(255,255,255,.95)}
+.nav{flex:1;background:none;border:0;color:var(--sub2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.nav small{font-size:8.5px;font-weight:800;letter-spacing:.5px}
+.nav.active{color:var(--accent)}
+
+/* ============ TABS (Serviset) ============ */
+.tabs{display:flex;gap:5px;background:var(--panel);border:1px solid var(--stroke);border-radius:13px;padding:4px;flex:none}
+.tab{flex:1;border:0;background:transparent;color:var(--sub);font-size:10px;font-weight:800;letter-spacing:.5px;padding:8px 2px;border-radius:10px}
+.tab.on{background:var(--accent2);color:#fff}
+.pane{display:none;flex-direction:column;gap:var(--gap)}
+.pane.on{display:flex}
+
+/* ============ LISTS ============ */
+.item{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:10px 12px}
+.item .txt{flex:1;min-width:0}
+.item .n{font-size:11.5px;font-weight:800;letter-spacing:.3px}
+.item .d{font-size:9px;font-weight:700;color:var(--sub);margin-top:2px}
+.item .act{display:flex;gap:6px}
+.mini{border:1px solid var(--stroke);background:var(--panel2);color:var(--text);border-radius:9px;
+  width:32px;height:32px;display:flex;align-items:center;justify-content:center}
+.mini:active{transform:scale(.93)}
+.tag{font-size:8px;font-weight:800;letter-spacing:.5px;padding:3px 7px;border-radius:20px;white-space:nowrap}
+.tag.ok{background:rgba(50,215,75,.14);color:var(--success)}
+.tag.warn{background:rgba(255,159,10,.14);color:var(--orange)}
+.tag.bad{background:rgba(255,59,48,.14);color:var(--danger)}
+.bar{height:4px;border-radius:3px;background:var(--stroke);margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:var(--success)}
+.bar i.warn{background:var(--orange)}.bar i.bad{background:var(--danger)}
+.empty{text-align:center;font-size:10px;font-weight:700;color:var(--sub2);padding:18px 8px}
+.monthbar{display:flex;align-items:center;gap:6px;background:var(--panel);
+  border:1px solid var(--stroke);border-radius:13px;padding:6px;flex:none}
+.monthbar .m{font-size:11.5px;font-weight:800;letter-spacing:.6px}
+.sel{flex:1;min-width:0;appearance:none;-webkit-appearance:none;border:1px solid var(--stroke);
+  background:var(--panel2);color:var(--text);border-radius:10px;padding:8px 26px 8px 10px;
+  font-size:11px;font-weight:800;letter-spacing:.4px;font-family:inherit;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a94a6' stroke-width='3' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat;background-position:right 9px center}
+.sel:focus{outline:none;border-color:var(--accent)}
+.sel.yr{flex:0 0 86px}
+.hbar{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--stroke2)}
+.hbar .dd{width:52px;font-size:9.5px;font-weight:800;color:var(--sub)}
+.hbar .gb{flex:1;height:8px;border-radius:5px;background:var(--stroke);overflow:hidden}
+.hbar .gb i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.hbar .hh{width:56px;text-align:right;font-size:9.5px;font-weight:800}
+
+/* ============ DRAWER ============ */
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:90;opacity:0;pointer-events:none;transition:.25s}
+#scrim.on{opacity:1;pointer-events:auto}
+#drawer{position:fixed;top:0;bottom:0;left:0;width:min(300px,82vw);z-index:95;background:var(--panel);
+  border-right:1px solid var(--stroke);padding:calc(18px + env(safe-area-inset-top)) 14px 18px;
+  transform:translateX(-102%);transition:transform .28s cubic-bezier(.3,.8,.3,1);
+  display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+#drawer.on{transform:none}
+#drawer h3{margin:0 0 3px;font-size:16px;font-weight:800;font-style:italic}
+#drawer h3 i{color:var(--accent);font-style:italic}
+.dline{font-size:9.5px;font-weight:700;color:var(--sub2);letter-spacing:.5px;margin-bottom:8px}
+.ditem{display:flex;align-items:center;gap:10px;padding:11px;border-radius:13px;background:var(--panel2);
+  border:1px solid var(--stroke2);color:var(--text);font-size:11.5px;font-weight:800;text-align:left;width:100%}
+.ditem span.val{margin-left:auto;font-size:10.5px;color:var(--sub);font-weight:700}
+
+/* ============ LOGIN ============ */
+#login{position:fixed;inset:0;z-index:200;background:var(--bg);display:none;align-items:center;justify-content:center;padding:20px}
+#login.active{display:flex}
+.loginbox{width:min(300px,92vw);text-align:center}
+.loginbox h1{font-size:22px;font-weight:800;font-style:italic;margin:0 0 3px}
+.loginbox h1 i{color:var(--accent);font-style:italic}
+.loginbox p{font-size:9.5px;font-weight:700;letter-spacing:1px;color:var(--sub2);margin:0 0 18px}
+#pin{width:100%;height:48px;text-align:center;font-size:22px;letter-spacing:13px;font-weight:800;background:var(--panel);
+  border:1px solid var(--stroke);border-radius:14px;color:var(--text);margin-bottom:14px;text-indent:13px}
+#pin:focus{outline:none;border-color:var(--accent)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.num{height:clamp(44px,7.4vh,58px);border-radius:14px;border:1px solid var(--stroke);background:var(--panel);color:var(--text);font-size:20px;font-weight:700}
+.num:active{background:var(--panel2);transform:scale(.96)}
+.num.red{color:var(--danger)}.num.green{color:var(--success)}
+
+@media(max-height:640px){
+  :root{--gap:6px}
+  .card{padding:7px 9px}
+  .row{padding:3px 0;font-size:9px}
+  .row b{font-size:9.5px}
+  .hint{display:none}
+}
+@media(max-width:340px){.chips{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="login">
+  <div class="loginbox">
+    <h1><i>i30</i> DIGITAL REMOTE</h1>
+    <p>VENDOS KODIN PIN</p>
+    <input id="pin" type="password" readonly placeholder="····">
+    <div class="numpad">
+      <button class="num" onclick="addPin('1')">1</button>
+      <button class="num" onclick="addPin('2')">2</button>
+      <button class="num" onclick="addPin('3')">3</button>
+      <button class="num" onclick="addPin('4')">4</button>
+      <button class="num" onclick="addPin('5')">5</button>
+      <button class="num" onclick="addPin('6')">6</button>
+      <button class="num" onclick="addPin('7')">7</button>
+      <button class="num" onclick="addPin('8')">8</button>
+      <button class="num" onclick="addPin('9')">9</button>
+      <button class="num red" onclick="clearPin()">C</button>
+      <button class="num" onclick="addPin('0')">0</button>
+      <button class="num green" onclick="checkLogin()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DRAWER ============ -->
+<div id="scrim" onclick="closeDrawer()"></div>
+<aside id="drawer">
+  <h3><i>i30</i> DIGITAL REMOTE</h3>
+  <div class="dline">ORA: <span id="clock">--:--:--</span> • ROLI: <span id="d-role">--</span></div>
+  <button class="ditem" onclick="pingCar(true);closeDrawer()">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>RIFRESKO TË DHËNAT</button>
+  <button class="ditem" onclick="toggleDarkMode()">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>NDRYSHO TEMËN</button>
+  <button class="ditem" onclick="go('telemetria');closeDrawer()">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V8"/></svg>TELEMETRIA</button>
+  <button class="ditem" onclick="go('serviset');svTab('sherbimet');closeDrawer()">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.3 9.3a2.8 2.8 0 0 1-4-4z"/></svg>SHËRBIMET / VAJ-FILTRA</button>
+  <button class="ditem" onclick="go('serviset');svTab('guest');closeDrawer()">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>PËRDORUESIT GUEST</button>
+  <button class="ditem" onclick="go('serviset');svTab('historiku');closeDrawer()">
+    <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>HISTORIKU I ORËVE</button>
+  <div class="ditem" style="pointer-events:none">
+    <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>ORË SOT<span class="val" data-m="today">0h 0m</span></div>
+  <div class="ditem" style="pointer-events:none">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>ORË TOTALE<span class="val" data-m="total">0h 0m</span></div>
+  <button class="ditem" style="color:var(--danger)" onclick="logout()">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>DIL NGA LLOGARIA</button>
+</aside>
+
+<!-- ============ APP ============ -->
+<div id="app">
+
+  <div class="greet">
+    <div class="g1" id="greetTxt">Mirë se erdhe!</div>
+    <div class="g2" id="greetRole">GUEST</div>
+  </div>
+
+  <header class="top">
+    <button class="iconbtn" onclick="openDrawer()">
+      <svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg></button>
+    <div class="brand"><i>i30</i> DIGITAL REMOTE</div>
+    <div class="themepill" onclick="toggleDarkMode()">
+      <span class="tp" id="tp-sun"><svg class="ico-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+      <span class="tp on" id="tp-moon"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span>
+    </div>
+  </header>
+
+  <section class="chips">
+    <div class="chip">
+      <div class="lab"><span id="mqttDot" class="dot"></span><span>MQTT <b id="mqtt" style="font-weight:800">CON...</b></span></div>
+      <div class="v" id="val-online">--</div>
+    </div>
+    <div class="chip">
+      <div class="lab"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="2.6"/></svg>GPS</div>
+      <div class="v" id="val-gps">--</div>
+    </div>
+    <div class="chip">
+      <div class="lab"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 20v-4"/><path d="M9 20v-8"/><path d="M14 20v-12"/><path d="M19 20V4"/></svg>SINJALI</div>
+      <div class="v" id="val-signal">--</div>
+    </div>
+    <div class="chip">
+      <div class="lab"><svg class="ico-sm" viewBox="0 0 24 24"><rect x="2" y="7" width="17" height="10" rx="2.5"/><path d="M22 11v2"/><path d="M5.5 10.5v3M9 10.5v3"/></svg>BATERIA</div>
+      <div class="v" id="val-battery">--.-V</div>
+    </div>
+  </section>
+
+  <div id="stage">
+
+  <!-- ==================== KONTROLLI ==================== -->
+  <section class="view active" id="view-kontrolli">
+    <div class="grid2">
+      <div class="card">
+        <div class="title">TELEMETRIA</div>
+        <div class="row"><span>MOTORI</span><b id="val-engine" class="green">OFF</b></div>
+        <div class="row"><span>DYERT</span><b id="val-locks" class="green">TË MBYLLURA</b></div>
+        <div class="row"><span>ÇELËSI SERVISIT</span><b id="val-key" class="gray">JO AKTIV</b></div>
+        <div class="row"><span>ORË SOT</span><b data-m="today" class="accent">0h 0m</b></div>
+        <div class="row"><span>ORË TOTALE</span><b data-m="total" class="accent">0h 0m</b></div>
+      </div>
+      <div class="card center">
+        <div class="title">MOTI</div>
+        <div class="wtop">
+          <span style="color:var(--orange)"><svg class="ico-lg" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2" stroke="#ffd60a"/><path d="M9 1.6v1.6M3.6 8H2M14.4 8H16M5.2 4.2 4 3M12.8 4.2 14 3" stroke="#ffd60a"/><path d="M17.5 20H8a4 4 0 0 1 0-8 5.2 5.2 0 0 1 9.9 1.2A3.4 3.4 0 0 1 17.5 20z" stroke="#c7d0dd"/></svg></span>
+          <div class="t"><span id="w-temp">--</span><sup>°C</sup></div>
+        </div>
+        <div class="wdesc" id="w-desc">DUKE NGARKUAR...</div>
+        <div class="wgrid">
+          <div class="wcell"><div class="i" style="color:var(--danger)"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/></svg></div><div class="v" id="w-max">--°</div><div class="k">MAX</div></div>
+          <div class="wcell"><div class="i" style="color:var(--blue)"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/></svg></div><div class="v" id="w-min">--°</div><div class="k">MIN</div></div>
+          <div class="wcell"><div class="i" style="color:var(--accent)"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 2.7s6 6.4 6 10.3a6 6 0 0 1-12 0C6 9.1 12 2.7 12 2.7z"/></svg></div><div class="v" id="w-hum">--%</div><div class="k">LAGËSHTIA</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="viewer" id="viewer">
+      <div class="badge360">360°</div>
+      <div class="hint">PREK PJESËN • RROTULLO • ZMADHO</div>
+      <canvas id="canvas"></canvas>
+      <div class="dots" id="dots">
+        <button class="on" onclick="setView(0)"></button><button onclick="setView(1)"></button>
+        <button onclick="setView(2)"></button><button onclick="setView(3)"></button>
+      </div>
+      <div id="feedback"></div>
+      <div id="loading"><div><div class="spin"></div>Duke ngarkuar modelin 3D...</div></div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-engine" class="btn bgreen" onclick="sendCommand('START')">
+        <span id="icon-engine"><svg class="ico-lg" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg></span>
+        <span class="lbl" id="lbl-engine">NDIZ MOTORRIN</span></button>
+      <button id="btn-locks" class="btn bgreen" onclick="sendCommand('UNLOCK')">
+        <span id="icon-locks"><svg class="ico-lg" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/></svg></span>
+        <span class="lbl" id="lbl-locks">SHKYÇ DYERT</span></button>
+      <button id="btn-windows" class="btn bblue" onclick="sendCommand('WINDOWS')">
+        <svg class="ico-lg" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="9" rx="2.5"/><path d="M3 13.5h18"/><path d="M6.5 9 8 6h8l1.5 3"/></svg>
+        <span class="lbl">XHAMAT</span><span class="sub">(HAPJE)</span></button>
+      <button id="btn-sunroof" class="btn borange" onclick="sendCommand('SUNROOF')">
+        <svg class="ico-lg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2.5"/><rect x="6" y="10" width="12" height="4" rx="1.4"/></svg>
+        <span class="lbl">TAVANI</span><span class="sub">(HAPJE)</span></button>
+      <button id="btn-trip" class="btn bpurple" onclick="sendCommand('TRIP_MODE')">
+        <svg class="ico-lg" viewBox="0 0 24 24"><path d="M5.5 14.5c-1.5 1.5-2 5.5-2 5.5s4-.5 5.5-2c.9-.9.9-2.3 0-3.2a2.2 2.2 0 0 0-3.5-.3z"/><path d="M9 15s-2-6 2.5-10.5C14.5 1.5 21 3 21 3s1.5 6.5-1.5 9.5C15 17 9 15 9 15z"/></svg>
+        <span class="lbl">UDHËTIM</span><span class="sub">(TRIP MODE)</span></button>
+      <button id="btn-gps" class="btn bgreen" onclick="sendCommand('GPS')">
+        <svg class="ico-lg" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="2.8"/></svg>
+        <span class="lbl">GPS / HARTA</span></button>
+    </div>
+
+    <div class="rowbtns">
+      <button id="btn-allclose" class="btn wide bblue" onclick="if(confirm('A je i sigurt që do të bësh Mbyllje Totale?'))sendCommand('ALL_CLOSE')">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.4 3 7.9 7 9 4-1.1 7-4.6 7-9V6z"/><path d="M9.2 12.2 11 14l3.8-4"/></svg>
+        <span class="lbl">MBYLLJE TOTALE</span></button>
+      <button id="btn-key" class="btn wide bpink" onclick="toggleKey()">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.3 9.3a2.8 2.8 0 0 1-4-4z"/></svg>
+        <span class="lbl" id="lbl-key-txt">ÇELËSI SERVISIT: JO AKTIV</span></button>
+    </div>
+  </section>
+
+  <!-- ==================== TELEMETRIA ==================== -->
+  <section class="view scroll" id="view-telemetria">
+    <div class="card">
+      <div class="title">TELEMETRIA E PLOTË</div>
+      <div class="row"><span>RRJETI</span><b data-m="online">--</b></div>
+      <div class="row"><span>MOTORI</span><b data-m="engine">OFF</b></div>
+      <div class="row"><span>DYERT</span><b data-m="locks">TË MBYLLURA</b></div>
+      <div class="row"><span>ÇELËSI SERVISIT</span><b data-m="key">JO AKTIV</b></div>
+      <div class="row"><span>BATERIA</span><b data-m="battery">--.-V</b></div>
+      <div class="row"><span>GPS</span><b data-m="gps">--</b></div>
+      <div class="row"><span>SINJALI</span><b data-m="signal">--</b></div>
+      <div class="row"><span>KILOMETRAZHI</span><b data-m="km">-- km</b></div>
+    </div>
+    <div class="card">
+      <div class="title">ORËT E PUNËS</div>
+      <div class="row"><span>ORË SOT</span><b data-m="today">0h 0m</b></div>
+      <div class="row"><span>ORË TOTALE</span><b data-m="total">0h 0m</b></div>
+      <div class="row"><span>ROLI</span><b data-m="role">--</b></div>
+    </div>
+    <button class="btn wide auto bblue" onclick="pingCar(true)">
+      <svg class="ico" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+      <span class="lbl">RIFRESKO TË DHËNAT</span></button>
+  </section>
+
+  <!-- ==================== SERVISET ==================== -->
+  <section class="view scroll" id="view-serviset">
+    <div class="tabs">
+      <button class="tab on" id="tab-sherbimet" onclick="svTab('sherbimet')">SHËRBIMET</button>
+      <button class="tab" id="tab-guest" onclick="svTab('guest')">GUEST</button>
+      <button class="tab" id="tab-historiku" onclick="svTab('historiku')">HISTORIKU</button>
+    </div>
+
+    <!-- ---- SHËRBIMET / VAJ-FILTRA ---- -->
+    <div class="pane on" id="pane-sherbimet">
+      <div class="card">
+        <div class="title">GJENDJA E AUTOMJETIT</div>
+        <div class="row"><span>KILOMETRAZHI AKTUAL</span><b data-m="km">-- km</b></div>
+        <div class="row"><span>ÇELËSI I SERVISIT</span><b data-m="key">JO AKTIV</b></div>
+        <div class="row"><span>MOTORI</span><b data-m="engine">OFF</b></div>
+        <div class="row"><span>TENSIONI</span><b data-m="battery">--.-V</b></div>
+      </div>
+
+      <div class="tabs" style="padding:0;border:0;background:transparent">
+        <button class="btn wide bpink" style="flex:1" onclick="toggleKey()">
+          <svg class="ico" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.3 9.3a2.8 2.8 0 0 1-4-4z"/></svg>
+          <span class="lbl" data-m="keybtn">ÇELËSI: JO AKTIV</span></button>
+        <button class="btn wide bblue" style="flex:1" onclick="setKm()">
+          <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 12 8 8"/><path d="M12 3v2M21 12h-2M3 12h2"/></svg>
+          <span class="lbl">VENDOS KM</span></button>
+      </div>
+
+      <div class="card" style="padding:9px 11px 4px">
+        <div class="title">MIRËMBAJTJA — VAJ &amp; FILTRA</div>
+      </div>
+      <div id="svList"><div class="empty">Duke ngarkuar shërbimet...</div></div>
+      <button class="btn wide auto bgreen" onclick="addService()">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="lbl">SHTO SHËRBIM TË RI</span></button>
+    </div>
+
+    <!-- ---- GUEST ---- -->
+    <div class="pane" id="pane-guest">
+      <div class="card">
+        <div class="title">PËRDORUESIT GUEST</div>
+        <div class="row"><span>TOTALI</span><b id="gCount">0</b></div>
+        <div class="row"><span>AKSESI YT</span><b data-m="role">--</b></div>
+      </div>
+      <div id="gList"><div class="empty">Duke ngarkuar përdoruesit...</div></div>
+      <button class="btn wide auto bgreen" onclick="addGuest()">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+        <span class="lbl">SHTO PËRDORUES GUEST</span></button>
+      <button class="btn wide auto bpurple" onclick="changeAdminPin()">
+        <svg class="ico" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <span class="lbl">NDRYSHO PIN-IN E ADMINIT</span></button>
+    </div>
+
+    <!-- ---- HISTORIKU ---- -->
+    <div class="pane" id="pane-historiku">
+      <div class="monthbar">
+        <button class="mini" onclick="histMove(-1)"><svg class="ico" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <select class="sel" id="selMonth" onchange="histPick()"></select>
+        <select class="sel yr" id="selYear" onchange="histPick()"></select>
+        <button class="mini" onclick="histMove(1)"><svg class="ico" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+      <div class="card">
+        <div class="title">PËRMBLEDHJE</div>
+        <div class="row"><span>ORË SOT</span><b data-m="today">0h 0m</b></div>
+        <div class="row"><span>TOTALI I MUAJIT</span><b id="histMonthTotal">0h 0m</b></div>
+        <div class="row"><span>MESATARJA / DITË</span><b id="histAvg">0h 0m</b></div>
+        <div class="row"><span>DITË PUNE</span><b id="histDays">0</b></div>
+        <div class="row"><span>TOTALI I VITIT</span><b id="histYearTotal">0h 0m</b></div>
+        <div class="row"><span>ORË TOTALE (GJITHSEJ)</span><b data-m="total">0h 0m</b></div>
+      </div>
+      <div class="card" id="histCard">
+        <div class="title">DITËT E PUNËS</div>
+        <div id="histList"><div class="empty">Duke ngarkuar historikun...</div></div>
+      </div>
+      <button class="btn wide auto bblue" onclick="exportHist()">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+        <span class="lbl">EKSPORTO CSV</span></button>
+    </div>
+  </section>
+
+  <!-- ==================== CILËSIMET ==================== -->
+  <section class="view scroll" id="view-cilesimet">
+    <div class="card">
+      <div class="title">CILËSIMET</div>
+      <div class="row"><span>TEMA</span><b class="accent" onclick="toggleDarkMode()" data-m="theme">E ERRËT</b></div>
+      <div class="row"><span>ROLI</span><b data-m="role">--</b></div>
+      <div class="row"><span>ORA</span><b data-m="clock">--:--:--</b></div>
+      <div class="row"><span>MQTT</span><b data-m="online">--</b></div>
+    </div>
+    <div class="rowbtns">
+      <button class="btn wide auto bblue" onclick="toggleDarkMode()">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <span class="lbl">NDRYSHO TEMËN</span></button>
+      <button class="btn wide auto bred" onclick="logout()">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        <span class="lbl">DIL</span></button>
+    </div>
+  </section>
+
+  </div><!-- /stage -->
+</div>
+
+<nav id="nav">
+  <button class="nav active" data-v="kontrolli" onclick="go('kontrolli')">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M18 11V6.5a1.5 1.5 0 0 0-3 0V11"/><path d="M15 10.5V4.5a1.5 1.5 0 0 0-3 0V11"/><path d="M12 10.5v-5a1.5 1.5 0 0 0-3 0V13"/><path d="M9 12.5V9a1.5 1.5 0 1 0-3 0v7c0 3.3 2.7 6 6 6h1.5a6 6 0 0 0 6-6v-5"/></svg>
+    <small>KONTROLLI</small></button>
+  <button class="nav" data-v="telemetria" onclick="go('telemetria')">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M4 19V13"/><path d="M8.7 19V5"/><path d="M13.3 19v-9"/><path d="M18 19V8"/></svg>
+    <small>TELEMETRIA</small></button>
+  <button class="nav" data-v="serviset" onclick="go('serviset')">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M13.7 6.3a4 4 0 0 0 5 5l-8.3 8.3a2.8 2.8 0 0 1-4-4z"/><path d="M3 4l3 3M6 4L3 7"/></svg>
+    <small>SERVISET</small></button>
+  <button class="nav" data-v="cilesimet" onclick="go('cilesimet')">
+    <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+    <small>CILËSIMET</small></button>
+</nav>
+
+<script>
+/* =========================================================================
+   1) FIREBASE + MQTT — IDENTIKE ME ORIGJINALIN
+   ========================================================================= */
+const firebaseConfig={
+ apiKey:"AIzaSyB5vAdwGuUd7oFjhxsyhuUSH84TXXSbtQo",
+ authDomain:"ab592no.firebaseapp.com",
+ databaseURL:"https://ab592no-default-rtdb.europe-west1.firebasedatabase.app",
+ projectId:"ab592no",storageBucket:"ab592no.firebasestorage.app",
+ messagingSenderId:"900777917500",appId:"1:900777917500:web:e9b29ed2d1eb2dc2c8d739"
+};
+if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const topicCmd="jon_i30_S3kr3t_998877/komanda";
+const topicStatus="jon_i30_S3kr3t_998877/statusi";
+const mqttClient=new Paho.Client("broker.hivemq.com",8884,"App_"+Math.random().toString(16).slice(2,8));
+
+let carTimer,isMqttConnected=false,isEngineRunning=false,userRole="guest",pinEntry="";
+let isDoorsOpen=false,isKeyActive=false,carKm=0;
+
+const ICON={
+ power:'<svg class="ico-lg" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>',
+ stop:'<svg class="ico-lg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><rect x="9" y="9" width="6" height="6" rx="1.2"/></svg>',
+ unlock:'<svg class="ico-lg" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/></svg>',
+ lock:'<svg class="ico-lg" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>'
+};
+function mirror(key,text,cls){
+ document.querySelectorAll('[data-m="'+key+'"]').forEach(el=>{
+  el.textContent=text;
+  if(cls!==undefined)el.className=el.className.replace(/\b(green|red|orange|purple|gray|accent)\b/g,'').trim()+(cls?' '+cls:'');
+ });
+}
+function isAdmin(){return userRole==="admin"}
+function needAdmin(){if(isAdmin())return true;alert("⛔ Vetëm ADMIN ka akses për këtë veprim.");return false}
+
+/* =========================================================================
+   2) LOGIN / PIN — IDENTIKE
+   ========================================================================= */
+function addPin(n){if(pinEntry.length<4){pinEntry+=n;document.getElementById("pin").value=pinEntry}}
+function clearPin(){pinEntry="";document.getElementById("pin").value=""}
+function checkLogin(){
+ if(!pinEntry)return;
+ db.ref("adminConfig/password").once("value").then(s=>{
+  if(String(pinEntry)===String(s.val())){
+   sessionStorage.setItem("isAuth","true");sessionStorage.setItem("role","admin");
+   db.ref("adminConfig/name").once("value").then(a=>{
+    sessionStorage.setItem("userName",a.val()||"Admin");showApp();
+   }).catch(()=>{sessionStorage.setItem("userName","Admin");showApp()});
+  }
+  else db.ref("guestUsers/"+pinEntry).once("value").then(g=>{
+   if(g.exists()){
+    const v=g.val(),o=(v&&typeof v==="object")?v:{};
+    let nm=o.name||o.emri||(typeof v==="string"?v:"")||"Guest";
+    nm=String(nm).trim();nm=nm.charAt(0).toUpperCase()+nm.slice(1).toLowerCase();
+    sessionStorage.setItem("isAuth","true");sessionStorage.setItem("role","guest");
+    sessionStorage.setItem("userName",nm||"Guest");showApp();
+   }
+   else{alert("PIN i gabuar ose llogaria nuk ekziston!");clearPin()}
+  })
+ })
+}
+/* ---- PËRSHËNDETJA SIPAS ORËS + EMRIT TË PËRDORUESIT ---- */
+function greetWord(){
+ const h=new Date().getHours();
+ if(h<5)return"Natë e mbarë";
+ if(h<12)return"Mirëmëngjes";
+ if(h<18)return"Mirëdita";
+ return"Mirëmbrëma";
+}
+function renderGreeting(){
+ const g=document.getElementById("greetTxt"),r=document.getElementById("greetRole");
+ if(!g)return;
+ const nm=sessionStorage.getItem("userName")||(isAdmin()?"Admin":"Guest");
+ g.innerHTML=greetWord()+", <b>"+nm+"</b>!";
+ r.textContent=isAdmin()?"ADMIN":"GUEST";
+ r.className="g2"+(isAdmin()?" adm":"");
+}
+function showApp(){
+ document.getElementById("login").classList.remove("active");
+ userRole=sessionStorage.getItem("role")||"guest";
+ mirror("role",userRole.toUpperCase());
+ const dr=document.getElementById("d-role");if(dr)dr.textContent=userRole.toUpperCase();
+ renderGreeting();
+ initMQTT();
+ lexoOretNgaFirebase();
+ loadServices();loadGuests();loadKm();loadHistYears();histLoad();
+}
+function logout(){sessionStorage.clear();location.reload()}
+
+/* =========================================================================
+   3) TEMA / NAVIGIM
+   ========================================================================= */
+function toggleDarkMode(){
+ document.body.classList.toggle("light");
+ localStorage.setItem("dashTheme",document.body.classList.contains("light")?"light":"dark");
+ syncTheme();
+}
+function syncTheme(){
+ const light=document.body.classList.contains("light");
+ document.getElementById("tp-sun").classList.toggle("on",light);
+ document.getElementById("tp-moon").classList.toggle("on",!light);
+ mirror("theme",light?"E ÇELËT":"E ERRËT");
+}
+if(localStorage.getItem("dashTheme")==="light")document.body.classList.add("light");
+
+function go(v){
+ document.querySelectorAll(".view").forEach(s=>s.classList.toggle("active",s.id==="view-"+v));
+ document.querySelectorAll(".nav").forEach(b=>b.classList.toggle("active",b.dataset.v===v));
+ const el=document.getElementById("view-"+v);if(el)el.scrollTop=0;
+ if(v==="kontrolli"&&window.__resize3D)setTimeout(window.__resize3D,60);
+}
+function svTab(t){
+ ["sherbimet","guest","historiku"].forEach(k=>{
+  document.getElementById("pane-"+k).classList.toggle("on",k===t);
+  document.getElementById("tab-"+k).classList.toggle("on",k===t);
+ });
+ document.getElementById("view-serviset").scrollTop=0;
+}
+function openDrawer(){document.getElementById("drawer").classList.add("on");document.getElementById("scrim").classList.add("on")}
+function closeDrawer(){document.getElementById("drawer").classList.remove("on");document.getElementById("scrim").classList.remove("on")}
+
+/* =========================================================================
+   4) KOMANDAT — IDENTIKE
+   ========================================================================= */
+function showFeedback(t){
+ const e=document.getElementById("feedback");
+ e.textContent=t;e.classList.add("show");
+ clearTimeout(showFeedback.t);showFeedback.t=setTimeout(()=>e.classList.remove("show"),1800)
+}
+function toggleKey(){sendCommand(isKeyActive?"KEY_OFF":"KEY_ON")}
+function sendCommand(cmd){
+ if(!isMqttConnected){initMQTT();alert("Duke u rilidhur me MQTT...");return}
+ try{const m=new Paho.Message(cmd);m.destinationName=topicCmd;m.qos=1;mqttClient.send(m)}catch(e){isMqttConnected=false}
+}
+function pingCar(manual){
+ try{const m=new Paho.Message("REFRESH");m.destinationName=topicCmd;m.qos=1;mqttClient.send(m)}catch(e){}
+ if(manual)showFeedback("🔄 Duke rifreskuar...");
+}
+function setOnline(ok){
+ const o=document.getElementById("val-online");
+ o.textContent=ok?"i30 ONLINE":"i30 OFFLINE";o.className="v "+(ok?"green":"red");
+ const m=document.getElementById("mqtt");m.textContent=ok?"OK":"ERR";m.className=ok?"green":"red";
+ document.getElementById("mqttDot").className=ok?"dot on":"dot";
+ mirror("online",ok?"ONLINE":"OFFLINE",ok?"green":"red");
+ const g=document.getElementById("val-gps");
+ if(!g.dataset.live){g.textContent=ok?"AKTIV":"JO AKTIV";g.className="v "+(ok?"green":"red");mirror("gps",ok?"AKTIV":"JO AKTIV",ok?"green":"red")}
+ const s=document.getElementById("val-signal");
+ if(!s.dataset.live){s.textContent=ok?"100%":"0%";s.className="v";mirror("signal",ok?"100%":"0%")}
+}
+function initMQTT(){
+ if(isMqttConnected)return;
+ setOnline(false);
+ try{
+  mqttClient.connect({useSSL:true,reconnect:true,timeout:10,keepAliveInterval:30,onSuccess:()=>{
+   isMqttConnected=true;mqttClient.subscribe(topicStatus);setOnline(true);pingCar(false)
+  },onFailure:()=>{isMqttConnected=false;setOnline(false);setTimeout(initMQTT,5000)}})
+ }catch(e){setOnline(false)}
+}
+mqttClient.onConnectionLost=()=>{isMqttConnected=false;setOnline(false)};
+
+mqttClient.onMessageArrived=msg=>{
+ clearTimeout(carTimer);setOnline(true);
+ try{
+  const d=JSON.parse(msg.payloadString);
+
+  if(d.v!==undefined){
+   const e=document.getElementById("val-battery"),txt=Number(d.v).toFixed(2)+"V";
+   e.textContent=txt;e.className="v "+(Number(d.v)>12?"green":"red");
+   mirror("battery",txt,Number(d.v)>12?"green":"red");
+  }
+
+  /* MOTORI: OFF = JESHIL • NDEZUR = KUQ */
+  if(d.e!==undefined){
+   isEngineRunning=d.e===1;
+   const e=document.getElementById("val-engine"),i=document.getElementById("icon-engine"),l=document.getElementById("lbl-engine");
+   e.textContent=isEngineRunning?"NDEZUR":"OFF";
+   e.className=isEngineRunning?"red":"green";
+   i.innerHTML=isEngineRunning?ICON.stop:ICON.power;
+   l.textContent=isEngineRunning?"FIK MOTORRIN":"NDIZ MOTORRIN";
+   document.getElementById("btn-engine").className="btn "+(isEngineRunning?"bred":"bgreen");
+   document.getElementById("btn-engine").onclick=()=>sendCommand(isEngineRunning?"STOP":"START");
+   mirror("engine",isEngineRunning?"NDEZUR":"OFF",isEngineRunning?"red":"green");
+   if(window.setCarPartState)window.setCarPartState("engine",isEngineRunning);
+  }
+
+  /* DYERT: SHKYÇ = JESHIL • KYÇ = KUQ */
+  if(d.l!==undefined){
+   isDoorsOpen=d.l===0;
+   const e=document.getElementById("val-locks"),i=document.getElementById("icon-locks"),l=document.getElementById("lbl-locks");
+   e.textContent=isDoorsOpen?"TË HAPURA":"TË MBYLLURA";
+   e.className=isDoorsOpen?"red":"green";
+   i.innerHTML=isDoorsOpen?ICON.lock:ICON.unlock;
+   l.textContent=isDoorsOpen?"KYÇ DYERT":"SHKYÇ DYERT";
+   document.getElementById("btn-locks").className="btn "+(isDoorsOpen?"bred":"bgreen");
+   document.getElementById("btn-locks").onclick=()=>sendCommand(isDoorsOpen?"LOCK":"UNLOCK");
+   mirror("locks",isDoorsOpen?"TË HAPURA":"TË MBYLLURA",isDoorsOpen?"red":"green");
+   if(window.setCarPartState)window.setCarPartState("doors",isDoorsOpen);
+  }
+
+  if(d.k!==undefined){
+   isKeyActive=d.k===1;
+   const e=document.getElementById("val-key"),l=document.getElementById("lbl-key-txt");
+   e.textContent=isKeyActive?"AKTIV":"JO AKTIV";
+   e.className=isKeyActive?"purple":"gray";
+   l.textContent=isKeyActive?"ÇELËSI SERVISIT: AKTIV":"ÇELËSI SERVISIT: JO AKTIV";
+   mirror("key",isKeyActive?"AKTIV":"JO AKTIV",isKeyActive?"purple":"gray");
+   mirror("keybtn",isKeyActive?"ÇELËSI: AKTIV":"ÇELËSI: JO AKTIV");
+  }
+
+  if(d.g!==undefined){
+   const e=document.getElementById("val-gps");e.dataset.live="1";
+   e.textContent=d.g===1?"AKTIV":"JO AKTIV";e.className="v "+(d.g===1?"green":"red");
+   mirror("gps",d.g===1?"AKTIV":"JO AKTIV",d.g===1?"green":"red");
+  }
+  if(d.s!==undefined||d.rssi!==undefined){
+   let p=d.s!==undefined?Number(d.s):Math.max(0,Math.min(100,Math.round(2*(Number(d.rssi)+100))));
+   const e=document.getElementById("val-signal");e.dataset.live="1";
+   e.textContent=p+"%";e.className="v "+(p>60?"green":p>30?"orange":"red");
+   mirror("signal",p+"%",p>60?"green":p>30?"orange":"red");
+  }
+  if(d.km!==undefined){carKm=Number(d.km)||0;mirror("km",carKm.toLocaleString("sq-AL")+" km");renderServices()}
+
+  if(d.wh!==undefined&&d.wh>0&&userRole==="admin")updateWorkHours(d.wh);
+ }catch(e){}
+};
+
+/* =========================================================================
+   5) ORËT E PUNËS — IDENTIKE + HISTORIKU
+   ========================================================================= */
+function formatHours(x){x=Number(x)||0;if(!x)return"0h 0m";let h=Math.floor(x),m=Math.round((x-h)*60);if(m===60){h++;m=0}return h+"h "+m+"m"}
+function updateWorkHours(x){
+ db.ref("statistika/ore_pune").transaction(v=>{v=v||{ore_totale:0,lajmerimi_derguar:false};v.ore_totale+=x;return v});
+ const n=new Date();db.ref(`workHours/${n.getFullYear()}/${n.getMonth()+1}/${n.getDate()}`).transaction(v=>(v||0)+x)
+}
+/* nxjerr orët totale pavarësisht si janë ruajtur: objekt {ore_totale} ose numër i thjeshtë */
+function parseTotal(v){
+ if(v===null||v===undefined)return 0;
+ if(typeof v==="number")return v;
+ if(typeof v==="string")return parseFloat(v)||0;
+ if(typeof v==="object"){
+  const c=["ore_totale","oreTotale","total","ore","hours","value"];
+  for(const k of c)if(v[k]!==undefined)return Number(v[k])||0;
+  let s=0,found=false;
+  Object.values(v).forEach(x=>{const n=Number(x);if(!isNaN(n)&&typeof x!=="boolean"){s+=n;found=true}});
+  if(found)return s;
+ }
+ return 0;
+}
+/* LEXIMI I ORËVE — tani për ÇDO përdorues (admin dhe guest) */
+function lexoOretNgaFirebase(){
+ db.ref("statistika/ore_pune").on("value",s=>{
+  mirror("total",formatHours(parseTotal(s.val())));
+ },err=>{console.warn("ore_pune:",err&&err.message);mirror("total","—")});
+
+ const n=new Date();
+ db.ref(`workHours/${n.getFullYear()}/${n.getMonth()+1}/${n.getDate()}`).on("value",s=>{
+  mirror("today",formatHours(Number(s.val())||0));
+ },err=>{console.warn("today:",err&&err.message);mirror("today","—")});
+}
+
+const MONTHS=["JANAR","SHKURT","MARS","PRILL","MAJ","QERSHOR","KORRIK","GUSHT","SHTATOR","TETOR","NËNTOR","DHJETOR"];
+let hY=new Date().getFullYear(),hM=new Date().getMonth()+1,histData={},histRef=null,histYearRef=null;
+
+/* mbush dropdown-at: 12 muajt + vitet ekzistuese në Firebase */
+function buildHistSelectors(years){
+ const ms=document.getElementById("selMonth"),ys=document.getElementById("selYear");
+ if(!ms.options.length)
+  ms.innerHTML=MONTHS.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("");
+ const now=new Date().getFullYear();
+ const set=new Set(years||[]);set.add(now);set.add(hY);
+ for(let y=now-2;y<=now+1;y++)set.add(y);
+ const list=[...set].sort((a,b)=>b-a);
+ const cur=ys.value;
+ ys.innerHTML=list.map(y=>`<option value="${y}">${y}</option>`).join("");
+ ys.value=String(list.includes(hY)?hY:(cur||now));
+ ms.value=String(hM);
+}
+function histPick(){
+ hM=parseInt(document.getElementById("selMonth").value,10)||1;
+ hY=parseInt(document.getElementById("selYear").value,10)||new Date().getFullYear();
+ histLoad();
+}
+function histMove(d){
+ hM+=d;if(hM>12){hM=1;hY++}if(hM<1){hM=12;hY--}
+ buildHistSelectors();histLoad();
+}
+function histLoad(){
+ document.getElementById("selMonth").value=String(hM);
+ document.getElementById("selYear").value=String(hY);
+
+ if(histRef)histRef.off();
+ histRef=db.ref(`workHours/${hY}/${hM}`);
+ histRef.on("value",s=>{histData=s.val()||{};renderHist()},
+  err=>{console.warn("hist:",err&&err.message);document.getElementById("histList").innerHTML='<div class="empty">Nuk u lexuan të dhënat</div>'});
+
+ /* totali i vitit + vitet e disponueshme për dropdown */
+ if(histYearRef)histYearRef.off();
+ histYearRef=db.ref(`workHours/${hY}`);
+ histYearRef.on("value",s=>{
+  const y=s.val()||{};let tot=0;
+  Object.values(y).forEach(mo=>Object.values(mo||{}).forEach(v=>tot+=Number(v)||0));
+  document.getElementById("histYearTotal").textContent=formatHours(tot);
+ },()=>{});
+}
+function loadHistYears(){
+ db.ref("workHours").once("value").then(s=>{
+  const v=s.val()||{};
+  buildHistSelectors(Object.keys(v).map(Number).filter(n=>!isNaN(n)));
+ }).catch(()=>buildHistSelectors());
+}
+function renderHist(){
+ const days=Object.keys(histData).map(Number).filter(n=>!isNaN(n)).sort((a,b)=>a-b);
+ const box=document.getElementById("histList");
+ if(!days.length){
+  box.innerHTML='<div class="empty">Asnjë orë pune e regjistruar në '+MONTHS[hM-1]+' '+hY+'</div>';
+  document.getElementById("histMonthTotal").textContent="0h 0m";
+  document.getElementById("histAvg").textContent="0h 0m";
+  document.getElementById("histDays").textContent="0";return;
+ }
+ let tot=0,max=0;
+ days.forEach(d=>{const v=Number(histData[d])||0;tot+=v;if(v>max)max=v});
+ box.innerHTML=days.map(d=>{
+  const v=Number(histData[d])||0,pc=max?Math.round(v/max*100):0;
+  return `<div class="hbar"><div class="dd">${String(d).padStart(2,"0")}.${String(hM).padStart(2,"0")}</div>
+   <div class="gb"><i style="width:${pc}%"></i></div><div class="hh">${formatHours(v)}</div></div>`;
+ }).join("");
+ document.getElementById("histMonthTotal").textContent=formatHours(tot);
+ document.getElementById("histAvg").textContent=formatHours(tot/days.length);
+ document.getElementById("histDays").textContent=days.length;
+}
+function exportHist(){
+ const days=Object.keys(histData).map(Number).sort((a,b)=>a-b);
+ if(!days.length){alert("Nuk ka të dhëna për të eksportuar.");return}
+ let csv="Data;Ore (dhjetore);Ore (h m)\n";
+ days.forEach(d=>{const v=Number(histData[d])||0;
+  csv+=`${String(d).padStart(2,"0")}/${String(hM).padStart(2,"0")}/${hY};${v.toFixed(2)};${formatHours(v)}\n`});
+ const a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+ a.download=`ore_pune_${hY}_${String(hM).padStart(2,"0")}.csv`;a.click();
+}
+
+/* =========================================================================
+   6) SHËRBIMET — VAJ, FILTRA, MIRËMBAJTJE
+   ========================================================================= */
+const DEFAULT_SERVICES=[
+ {k:"vaj",           n:"VAJI I MOTORIT",        int:10000},
+ {k:"filter_vaji",   n:"FILTRI I VAJIT",        int:10000},
+ {k:"filter_ajri",   n:"FILTRI I AJRIT",        int:20000},
+ {k:"filter_kabines",n:"FILTRI I KABINËS",      int:15000},
+ {k:"filter_naftes", n:"FILTRI I NAFTËS/BENZ.", int:30000},
+ {k:"kandela",       n:"KANDELAT",              int:40000},
+ {k:"frenat",        n:"PLLAKAT E FRENAVE",     int:30000},
+ {k:"rripi",         n:"RRIPI I SHPËRNDARJES",  int:90000},
+ {k:"gomat",         n:"GOMAT",                 int:50000},
+ {k:"antifrizi",     n:"ANTIFRIZI / FTOHËSI",   int:60000}
+];
+let svData={};
+function loadKm(){db.ref("statistika/km").on("value",s=>{const v=Number(s.val())||0;if(v>carKm)carKm=v;mirror("km",carKm?carKm.toLocaleString("sq-AL")+" km":"-- km");renderServices()})}
+function setKm(){
+ if(!needAdmin())return;
+ const v=prompt("Kilometrazhi aktual (km):",carKm||"");
+ if(v===null)return;const n=parseInt(String(v).replace(/\D/g,""),10);
+ if(isNaN(n)){alert("Vlerë e pavlefshme.");return}
+ carKm=n;db.ref("statistika/km").set(n);mirror("km",n.toLocaleString("sq-AL")+" km");renderServices();
+}
+function loadServices(){
+ db.ref("serviset").on("value",s=>{svData=s.val()||{};renderServices()},
+  ()=>{document.getElementById("svList").innerHTML='<div class="empty">Nuk u lexuan shërbimet</div>'});
+}
+function svAll(){
+ const map={};
+ DEFAULT_SERVICES.forEach(d=>map[d.k]={k:d.k,n:d.n,int:d.int,km:0,date:"",custom:false});
+ Object.keys(svData).forEach(k=>{
+  const v=svData[k]||{};
+  map[k]=Object.assign(map[k]||{k:k,n:(v.n||k.toUpperCase()),int:10000,km:0,date:"",custom:!map[k]},v,{k:k});
+  if(v.n)map[k].n=v.n;
+ });
+ return Object.values(map);
+}
+function renderServices(){
+ const box=document.getElementById("svList");if(!box)return;
+ const list=svAll();
+ box.innerHTML=list.map(s=>{
+  const last=Number(s.km)||0,int=Number(s.int)||10000,next=last+int;
+  const used=carKm>0?Math.max(0,carKm-last):0;
+  const pc=Math.max(0,Math.min(100,Math.round(used/int*100)));
+  const left=next-carKm;
+  let cls="ok",tag="NË RREGULL";
+  if(carKm>0){if(left<=0){cls="bad";tag="I SKADUAR"}else if(left<int*0.15){cls="warn";tag="AFROHET"}}
+  else{cls="ok";tag=s.date?"I REGJISTRUAR":"PA TË DHËNA"}
+  const info=[];
+  if(s.date)info.push("📅 "+s.date);
+  if(last)info.push("🛣️ "+last.toLocaleString("sq-AL")+" km");
+  info.push("↻ çdo "+int.toLocaleString("sq-AL")+" km");
+  if(carKm>0&&last)info.push(left>0?("mbeten "+left.toLocaleString("sq-AL")+" km"):("tejkaluar "+Math.abs(left).toLocaleString("sq-AL")+" km"));
+  return `<div class="item">
+    <div class="txt">
+      <div class="n">${s.n} <span class="tag ${cls}">${tag}</span></div>
+      <div class="d">${info.join(" • ")}</div>
+      <div class="bar"><i class="${cls==="ok"?"":cls}" style="width:${carKm>0&&last?pc:0}%"></i></div>
+    </div>
+    <div class="act">
+      <button class="mini" style="color:var(--success)" onclick="doService('${s.k}')" title="Kryer">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></button>
+      <button class="mini" style="color:var(--accent)" onclick="editService('${s.k}')" title="Ndrysho">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+      <button class="mini" style="color:var(--danger)" onclick="delService('${s.k}')" title="Fshi">
+        <svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+    </div></div>`;
+ }).join("");
+}
+function doService(k){
+ if(!needAdmin())return;
+ const cur=svAll().find(s=>s.k===k)||{};
+ const km=prompt("Kilometrazhi ku u krye ("+cur.n+"):",carKm||cur.km||"");
+ if(km===null)return;
+ const n=parseInt(String(km).replace(/\D/g,""),10);if(isNaN(n)){alert("Vlerë e pavlefshme.");return}
+ const today=new Date().toISOString().slice(0,10);
+ db.ref("serviset/"+k).update({n:cur.n,int:cur.int,km:n,date:today});
+ showFeedback("✅ "+cur.n+" u shënua si i kryer");
+}
+function editService(k){
+ if(!needAdmin())return;
+ const cur=svAll().find(s=>s.k===k)||{};
+ const nm=prompt("Emri i shërbimit:",cur.n);if(nm===null)return;
+ const iv=prompt("Intervali në km:",cur.int);if(iv===null)return;
+ const dt=prompt("Data e fundit (VVVV-MM-DD):",cur.date||"");if(dt===null)return;
+ db.ref("serviset/"+k).update({n:nm.toUpperCase(),int:parseInt(String(iv).replace(/\D/g,""),10)||10000,date:dt,km:Number(cur.km)||0});
+ showFeedback("✏️ U përditësua");
+}
+function delService(k){
+ if(!needAdmin())return;
+ if(!confirm("Fshi këtë shërbim nga lista?"))return;
+ db.ref("serviset/"+k).remove();
+}
+function addService(){
+ if(!needAdmin())return;
+ const nm=prompt("Emri i shërbimit të ri:");if(!nm)return;
+ const iv=prompt("Intervali në km:","10000");if(iv===null)return;
+ const key=nm.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,"")||("sv_"+Date.now());
+ db.ref("serviset/"+key).set({n:nm.toUpperCase(),int:parseInt(String(iv).replace(/\D/g,""),10)||10000,km:carKm||0,date:new Date().toISOString().slice(0,10)});
+ showFeedback("➕ Shërbimi u shtua");
+}
+
+/* =========================================================================
+   7) PËRDORUESIT GUEST
+   ========================================================================= */
+let gData={};
+function loadGuests(){
+ db.ref("guestUsers").on("value",s=>{gData=s.val()||{};renderGuests()},
+  ()=>{document.getElementById("gList").innerHTML='<div class="empty">Nuk u lexuan përdoruesit</div>'});
+}
+function renderGuests(){
+ const box=document.getElementById("gList");if(!box)return;
+ const keys=Object.keys(gData);
+ document.getElementById("gCount").textContent=keys.length;
+ if(!keys.length){box.innerHTML='<div class="empty">Asnjë përdorues guest i regjistruar</div>';return}
+ box.innerHTML=keys.map(pin=>{
+  const v=gData[pin],o=(v&&typeof v==="object")?v:{};
+  const nm=o.name||o.emri||"PËRDORUES GUEST";
+  const cr=o.created?new Date(o.created).toLocaleDateString("sq-AL"):"—";
+  const shown=isAdmin()?pin:"••••";
+  return `<div class="item">
+   <div class="txt"><div class="n">${nm}</div><div class="d">PIN: ${shown} • krijuar: ${cr}</div></div>
+   <div class="act">
+     <button class="mini" style="color:var(--accent)" onclick="renameGuest('${pin}')">
+       <svg class="ico" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></button>
+     <button class="mini" style="color:var(--danger)" onclick="delGuest('${pin}')">
+       <svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg></button>
+   </div></div>`;
+ }).join("");
+}
+function addGuest(){
+ if(!needAdmin())return;
+ const pin=prompt("PIN-i i ri (4 shifra):");
+ if(!pin)return;
+ if(!/^\d{4}$/.test(pin)){alert("PIN-i duhet të ketë saktësisht 4 shifra.");return}
+ if(gData[pin]){alert("Ky PIN ekziston tashmë.");return}
+ const nm=prompt("Emri i përdoruesit:","GUEST")||"GUEST";
+ db.ref("guestUsers/"+pin).set({name:nm.toUpperCase(),created:Date.now()});
+ showFeedback("👤 Përdoruesi u shtua");
+}
+function renameGuest(pin){
+ if(!needAdmin())return;
+ const v=gData[pin],o=(v&&typeof v==="object")?v:{};
+ const nm=prompt("Emri i ri:",o.name||"GUEST");if(nm===null)return;
+ db.ref("guestUsers/"+pin).update({name:nm.toUpperCase(),created:o.created||Date.now()});
+}
+function delGuest(pin){
+ if(!needAdmin())return;
+ if(!confirm("Fshi përdoruesin me PIN "+pin+"?"))return;
+ db.ref("guestUsers/"+pin).remove();
+ showFeedback("🗑️ Përdoruesi u fshi");
+}
+function changeAdminPin(){
+ if(!needAdmin())return;
+ const p=prompt("PIN-i i ri i adminit (4 shifra):");
+ if(!p)return;
+ if(!/^\d{4}$/.test(p)){alert("PIN-i duhet të ketë 4 shifra.");return}
+ if(!confirm("Konfirmo ndryshimin e PIN-it të adminit në "+p+" ?"))return;
+ db.ref("adminConfig/password").set(p).then(()=>alert("✅ PIN-i u ndryshua."));
+}
+
+/* ---- ORA ---- */
+setInterval(()=>{
+ const t=new Date().toLocaleTimeString("sq-AL",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+ const c=document.getElementById("clock");if(c)c.textContent=t;
+ mirror("clock",t);
+},1000);
+
+/* =========================================================================
+   8) MOTI
+   ========================================================================= */
+const WMO={0:"KTHJELLËT",1:"KRYESISHT KTHJELLËT",2:"PJESËRISHT ME RE",3:"ME RE",45:"MJEGULL",48:"MJEGULL",
+51:"SHI I LEHTË",53:"SHI I LEHTË",55:"SHI I LEHTË",61:"SHI",63:"SHI",65:"SHI I FORTË",
+71:"BORË",73:"BORË",75:"BORË E FORTË",80:"RRESHJE",81:"RRESHJE",82:"RRESHJE TË FORTA",
+95:"STUHI",96:"STUHI ME BRESHËR",99:"STUHI ME BRESHËR"};
+function loadWeather(lat,lon){
+ const u=`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`;
+ fetch(u).then(r=>r.json()).then(j=>{
+  const c=j.current,dy=j.daily;
+  document.getElementById("w-temp").textContent=Math.round(c.temperature_2m);
+  document.getElementById("w-hum").textContent=Math.round(c.relative_humidity_2m)+"%";
+  document.getElementById("w-desc").textContent=WMO[c.weather_code]||"MOT I NDRYSHUESHËM";
+  document.getElementById("w-max").textContent=Math.round(dy.temperature_2m_max[0])+"°C";
+  document.getElementById("w-min").textContent=Math.round(dy.temperature_2m_min[0])+"°C";
+ }).catch(()=>{document.getElementById("w-desc").textContent="MOTI JO I DISPONUESHËM"});
+}
+function initWeather(){
+ const D={lat:41.3236,lon:19.4565};
+ if(navigator.geolocation)navigator.geolocation.getCurrentPosition(
+  p=>loadWeather(p.coords.latitude.toFixed(3),p.coords.longitude.toFixed(3)),
+  ()=>loadWeather(D.lat,D.lon),{timeout:6000,maximumAge:900000});
+ else loadWeather(D.lat,D.lon);
+}
+
+/* =========================================================================
+   9) NISJA
+   ========================================================================= */
+window.addEventListener("load",()=>{
+ syncTheme();buildHistSelectors();
+ if(sessionStorage.getItem("isAuth"))showApp();else document.getElementById("login").classList.add("active");
+ initWeather();setInterval(initWeather,15*60*1000);
+ setInterval(renderGreeting,60000);
+});
+
+/* =========================================================================
+   10) 3D — LOGJIKA E PANDRYSHUAR
+   ========================================================================= */
+(function(){
+ const MODEL_URL="./2018_hyundai_i30_n.glb";
+ let scene,camera,renderer,controls,carModel,sunroofMesh,raycaster,pointer,initialized=false,downPos=null;
+ const canvas=document.getElementById("canvas"),viewer=document.getElementById("viewer"),loading=document.getElementById("loading");
+
+ window.setCarPartState=function(part,active){
+  if(!carModel)return;
+  carModel.traverse(obj=>{
+   if(!obj.isMesh)return;
+   const n=(obj.name||"").toLowerCase();
+   const isEngine=part==="engine"&&(n.includes("hood")||n.includes("bonnet")||n.includes("kapot"));
+   const isDoor=part==="doors"&&(n.includes("detach_door_l")||n.includes("detach_door_r")||n.includes("door"));
+   if(!isEngine&&!isDoor)return;
+   if(!obj.userData.origSaved){obj.userData.origSaved=true;obj.userData.origPos=obj.position.clone();obj.userData.origRot=obj.rotation.clone()}
+   if(!obj.userData.isCloned){obj.material=Array.isArray(obj.material)?obj.material.map(m=>m.clone()):obj.material.clone();obj.userData.isCloned=true}
+   const mats=Array.isArray(obj.material)?obj.material:[obj.material];
+   mats.forEach(m=>{
+    if(m._trueOrigEmissive===undefined){m._trueOrigEmissive=m.emissive?m.emissive.clone():new THREE.Color(0);m._trueOrigEI=m.emissiveIntensity??1;m._trueOrigColor=m.color?m.color.clone():new THREE.Color(1,1,1)}
+    if(active){if(m.emissive)m.emissive.setHex(0xff0000);m.emissiveIntensity=.8;if(m.color)m.color.setHex(0xff3b30)}
+    else{if(m.emissive)m.emissive.copy(m._trueOrigEmissive);m.emissiveIntensity=m._trueOrigEI;if(m.color)m.color.copy(m._trueOrigColor)}
+   });
+   if(isDoor){
+    const right=n.includes("_r")||n.includes("right")||n.includes("_fr")||n.endsWith("_r");
+    obj.position.copy(obj.userData.origPos);obj.rotation.copy(obj.userData.origRot);
+    if(active){
+     const angle=right?.42:-.42,hingeX=right?-.05:.05,hingeZ=1.1,slide=-.25;
+     obj.rotation.y+=angle;const c=Math.cos(angle),s=Math.sin(angle);
+     const dx=hingeX-(hingeX*c+hingeZ*s),dz=hingeZ-(-hingeX*s+hingeZ*c);
+     obj.position.x+=dx;obj.position.z+=dz+slide;
+    }
+   }
+  })
+ };
+
+ function flashMesh(mesh,duration=400){
+  if(!mesh||!mesh.material)return;
+  const mats=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+  mats.forEach(m=>{if(m.emissive){if(!m._old)m._old=m.emissive.clone();m.emissive.setHex(0x00d2ff);m.emissiveIntensity=.8}});
+  setTimeout(()=>mats.forEach(m=>{if(m.emissive&&m._old)m.emissive.copy(m._old)}),duration)
+ }
+ function partName(obj){
+  let s="";while(obj&&obj!==scene){s+=" "+(obj.name||"").toLowerCase();obj=obj.parent}
+  if(s.includes("upper")||s.includes("roof")||s.includes("sunroof")||s.includes("panoram")||s.includes("tavan"))return"sunroof";
+  if(s.includes("door")||s.includes("dyr")||s.includes("porta")||s.includes("detach_door"))return"door";
+  if(s.includes("hood")||s.includes("bonnet")||s.includes("kapot"))return"engine";
+  if((s.includes("glass")||s.includes("window")||s.includes("dritare"))&&!s.includes("roof"))return"windows";
+  return null
+ }
+ function trigger(part,mesh){
+  if(part==="door"){
+   flashMesh(mesh);
+   if(!isDoorsOpen){sendCommand("UNLOCK");showFeedback("🔓 Duke shkyçur dyert")}
+   else{sendCommand("LOCK");showFeedback("🔒 Duke mbyllur dyert")}
+  }else if(part==="engine"){
+   flashMesh(mesh);
+   if(isEngineRunning){sendCommand("STOP");setTimeout(()=>sendCommand("LOCK"),500);showFeedback("🛑 Motorri u fik & Dyert u kyçën!")}
+   else{sendCommand("TRIP_MODE");showFeedback("🚀 Trip Mode u aktivizua!")}
+  }else if(part==="sunroof"){
+   if(userRole==="guest"){showFeedback("⛔ Nuk keni akses për tavanin");return}
+   flashMesh(mesh,8000);sendCommand("SUNROOF");showFeedback("🪟 Duke lëvizur tavanin...")
+  }else if(part==="windows"){showFeedback("ℹ️ Përdor butonin XHAMAT në ekran")}
+ }
+ function tap(e){
+  if(!carModel)return;
+  const r=renderer.domElement.getBoundingClientRect();
+  pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;
+  raycaster.setFromCamera(pointer,camera);
+  const hits=raycaster.intersectObject(carModel,true);if(!hits.length)return;
+  const hit=hits[0];if(hit.object===sunroofMesh)return trigger("sunroof",hit.object);
+  const p=partName(hit.object);if(p)trigger(p,hit.object);else showFeedback("🤔 Pjesë e panjohur")
+ }
+ function resize(){if(!renderer)return;const w=Math.max(viewer.clientWidth,100),h=Math.max(viewer.clientHeight,100);camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}
+ window.__resize3D=resize;
+
+ /* 0 = 3/4 ballor (si në dizajn) • 1 = anash • 2 = 3/4 prapa • 3 = nga lart */
+ const VIEWS=[[-4.9,2.5,6.4],[7.6,1.9,0],[4.6,2.6,-6.2],[0,8.4,.2]];
+ const START=VIEWS[0];
+ window.setView=function(i){
+  if(!camera||!controls)return;
+  camera.position.set(VIEWS[i][0],VIEWS[i][1],VIEWS[i][2]);controls.update();
+  document.querySelectorAll("#dots b").forEach((b,k)=>b.classList.toggle("on",k===i));
+ };
+
+ function init(){
+  if(initialized)return;initialized=true;
+  const w=Math.max(viewer.clientWidth,100),h=Math.max(viewer.clientHeight,100);
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(38,w/h,.1,1000);camera.position.set(START[0],START[1],START[2]);
+  renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.7));renderer.setSize(w,h,false);
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
+
+  /* ndriçim studio: kyç + mbushës i ftohtë + rim blu nga prapa */
+  scene.add(new THREE.AmbientLight(0xffffff,.55));
+  scene.add(new THREE.HemisphereLight(0xbfe4ff,0x0a0f16,.65));
+  const d=new THREE.DirectionalLight(0xffffff,1.05);d.position.set(5,9,7);scene.add(d);
+  const d2=new THREE.DirectionalLight(0x9fd8ff,.55);d2.position.set(-7,4,-3);scene.add(d2);
+  const d3=new THREE.DirectionalLight(0x22c6ff,.7);d3.position.set(0,2.5,-8);scene.add(d3);
+
+  controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;controls.dampingFactor=.09;controls.enablePan=false;
+  controls.minDistance=4;controls.maxDistance=13;
+  controls.minPolarAngle=Math.PI/6;controls.maxPolarAngle=Math.PI/2.12;
+  controls.autoRotate=true;controls.autoRotateSpeed=.55;
+  /* ndalon vetërrotullimin sapo prek ekranin */
+  renderer.domElement.addEventListener("pointerdown",()=>{controls.autoRotate=false},{once:true});
+  raycaster=new THREE.Raycaster();pointer=new THREE.Vector2();
+
+  new THREE.GLTFLoader().load(MODEL_URL,g=>{
+   carModel=g.scene;
+   const pearl=new THREE.Color(0xF2F4F5);
+   carModel.traverse(o=>{if(!o.isMesh||!o.material)return;const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{const n=String(m.name||"").toLowerCase();if(n==="carpaint"||n.includes("carpaint")){m.color.copy(pearl);if("metalness"in m)m.metalness=.45;if("roughness"in m)m.roughness=.24}})});
+   const box=new THREE.Box3().setFromObject(carModel),size=box.getSize(new THREE.Vector3()),center=box.getCenter(new THREE.Vector3()),max=Math.max(size.x,size.y,size.z)||1,scale=7.9/max;
+   carModel.scale.setScalar(scale);
+   carModel.position.x=-center.x*scale;carModel.position.z=-center.z*scale;carModel.position.y=-box.min.y*scale;
+   scene.add(carModel);
+   const sg=new THREE.PlaneGeometry(size.x*.28,size.z*.20),sm=new THREE.MeshStandardMaterial({color:0x050505,roughness:.1,metalness:.8,side:THREE.DoubleSide});
+   sunroofMesh=new THREE.Mesh(sg,sm);sunroofMesh.rotation.x=-Math.PI/2;
+   sunroofMesh.position.set(center.x,box.max.y,center.z-size.z*.12);carModel.add(sunroofMesh);
+
+   /* unaza ndriçuese nën makinë (si në dizajn) */
+   const carH=size.y*scale,carL=Math.max(size.x,size.z)*scale;
+   const ring=new THREE.Mesh(
+     new THREE.RingGeometry(carL*.42,carL*.455,96),
+     new THREE.MeshBasicMaterial({color:0x22c6ff,transparent:true,opacity:.55,side:THREE.DoubleSide,depthWrite:false})
+   );
+   ring.rotation.x=-Math.PI/2;ring.position.y=.02;scene.add(ring);
+   const glow=new THREE.Mesh(
+     new THREE.CircleGeometry(carL*.52,72),
+     new THREE.MeshBasicMaterial({color:0x0a84ff,transparent:true,opacity:.13,depthWrite:false})
+   );
+   glow.rotation.x=-Math.PI/2;glow.position.y=.01;scene.add(glow);
+
+   controls.target.set(0,carH*.42,0);controls.update();
+   loading.style.display="none";
+   setCarPartState("engine",isEngineRunning);
+   setCarPartState("doors",isDoorsOpen);
+  },undefined,e=>{loading.innerHTML="⚠️ Modeli 3D nuk u ngarkua<br><span style=\"opacity:.7\">vendos 2018_hyundai_i30_n.glb pranë index.html</span>";console.error(e)});
+
+  canvas.addEventListener("pointerdown",e=>downPos={x:e.clientX,y:e.clientY});
+  canvas.addEventListener("pointerup",e=>{if(!downPos)return;const dx=e.clientX-downPos.x,dy=e.clientY-downPos.y;downPos=null;if(Math.hypot(dx,dy)<8)tap(e)});
+  window.addEventListener("resize",resize);
+  window.addEventListener("orientationchange",()=>setTimeout(resize,300));
+  if(window.ResizeObserver)new ResizeObserver(()=>resize()).observe(viewer);
+  (function loop(){requestAnimationFrame(loop);controls.update();renderer.render(scene,camera)})();
+ }
+ init();
+})();
+</script>
+</body>
+</html>

@@ -22,6 +22,7 @@
 <link rel="manifest" href="manifest.json">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.1.0/paho-mqtt.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -55,7 +56,7 @@ button{font-family:inherit;cursor:pointer}
 svg{display:block}
 .ico{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .ico-sm{width:13px;height:13px;stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}
-.ico-lg{width:clamp(20px,3.4vh,27px);height:clamp(20px,3.4vh,27px);stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ico-lg{width:clamp(17px,2.7vh,22px);height:clamp(17px,2.7vh,22px);stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
 /* ============ SHELL ============ */
 #app{
@@ -120,7 +121,7 @@ svg{display:block}
 .wcell .k{font-size:7px;font-weight:800;letter-spacing:.6px;color:var(--sub2)}
 
 /* ============ 3D ============ */
-.viewer{position:relative;flex:1;min-height:110px;border-radius:var(--r);overflow:hidden;border:1px solid var(--stroke);
+.viewer{position:relative;flex:1;min-height:170px;border-radius:var(--r);overflow:hidden;border:1px solid var(--stroke);
   background:radial-gradient(ellipse at 50% 62%,rgba(34,198,255,.14),transparent 60%),#000;touch-action:none}
 body.light .viewer{background:radial-gradient(ellipse at 50% 62%,rgba(10,132,255,.14),transparent 60%),#0b1018}
 #canvas{width:100%;height:100%;display:block}
@@ -226,12 +227,13 @@ body.light #fab{box-shadow:0 6px 20px rgba(10,40,80,.16)}
 #fab.spin2 svg{animation:sp .8s linear}
 
 /* ============ BUTTONS ============ */
-.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap);flex:none}
-.btn{background:var(--panel);border:1px solid var(--stroke);border-radius:var(--r);color:var(--text);
-  padding:6px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-  height:clamp(54px,8.6vh,74px);transition:transform .12s}
+/* 8 butona ne 4 kolona x 2 rreshta — me kompakt, i le hapesire 3D-se */
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:none}
+.btn{background:var(--panel);border:1px solid var(--stroke);border-radius:14px;color:var(--text);
+  padding:5px 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  height:clamp(50px,7.2vh,62px);transition:transform .12s}
 .btn:active{transform:scale(.965)}
-.btn .lbl{font-size:clamp(9px,2.6vw,11px);font-weight:800;letter-spacing:.3px;text-align:center;line-height:1.1}
+.btn .lbl{font-size:clamp(7.5px,2.1vw,9px);font-weight:800;letter-spacing:.1px;text-align:center;line-height:1.05}
 .btn .sub{font-size:8.5px;font-weight:700;opacity:.85;line-height:1}
 .btn.bgreen{color:var(--success)}.btn.bred{color:var(--danger)}.btn.borange{color:var(--orange)}
 .btn.bblue{color:var(--blue)}.btn.bpurple{color:var(--purple)}.btn.bpink{color:var(--pink)}.btn.bgray{color:var(--sub)}
@@ -421,6 +423,9 @@ body.guest .gnote{display:block}
 <aside id="drawer">
   <h3><i>i30</i> DIGITAL REMOTE</h3>
   <div class="dline">ORA: <span id="clock">--:--:--</span> • ROLI: <span id="d-role">--</span></div>
+  <button class="ditem" onclick="sendCommand('AC_TOGGLE');closeDrawer()">
+    <svg class="ico" viewBox="0 0 24 24"><path d="M12 3v18M3.5 7.5l17 9M20.5 7.5l-17 9"/><path d="M12 7l2.4-2.4M12 7L9.6 4.6M12 17l2.4 2.4M12 17l-2.4 2.4"/></svg>
+    <span data-m="acbtn">AC: FIKUR</span></button>
   <button class="ditem" onclick="pingCar(true);closeDrawer()">
     <svg class="ico" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>RIFRESKO TË DHËNAT</button>
   <button class="ditem" onclick="toggleDarkMode()">
@@ -520,34 +525,39 @@ body.guest .gnote{display:block}
 
     <div class="gnote">Prek <b>KAPAKUN</b> për <b>TRIP MODE</b> • prek <b>DYERT</b> për t'i hapur/mbyllur</div>
 
+    <!-- 8 butona ne rrjet 4x2 kompakt -->
     <div class="actions">
       <button id="btn-engine" class="btn bgreen" onclick="sendCommand('START')">
         <span id="icon-engine"><svg class="ico-lg" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg></span>
-        <span class="lbl" id="lbl-engine">NDIZ MOTORRIN</span></button>
+        <span class="lbl" id="lbl-engine">NDIZ</span></button>
+
       <button id="btn-locks" class="btn bgreen" onclick="sendCommand('UNLOCK')">
         <span id="icon-locks"><svg class="ico-lg" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/></svg></span>
-        <span class="lbl" id="lbl-locks">SHKYÇ DYERT</span></button>
+        <span class="lbl" id="lbl-locks">SHKYÇ</span></button>
+
       <button id="btn-windows" class="btn bblue" onclick="sendCommand('WINDOWS')">
         <svg class="ico-lg" viewBox="0 0 24 24"><rect x="3" y="9" width="18" height="9" rx="2.5"/><path d="M3 13.5h18"/><path d="M6.5 9 8 6h8l1.5 3"/></svg>
-        <span class="lbl">XHAMAT</span><span class="sub">(HAPJE)</span></button>
+        <span class="lbl">XHAMAT</span></button>
+
       <button id="btn-sunroof" class="btn borange" onclick="sendCommand('SUNROOF')">
         <svg class="ico-lg" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2.5"/><rect x="6" y="10" width="12" height="4" rx="1.4"/></svg>
-        <span class="lbl">TAVANI</span><span class="sub">(HAPJE)</span></button>
+        <span class="lbl">TAVANI</span></button>
+
       <button id="btn-trip" class="btn bpurple" onclick="sendCommand('TRIP_MODE')">
         <svg class="ico-lg" viewBox="0 0 24 24"><path d="M5.5 14.5c-1.5 1.5-2 5.5-2 5.5s4-.5 5.5-2c.9-.9.9-2.3 0-3.2a2.2 2.2 0 0 0-3.5-.3z"/><path d="M9 15s-2-6 2.5-10.5C14.5 1.5 21 3 21 3s1.5 6.5-1.5 9.5C15 17 9 15 9 15z"/></svg>
-        <span class="lbl">UDHËTIM</span><span class="sub">(TRIP MODE)</span></button>
+        <span class="lbl">UDHËTIM</span></button>
+
       <button id="btn-gps" class="btn bgreen" onclick="sendCommand('GPS')">
         <svg class="ico-lg" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="2.8"/></svg>
-        <span class="lbl">GPS / HARTA</span></button>
-    </div>
+        <span class="lbl">GPS</span></button>
 
-    <div class="rowbtns">
-      <button id="btn-allclose" class="btn wide bblue" onclick="if(confirm('A je i sigurt që do të bësh Mbyllje Totale?'))sendCommand('ALL_CLOSE')">
-        <svg class="ico" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.4 3 7.9 7 9 4-1.1 7-4.6 7-9V6z"/><path d="M9.2 12.2 11 14l3.8-4"/></svg>
-        <span class="lbl">MBYLLJE TOTALE</span></button>
-      <button id="btn-key" class="btn wide bpink" onclick="toggleKey()">
-        <svg class="ico" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.3 9.3a2.8 2.8 0 0 1-4-4z"/></svg>
-        <span class="lbl" id="lbl-key-txt">ÇELËSI SERVISIT: JO AKTIV</span></button>
+      <button id="btn-allclose" class="btn bblue" onclick="if(confirm('A je i sigurt që do të bësh Mbyllje Totale?'))sendCommand('ALL_CLOSE')">
+        <svg class="ico-lg" viewBox="0 0 24 24"><path d="M12 3 5 6v6c0 4.4 3 7.9 7 9 4-1.1 7-4.6 7-9V6z"/><path d="M9.2 12.2 11 14l3.8-4"/></svg>
+        <span class="lbl">MBYLL TË GJITHA</span></button>
+
+      <button id="btn-key" class="btn bpink" onclick="toggleKey()">
+        <svg class="ico-lg" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5l-9.3 9.3a2.8 2.8 0 0 1-4-4z"/></svg>
+        <span class="lbl" id="lbl-key-txt">ÇELËSI</span></button>
     </div>
   </section>
 
@@ -559,10 +569,12 @@ body.guest .gnote{display:block}
       <div class="row"><span>MOTORI</span><b data-m="engine">OFF</b></div>
       <div class="row"><span>DYERT</span><b data-m="locks">TË MBYLLURA</b></div>
       <div class="row"><span>ÇELËSI SERVISIT</span><b data-m="key">JO AKTIV</b></div>
+      <div class="row"><span>KONDICIONERI</span><b data-m="ac">--</b></div>
       <div class="row"><span>BATERIA</span><b data-m="battery">--.-V</b></div>
       <div class="row"><span>GPS</span><b data-m="gps">--</b></div>
       <div class="row"><span>SINJALI</span><b data-m="signal">--</b></div>
       <div class="row"><span>KILOMETRAZHI</span><b data-m="km">-- km</b></div>
+      <div class="row"><span>ORË MOTORRI (MAKINA)</span><b data-m="engineh">0h 0m</b></div>
     </div>
     <div class="card">
       <div class="title">ORËT E PUNËS</div>
@@ -814,12 +826,47 @@ const firebaseConfig={
 };
 if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
 const db=firebase.database();
+
+/* -------------------------------------------------------------------------
+   FIREBASE AUTH (anonim)
+   Rregullat e bazes kerkojne "auth != null". Ky hyrje anonime i jep
+   aplikacionit nje identitet te vlefshem pa kerkuar email/fjalekalim —
+   PIN-i mbetet mbrojtja jote e vertete per rolet.
+   Aktivizoje: Firebase Console > Authentication > Sign-in method > Anonymous
+   ------------------------------------------------------------------------- */
+let authReady=false;
+const authWaiters=[];
+function whenAuthed(fn){authReady?fn():authWaiters.push(fn)}
+
+firebase.auth().onAuthStateChanged(u=>{
+ if(u){
+  authReady=true;
+  while(authWaiters.length)authWaiters.shift()();
+ }
+});
+firebase.auth().signInAnonymously().catch(e=>{
+ console.error("Auth deshtoi:",e.code,e.message);
+ if(e.code==="auth/operation-not-allowed"){
+  alert("Aktivizo 'Anonymous' te Firebase Console:\nAuthentication > Sign-in method > Anonymous > Enable");
+ }else if(e.code==="auth/network-request-failed"){
+  alert("Nuk ka internet. Lidhu dhe provo perseri.");
+ }
+});
 const topicCmd="jon_i30_S3kr3t_998877/komanda";
 const topicStatus="jon_i30_S3kr3t_998877/statusi";
-const mqttClient=new Paho.Client("broker.hivemq.com",8884,"App_"+Math.random().toString(16).slice(2,8));
+
+/* ===== HiveMQ Cloud (privat) — duhet të përputhet me secrets.h te ESP32 =====
+   Porti 8884 = WebSocket mbi TLS (shfletuesi përdor WSS, jo MQTT të thjeshtë).
+   Host-in merre nga console.hivemq.cloud > Cluster > Details.              */
+const MQTT_HOST="910f5e1b9b3241f0b3d1a3ec2b22940a.s1.eu.hivemq.cloud";   // ← i njëjti host si te secrets.h
+const MQTT_PORT=8884;                             // WebSocket TLS (jo 8883)
+const MQTT_USER="aglien";                       // ← i njëjti user
+const MQTT_PASS="Jonian161924";                       // ← i njëjti pass
+
+const mqttClient=new Paho.Client(MQTT_HOST,MQTT_PORT,"/mqtt","App_"+Math.random().toString(16).slice(2,8));
 
 let carTimer,isMqttConnected=false,isEngineRunning=false,userRole="guest",pinEntry="";
-let isDoorsOpen=false,isKeyActive=false,carKm=0;
+let isDoorsOpen=false,isKeyActive=false,carKm=0,isAcOn=false;
 
 const ICON={
  power:'<svg class="ico-lg" viewBox="0 0 24 24"><path d="M12 3v9"/><path d="M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>',
@@ -936,6 +983,8 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 function checkLogin(){
  if(!pinEntry)return;
+ /* pa autentikim, cdo lexim kthen "Permission denied" */
+ if(!authReady){whenAuthed(checkLogin);return}
  const enter=(role,name)=>{
   sessionStorage.setItem("isAuth","true");
   sessionStorage.setItem("role",role);
@@ -990,8 +1039,11 @@ function showApp(){
  renderGreeting();
  applyRoleUI();
  initMQTT();
- lexoOretNgaFirebase();
- loadServices();loadHidden();loadLog();loadGuests();loadKm();loadHistYears();histLoad();
+ /* te gjitha leximet nisin vetem pasi autentikimi eshte gati */
+ whenAuthed(()=>{
+  lexoOretNgaFirebase();
+  loadServices();loadHidden();loadLog();loadGuests();loadKm();loadHistYears();histLoad();
+ });
 }
 function logout(){sessionStorage.clear();location.reload()}
 
@@ -1077,11 +1129,13 @@ function initMQTT(){
  mqttBusy=true;
  try{
   mqttClient.connect({useSSL:true,reconnect:true,timeout:12,keepAliveInterval:20,cleanSession:true,
+   userName:MQTT_USER,password:MQTT_PASS,      /* HiveMQ Cloud i kërkon */
    onSuccess:()=>{
     mqttBusy=false;retryDelay=2000;
     isMqttConnected=true;mqttClient.subscribe(topicStatus);setOnline(true);pingCar(false)
    },
-   onFailure:()=>{
+   onFailure:(e)=>{
+    console.warn("MQTT:",e&&e.errorMessage);
     mqttBusy=false;isMqttConnected=false;setOnline(false);
     setTimeout(initMQTT,retryDelay);
     retryDelay=Math.min(retryDelay*1.6,20000);   /* prapavijë në rritje */
@@ -1186,6 +1240,19 @@ mqttClient.onMessageArrived=msg=>{
   }
   if(d.km!==undefined){carKm=Number(d.km)||0;mirror("km",carKm.toLocaleString("sq-AL")+" km");renderServices()}
 
+  /* "th" = orët totale reale të matura nga vetë makina */
+  if(d.th!==undefined)mirror("engineh",formatHours(Number(d.th)||0));
+
+  /* "ac" = kondicioneri */
+  if(d.ac!==undefined){
+   isAcOn=d.ac===1;
+   mirror("ac",isAcOn?"NDEZUR":"FIKUR",isAcOn?"green":"gray");
+   mirror("acbtn",isAcOn?"AC: NDEZUR":"AC: FIKUR");
+   /* AC-ja tani ndodhet te menuja anësore */
+  }
+
+  /* "d" = alarm dere — trajtohet vetëm nga Telegram, jo në aplikacion */
+
   if(d.wh!==undefined&&d.wh>0&&userRole==="admin")handleWorkHours(d.wh);
  }catch(e){}
 };
@@ -1236,7 +1303,13 @@ function handleWorkHours(x){
   if(err||!committed||!snap)return;
   const v=snap.val()||{};
   const d=Number(v.delta)||0;
-  if(d>0)updateWorkHours(d);   /* shkruhet vetëm diferenca e vërtetë */
+  if(d>0){
+   updateWorkHours(d);        /* shkruhet vetëm diferenca e vërtetë */
+   /* Konfirmojmë te makina që orët u ruajtën, që ajo ta zerojë numëruesin
+      e vet (oreTePaderguara). Pa këtë, ESP32-ja e ridërgon të njëjtën
+      vlerë në çdo mesazh dhe orët duken sikur shtohen vazhdimisht. */
+   sendCommand("SAVED_HOURS");
+  }
  });
 }
 /* nxjerr orët totale pavarësisht si janë ruajtur: objekt {ore_totale} ose numër i thjeshtë */

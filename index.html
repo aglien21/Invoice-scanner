@@ -852,16 +852,20 @@ firebase.auth().signInAnonymously().catch(e=>{
   alert("Nuk ka internet. Lidhu dhe provo perseri.");
  }
 });
-const topicCmd="jon_i30_S3kr3t_998877/komanda";
-const topicStatus="jon_i30_S3kr3t_998877/statusi";
+/* -------------------------------------------------------------------------
+   TOPIKËT NUK NDODHEN NË KOD
+   Ruhen te Firebase (mqttConfig/) dhe lexohen vetëm PAS hyrjes me PIN.
+   Kush hap skedarin në GitHub ose bën "View Source" nuk sheh asgjë të
+   përdorshme — pa PIN nuk merr dot topikët, pa topikë s'komandon makinën.
+   ------------------------------------------------------------------------- */
+let topicCmd="", topicStatus="";
 
-/* ===== HiveMQ Cloud (privat) — duhet të përputhet me secrets.h te ESP32 =====
-   Porti 8884 = WebSocket mbi TLS (shfletuesi përdor WSS, jo MQTT të thjeshtë).
-   Host-in merre nga console.hivemq.cloud > Cluster > Details.              */
-const MQTT_HOST="910f5e1b9b3241f0b3d1a3ec2b22940a.s1.eu.hivemq.cloud";   // ← i njëjti host si te secrets.h
-const MQTT_PORT=8884;                             // WebSocket TLS (jo 8883)
-const MQTT_USER="aglien";                       // ← i njëjti user
-const MQTT_PASS="Jonian161924";                       // ← i njëjti pass
+/* ===== Brokeri publik HiveMQ =====
+   ESP32 përdor portin 1883 (MQTT), shfletuesi 8884 (WebSocket mbi TLS).
+   Të dy lidhen te i njëjti broker dhe komunikojnë përmes topikëve.
+   Siguria varet nga fshehtësia e topikëve — mos i publiko kurrë.        */
+const MQTT_HOST="broker.hivemq.com";
+const MQTT_PORT=8884;                 /* WSS për shfletuesin */
 
 const mqttClient=new Paho.Client(MQTT_HOST,MQTT_PORT,"/mqtt","App_"+Math.random().toString(16).slice(2,8));
 
@@ -1038,11 +1042,29 @@ function showApp(){
  const dr=document.getElementById("d-role");if(dr)dr.textContent=userRole.toUpperCase();
  renderGreeting();
  applyRoleUI();
- initMQTT();
  /* te gjitha leximet nisin vetem pasi autentikimi eshte gati */
  whenAuthed(()=>{
+  loadTopics();          /* topikët merren nga Firebase, pastaj lidhet MQTT */
   lexoOretNgaFirebase();
   loadServices();loadHidden();loadLog();loadGuests();loadKm();loadHistYears();histLoad();
+ });
+}
+
+/* Merr topikët nga Firebase dhe vetëm atëherë hap lidhjen MQTT */
+function loadTopics(){
+ db.ref("mqttConfig").once("value").then(s=>{
+  const c=s.val()||{};
+  topicCmd=c.cmd||"";topicStatus=c.status||"";
+  if(!topicCmd||!topicStatus){
+   setOnline(false);
+   showFeedback("⚠️ Topikët mungojnë te Firebase");
+   console.error("Krijo te Firebase: mqttConfig/cmd dhe mqttConfig/status");
+   return;
+  }
+  initMQTT();
+ }).catch(e=>{
+  console.error("mqttConfig:",e&&e.message);
+  setOnline(false);showFeedback("⚠️ S'u lexuan cilësimet MQTT");
  });
 }
 function logout(){sessionStorage.clear();location.reload()}
@@ -1095,10 +1117,12 @@ function showFeedback(t){
 }
 function toggleKey(){sendCommand(isKeyActive?"KEY_OFF":"KEY_ON")}
 function sendCommand(cmd){
+ if(!topicCmd){showFeedback("⚠️ Cilësimet MQTT s'u ngarkuan");return}
  if(!isMqttConnected){initMQTT();alert("Duke u rilidhur me MQTT...");return}
  try{const m=new Paho.Message(cmd);m.destinationName=topicCmd;m.qos=1;mqttClient.send(m)}catch(e){isMqttConnected=false}
 }
 function pingCar(manual){
+ if(!topicCmd)return;
  try{const m=new Paho.Message("REFRESH");m.destinationName=topicCmd;m.qos=1;mqttClient.send(m)}catch(e){}
  if(manual)showFeedback("🔄 Duke rifreskuar...");
 }
@@ -1126,10 +1150,10 @@ function setOnline(ok){
 let mqttBusy=false,retryDelay=2000;
 function initMQTT(){
  if(isMqttConnected||mqttBusy)return;
+ if(!topicCmd||!topicStatus)return;   /* pa topikë nuk lidhemi */
  mqttBusy=true;
  try{
   mqttClient.connect({useSSL:true,reconnect:true,timeout:12,keepAliveInterval:20,cleanSession:true,
-   userName:MQTT_USER,password:MQTT_PASS,      /* HiveMQ Cloud i kërkon */
    onSuccess:()=>{
     mqttBusy=false;retryDelay=2000;
     isMqttConnected=true;mqttClient.subscribe(topicStatus);setOnline(true);pingCar(false)
@@ -1154,6 +1178,7 @@ mqttClient.onConnectionLost=r=>{
    rilidhemi sapo telefoni zgjohet ose interneti kthehet.
    ------------------------------------------------------------------------- */
 setInterval(()=>{
+ if(!topicCmd)return;              /* topikët ende s'janë ngarkuar */
  const live=mqttClient.isConnected&&mqttClient.isConnected();
  if(!live){
   if(isMqttConnected){isMqttConnected=false;setOnline(false)}
@@ -2093,5 +2118,5 @@ window.addEventListener("load",()=>{
  init();
 })();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a249083a4fdd0e8d',t:'MTc4NTYzMTIzNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
